@@ -40,9 +40,9 @@ public class TemplateCodecTest {
         TemplateJaxbCodec templateJaxbCodec = new TemplateJaxbCodec();
         TemplateYamlCodec templateYamlCodec = new TemplateYamlCodec();
         for (File file : new File("/Users/brosander/Github/nifi-templates/templates/").listFiles((dir, name) -> name.endsWith(".xml"))) {
-            Template template;
+            Template initialTemplate;
             try (FileReader fileReader = new FileReader(file)) {
-                template = templateJaxbCodec.read(fileReader);
+                initialTemplate = templateJaxbCodec.read(fileReader);
             }
             String xml;
             try (FileReader fileReader = new FileReader(file)) {
@@ -51,17 +51,14 @@ public class TemplateCodecTest {
                 xml = stringWriter.toString();
             }
             StringWriter stringWriter = new StringWriter();
-            templateYamlCodec.write(template, stringWriter);
+            templateYamlCodec.write(initialTemplate, stringWriter);
             String outputFile = file.getName().substring(0, file.getName().length() - 4);
             try (FileWriter outputWriter = new FileWriter(outputFile + ".yaml")) {
-                templateYamlCodec.write(template, outputWriter);
+                templateYamlCodec.write(initialTemplate, outputWriter);
             }
-            template = templateYamlCodec.read(new StringReader(stringWriter.toString()));
+            Template yamlReadTemplate = templateYamlCodec.read(new StringReader(stringWriter.toString()));
             stringWriter = new StringWriter();
-            templateJaxbCodec.write(template, stringWriter);
-            try (FileWriter outputWriter = new FileWriter(new File(file.getParent(), outputFile + ".output"))) {
-                templateJaxbCodec.write(template, outputWriter);
-            }
+            templateJaxbCodec.write(yamlReadTemplate, stringWriter);
             assertEquals(file + " didn't round trip.", xml, stringWriter.toString());
         }
     }

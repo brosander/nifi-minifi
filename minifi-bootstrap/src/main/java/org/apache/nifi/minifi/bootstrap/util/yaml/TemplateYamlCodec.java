@@ -22,18 +22,11 @@ import org.apache.nifi.minifi.bootstrap.util.TemplateCodec;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.error.YAMLException;
-import org.yaml.snakeyaml.introspector.Property;
-import org.yaml.snakeyaml.nodes.NodeId;
 
-import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 
 public class TemplateYamlCodec implements TemplateCodec {
     @Override
@@ -46,46 +39,11 @@ public class TemplateYamlCodec implements TemplateCodec {
     @Override
     public Template read(Reader reader) throws IOException {
         try {
-            return new Template((TemplateDTO) new Yaml(new BooleanCompatibleConstructor()).load(reader));
+            return new Template((TemplateDTO) new Yaml(new DTOConstructor()).load(reader));
         } catch (ClassCastException e) {
             throw new IOException("Was expecting TemplateDTO at root of file.", e);
         } catch (YAMLException e) {
             throw new IOException("Unable to parse yaml.", e);
-        }
-    }
-
-    protected class BooleanCompatibleConstructor extends Constructor {
-        public BooleanCompatibleConstructor() {
-            yamlClassConstructors.put(NodeId.mapping, new ConstructMapping() {
-                private Map<Class<?>, Map<String, Property>> booleanProps = new HashMap<>();
-
-                @Override
-                protected Property getProperty(Class<? extends Object> type, String name) throws IntrospectionException {
-                    try {
-                        return super.getProperty(type, name);
-                    } catch (YAMLException e) {
-                        Map<String, Property> namePropertyMap = booleanProps.get(type);
-                        if (namePropertyMap == null) {
-                            namePropertyMap = new HashMap<>();
-                            booleanProps.put(type, namePropertyMap);
-                        }
-                        Property property = namePropertyMap.get(name);
-                        if (property == null) {
-                            if (namePropertyMap.containsKey(name)) {
-                                throw e;
-                            } else {
-                                Optional<Property> first = DTORepresenter.getBooleanProperties(type).stream()
-                                        .filter(booleanProperty -> booleanProperty.getName().equals(name))
-                                        .findFirst();
-                                namePropertyMap.put(name, first.orElse(null));
-                                return first.orElseThrow(() -> e);
-                            }
-                        } else {
-                            return property;
-                        }
-                    }
-                }
-            });
         }
     }
 }

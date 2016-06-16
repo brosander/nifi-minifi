@@ -45,19 +45,35 @@ public class DTORepresenter extends Representer {
                 throw new RuntimeException();
             } else {
                 Class<?> clazz = data.getClass();
-                DTORepresent DTORepresent = new DTORepresent(clazz, null);
-                representers.put(clazz, DTORepresent);
-                return DTORepresent.representData(data);
+                DTORepresent dtoRepresent = new DTORepresent(clazz, null);
+                representers.put(clazz, dtoRepresent);
+                return dtoRepresent.representData(data);
             }
         });
+    }
+
+    public static List<Property> getBooleanProperties(Class<?> clazz) {
+        return Arrays.stream(clazz.getDeclaredMethods())
+                .filter(method -> method.getReturnType() == Boolean.class && method.getName().startsWith("is"))
+                .map(method -> {
+                    try {
+                        return new PropertyDescriptor(method.getName().substring(2), clazz, method.getName(), "set" + method.getName().substring(2));
+                    } catch (IntrospectionException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .map(MethodProperty::new).collect(Collectors.toList());
     }
 
     public class DTORepresent implements Represent {
         private final Set<Property> properties;
         private final Object defaultObj;
 
-        public DTORepresent(Class<?> clazz, List<String> propertyNames) {
+        public DTORepresent(Class<?> clazz, Set<String> propertyNames) {
             Set<Property> properties;
+            List<Property> booleanProperties = getBooleanProperties(clazz);
             if (propertyNames != null) {
                 Map<String, Property> propertyMap;
                 try {
@@ -66,6 +82,7 @@ public class DTORepresenter extends Representer {
                     throw new RuntimeException(e);
                 }
                 properties = propertyNames.stream().map(propertyMap::get).collect(Collectors.toCollection(TreeSet::new));
+                booleanProperties = booleanProperties.stream().filter(booleanProperty -> propertyNames.contains(booleanProperty.getName())).collect(Collectors.toList());
             } else {
                 try {
                     properties = getProperties(clazz);
@@ -73,7 +90,7 @@ public class DTORepresenter extends Representer {
                     throw new RuntimeException(e);
                 }
             }
-            properties.addAll(getBooleanProperties(clazz));
+            properties.addAll(booleanProperties);
             this.properties = Collections.unmodifiableSet(properties);
             try {
                 defaultObj = clazz.newInstance();
@@ -93,20 +110,5 @@ public class DTORepresenter extends Representer {
                 return !currentValue.equals(defaultValue);
             }).collect(Collectors.toCollection(LinkedHashSet::new)), data);
         }
-    }
-
-    public static List<Property> getBooleanProperties(Class<?> clazz) {
-        return Arrays.stream(clazz.getDeclaredMethods())
-                .filter(method -> method.getReturnType() == Boolean.class && method.getName().startsWith("is"))
-                .map(method -> {
-                    try {
-                        return new PropertyDescriptor(method.getName().substring(2), clazz, method.getName(), "set" + method.getName().substring(2));
-                    } catch (IntrospectionException e) {
-                        e.printStackTrace();
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .map(MethodProperty::new).collect(Collectors.toList());
     }
 }
