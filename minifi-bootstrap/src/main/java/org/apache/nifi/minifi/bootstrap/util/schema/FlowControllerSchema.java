@@ -17,6 +17,7 @@
 package org.apache.nifi.minifi.bootstrap.util.schema;
 
 import org.apache.nifi.minifi.bootstrap.util.schema.common.BaseSchema;
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 
 import java.util.Map;
 
@@ -33,6 +34,11 @@ public class FlowControllerSchema extends BaseSchema {
     private String comment = "";
 
     public FlowControllerSchema() {
+    }
+
+    public FlowControllerSchema(ControllerServiceDTO controllerServiceDTO) {
+        this.name = controllerServiceDTO.getName();
+        this.comment = controllerServiceDTO.getName();
     }
 
     public FlowControllerSchema(Map map) {

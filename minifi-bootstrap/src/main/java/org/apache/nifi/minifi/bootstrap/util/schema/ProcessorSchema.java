@@ -18,10 +18,13 @@ package org.apache.nifi.minifi.bootstrap.util.schema;
 
 import org.apache.nifi.minifi.bootstrap.util.schema.common.BaseSchema;
 import org.apache.nifi.scheduling.SchedulingStrategy;
+import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.RelationshipDTO;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.MAX_CONCURRENT_TASKS_KEY;
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.NAME_KEY;
@@ -53,6 +56,22 @@ public class ProcessorSchema extends BaseSchema {
     private Map<String, Object> properties = Collections.emptyMap();
 
     public ProcessorSchema() {
+    }
+
+    public ProcessorSchema(ProcessorDTO processorDTO) {
+        this.name = processorDTO.getName();
+        this.processorClass = processorDTO.getType();
+        this.maxConcurrentTasks = processorDTO.getConfig().getConcurrentlySchedulableTaskCount();
+        this.schedulingStrategy = processorDTO.getConfig().getSchedulingStrategy();
+        this.schedulingPeriod = processorDTO.getConfig().getSchedulingPeriod();
+        this.penalizationPeriod = processorDTO.getConfig().getPenaltyDuration();
+        this.yieldPeriod = processorDTO.getConfig().getYieldDuration();
+        this.runDurationNanos = processorDTO.getConfig().getRunDurationMillis() * 1000;
+        this.autoTerminatedRelationshipsList = processorDTO.getRelationships().stream()
+                .filter(RelationshipDTO::isAutoTerminate)
+                .map(RelationshipDTO::getName)
+                .collect(Collectors.toList());
+        // TODO: properties
     }
 
     public ProcessorSchema(Map map) {

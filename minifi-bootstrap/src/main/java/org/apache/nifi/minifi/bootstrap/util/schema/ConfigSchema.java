@@ -16,10 +16,17 @@
  */
 package org.apache.nifi.minifi.bootstrap.util.schema;
 
+import org.apache.nifi.controller.Template;
 import org.apache.nifi.minifi.bootstrap.util.schema.common.BaseSchema;
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
+import org.apache.nifi.web.api.dto.FlowSnippetDTO;
+import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.TemplateDTO;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.COMPONENT_STATUS_REPO_KEY;
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.CONNECTIONS_KEY;
@@ -53,6 +60,25 @@ public class ConfigSchema extends BaseSchema {
     private ProvenanceRepositorySchema provenanceRepositorySchema;
 
     public ConfigSchema() {
+    }
+
+    public ConfigSchema(Template template) {
+        TemplateDTO templateDTO = template.getDetails();
+        FlowSnippetDTO templateDTOSnippet = templateDTO.getSnippet();
+
+        this.processors = templateDTOSnippet.getProcessors().stream()
+                .map(ProcessorSchema::new)
+                .collect(Collectors.toList());
+
+        this.connections = templateDTOSnippet.getConnections().stream()
+                .map(ConnectionSchema::new)
+                .collect(Collectors.toList());
+
+        this.remoteProcessingGroups = templateDTOSnippet.getRemoteProcessGroups().stream()
+                .map(RemoteProcessingGroupSchema::new)
+                .collect(Collectors.toList());
+
+        
     }
 
     public ConfigSchema(Map map) {
