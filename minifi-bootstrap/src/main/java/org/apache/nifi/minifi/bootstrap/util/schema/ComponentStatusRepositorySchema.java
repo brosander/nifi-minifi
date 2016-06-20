@@ -29,15 +29,26 @@ public class ComponentStatusRepositorySchema extends BaseSchema {
     public static final String BUFFER_SIZE_KEY = "buffer size";
     public static final String SNAPSHOT_FREQUENCY_KEY = "snapshot frequency";
 
-    private Number bufferSize = 1440;
-    private String snapshotFrequency = "1 min";
+    public static final int DEFAULT_BUFFER_SIZE = 1440;
+    public static final String DEFAULT_SNAPSHOT_FREQUENCY = "1 min";
+
+    private Number bufferSize = DEFAULT_BUFFER_SIZE;
+    private String snapshotFrequency = DEFAULT_SNAPSHOT_FREQUENCY;
 
     public ComponentStatusRepositorySchema() {
     }
 
     public ComponentStatusRepositorySchema(Map map) {
-        bufferSize = getOptionalKeyAsType(map, BUFFER_SIZE_KEY, Number.class, COMPONENT_STATUS_REPO_KEY, 1440);
-        snapshotFrequency = getOptionalKeyAsType(map, SNAPSHOT_FREQUENCY_KEY, String.class, COMPONENT_STATUS_REPO_KEY, "1 min");
+        bufferSize = getOptionalKeyAsType(map, BUFFER_SIZE_KEY, Number.class, COMPONENT_STATUS_REPO_KEY, DEFAULT_BUFFER_SIZE);
+        snapshotFrequency = getOptionalKeyAsType(map, SNAPSHOT_FREQUENCY_KEY, String.class, COMPONENT_STATUS_REPO_KEY, DEFAULT_SNAPSHOT_FREQUENCY);
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(BUFFER_SIZE_KEY, bufferSize);
+        result.put(SNAPSHOT_FREQUENCY_KEY, snapshotFrequency);
+        return result;
     }
 
     public Number getBufferSize() {
