@@ -17,6 +17,7 @@
 package org.apache.nifi.minifi.bootstrap.util.schema;
 
 import org.apache.nifi.minifi.bootstrap.util.schema.common.BaseSchema;
+import org.apache.nifi.web.api.dto.RemoteProcessGroupDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,14 @@ public class RemoteProcessingGroupSchema extends BaseSchema {
     private List<RemoteInputPortSchema> inputPorts;
 
     public RemoteProcessingGroupSchema() {
+    }
+
+    public RemoteProcessingGroupSchema(RemoteProcessGroupDTO remoteProcessGroupDTO) {
+        this.name = remoteProcessGroupDTO.getName();
+        this.comment = remoteProcessGroupDTO.getComments();
+        this.url = remoteProcessGroupDTO.getUri(); // TODO: targetURI?
+        this.timeout = remoteProcessGroupDTO.getCommunicationsTimeout();
+        this.inputPorts = null;//TODO
     }
 
     public RemoteProcessingGroupSchema(Map map) {

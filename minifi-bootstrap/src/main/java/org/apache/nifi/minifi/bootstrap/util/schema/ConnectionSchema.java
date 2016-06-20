@@ -17,6 +17,7 @@
 package org.apache.nifi.minifi.bootstrap.util.schema;
 
 import org.apache.nifi.minifi.bootstrap.util.schema.common.BaseSchema;
+import org.apache.nifi.web.api.dto.ConnectionDTO;
 
 import java.util.Map;
 
@@ -45,6 +46,17 @@ public class ConnectionSchema extends BaseSchema {
     private String queuePrioritizerClass = "";
 
     public ConnectionSchema() {
+    }
+
+    public ConnectionSchema(ConnectionDTO connectionDTO) {
+        this.name = connectionDTO.getName();
+        this.sourceName = connectionDTO.getSource().getName();
+        this.sourceRelationshipName = null; //TODO
+        this.destinationName = connectionDTO.getDestination().getName();
+        this.maxWorkQueueSize = connectionDTO.getBackPressureObjectThreshold();
+        this.maxWorkQueueDataSize = connectionDTO.getBackPressureDataSizeThreshold();
+        this.flowfileExpiration = connectionDTO.getFlowFileExpiration();
+        this.queuePrioritizerClass = ""; // TODO: connectionDTO.getPrioritizers();
     }
 
     public ConnectionSchema(Map map) {
