@@ -28,13 +28,15 @@ import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonProperty
  *
  */
 public class FlowFileRepositorySchema extends BaseSchema {
-
     public static final String PARTITIONS_KEY = "partitions";
     public static final String CHECKPOINT_INTERVAL_KEY = "checkpoint interval";
+    public static final int DEFAULT_PARTITIONS = 256;
+    public static final String DEFAULT_CHECKPOINT_INTERVAL = "2 mins";
+    public static final boolean DEFAULT_ALWAYS_SYNC = false;
 
-    private Number partitions = 256;
-    private String checkpointInterval = "2 mins";
-    private Boolean alwaysSync = false;
+    private Number partitions = DEFAULT_PARTITIONS;
+    private String checkpointInterval = DEFAULT_CHECKPOINT_INTERVAL;
+    private Boolean alwaysSync = DEFAULT_ALWAYS_SYNC;
     private SwapSchema swapProperties;
 
     public FlowFileRepositorySchema() {
@@ -42,12 +44,22 @@ public class FlowFileRepositorySchema extends BaseSchema {
     }
 
     public FlowFileRepositorySchema(Map map) {
-        partitions = getOptionalKeyAsType(map, PARTITIONS_KEY, Number.class, FLOWFILE_REPO_KEY, 256);
-        checkpointInterval = getOptionalKeyAsType(map, CHECKPOINT_INTERVAL_KEY, String.class, FLOWFILE_REPO_KEY, "2 mins");
-        alwaysSync = getOptionalKeyAsType(map, ALWAYS_SYNC_KEY, Boolean.class, FLOWFILE_REPO_KEY, false);
+        partitions = getOptionalKeyAsType(map, PARTITIONS_KEY, Number.class, FLOWFILE_REPO_KEY, DEFAULT_PARTITIONS);
+        checkpointInterval = getOptionalKeyAsType(map, CHECKPOINT_INTERVAL_KEY, String.class, FLOWFILE_REPO_KEY, DEFAULT_CHECKPOINT_INTERVAL);
+        alwaysSync = getOptionalKeyAsType(map, ALWAYS_SYNC_KEY, Boolean.class, FLOWFILE_REPO_KEY, DEFAULT_ALWAYS_SYNC);
 
         swapProperties = getMapAsType(map, SWAP_PROPS_KEY, SwapSchema.class, FLOWFILE_REPO_KEY, false);
         addIssuesIfNotNull(swapProperties);
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(PARTITIONS_KEY, partitions);
+        result.put(CHECKPOINT_INTERVAL_KEY, checkpointInterval);
+        result.put(ALWAYS_SYNC_KEY, alwaysSync);
+        putIfNotNull(result, SWAP_PROPS_KEY, swapProperties);
+        return result;
     }
 
     public Number getPartitions() {

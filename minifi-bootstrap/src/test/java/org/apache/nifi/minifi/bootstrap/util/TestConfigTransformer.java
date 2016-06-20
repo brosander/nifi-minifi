@@ -22,10 +22,17 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import org.apache.nifi.minifi.bootstrap.exception.InvalidConfigurationException;
 import org.junit.Assert;
 import org.junit.Test;
+
+import javax.xml.bind.JAXBException;
 
 public class TestConfigTransformer {
 
@@ -197,6 +204,15 @@ public class TestConfigTransformer {
         } catch (InvalidConfigurationException e){
             assertEquals("Failed to transform config file due to:['scheduling strategy' in section 'Provenance Reporting' because it is not a valid scheduling strategy], ['class' in section " +
                     "'Processors' because it was not found and it is required], ['source name' in section 'Connections' because it was not found and it is required]", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testTransformTemplatesToYAML() throws IOException, JAXBException {
+        for (File file : new File("/Users/brosander/Github/nifi-templates/templates/").listFiles((dir, name) -> name.endsWith(".xml"))) {
+            try (FileReader fileReader = new FileReader(file); FileWriter fileWriter = new FileWriter(file.getName() + ".yaml")) {
+                ConfigTransformer.transformTemplate(fileReader, fileWriter);
+            }
         }
     }
 }

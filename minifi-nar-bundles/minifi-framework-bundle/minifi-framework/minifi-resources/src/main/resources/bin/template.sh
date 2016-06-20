@@ -208,40 +208,10 @@ run() {
     echo "Bootstrap Config File: ${BOOTSTRAP_CONF}"
     echo
 
-    # run 'start' in the background because the process will continue to run, monitoring MiNiFi.
-    # all other commands will terminate quickly so want to just wait for them
-    if [ "$1" = "start" ]; then
-        (cd "${MINIFI_HOME}" && ${sudo_cmd_prefix} "${JAVA}" -cp "${BOOTSTRAP_CLASSPATH}" -Xms12m -Xmx24m -Dorg.apache.nifi.minifi.bootstrap.config.file="${BOOTSTRAP_CONF}" org.apache.nifi.minifi.bootstrap.RunMiNiFi $@ &)
-    else
-        (cd "${MINIFI_HOME}" && ${sudo_cmd_prefix} "${JAVA}" -cp "${BOOTSTRAP_CLASSPATH}" -Xms12m -Xmx24m -Dorg.apache.nifi.minifi.bootstrap.config.file="${BOOTSTRAP_CONF}" org.apache.nifi.minifi.bootstrap.RunMiNiFi $@)
-    fi
 
-    # Wait just a bit (3 secs) to wait for the logging to finish and then echo a new-line.
-    # We do this to avoid having logs spewed on the console after running the command and then not giving
-    # control back to the user
-    sleep 3
-    echo
-}
-
-main() {
-    init "$1"
-    run "$@"
+   (cd "${MINIFI_HOME}" && ${sudo_cmd_prefix} "${JAVA}" -cp "${BOOTSTRAP_CLASSPATH}" -Xms12m -Xmx24m -Dorg.apache.nifi.minifi.bootstrap.config.file="${BOOTSTRAP_CONF}" org.apache.nifi.minifi.bootstrap.util.TemplateUtil $@)
 }
 
 
-case "$1" in
-    install)
-        install "$@"
-        ;;
-    start|stop|run|status|dump|env|transform)
-        main "$@"
-        ;;
-    restart)
-        init
-    run "stop"
-    run "start"
-    ;;
-    *)
-        echo "Usage minifi {start|stop|run|restart|status|dump|install}"
-        ;;
-esac
+init "$1"
+run "$@"
