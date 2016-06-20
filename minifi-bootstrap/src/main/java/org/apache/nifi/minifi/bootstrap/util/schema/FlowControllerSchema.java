@@ -36,11 +36,6 @@ public class FlowControllerSchema extends BaseSchema {
     public FlowControllerSchema() {
     }
 
-    public FlowControllerSchema(ControllerServiceDTO controllerServiceDTO) {
-        this.name = controllerServiceDTO.getName();
-        this.comment = controllerServiceDTO.getName();
-    }
-
     public FlowControllerSchema(Map map) {
         name = getRequiredKeyAsType(map, NAME_KEY, String.class, FLOW_CONTROLLER_PROPS_KEY);
 

@@ -78,7 +78,7 @@ public class ConfigSchema extends BaseSchema {
                 .map(RemoteProcessingGroupSchema::new)
                 .collect(Collectors.toList());
 
-        
+
     }
 
     public ConfigSchema(Map map) {
