@@ -30,19 +30,29 @@ public class SensitivePropsSchema extends BaseSchema {
     public static final String SENSITIVE_PROPS_ALGORITHM_KEY = "algorithm";
     public static final String SENSITIVE_PROPS_PROVIDER_KEY = "provider";
 
-    private String key = "";
-    private String algorithm = "PBEWITHMD5AND256BITAES-CBC-OPENSSL";
-    private String provider = "BC";
+    public static final String DEFAULT_ALGORITHM = "PBEWITHMD5AND256BITAES-CBC-OPENSSL";
+    public static final String DEFAULT_PROVIDER = "BC";
+
+    private String key;
+    private String algorithm = DEFAULT_ALGORITHM;
+    private String provider = DEFAULT_PROVIDER;
 
     public SensitivePropsSchema() {
     }
 
     public SensitivePropsSchema(Map map) {
         key = getOptionalKeyAsType(map, SENSITIVE_PROPS_KEY_KEY, String.class, SENSITIVE_PROPS_KEY, "");
+        algorithm = getOptionalKeyAsType(map, SENSITIVE_PROPS_ALGORITHM_KEY, String.class, SENSITIVE_PROPS_KEY, DEFAULT_ALGORITHM);
+        provider = getOptionalKeyAsType(map, SENSITIVE_PROPS_PROVIDER_KEY, String.class, SENSITIVE_PROPS_KEY, DEFAULT_PROVIDER);
+    }
 
-        algorithm = getOptionalKeyAsType(map, SENSITIVE_PROPS_ALGORITHM_KEY, String.class, SENSITIVE_PROPS_KEY, "PBEWITHMD5AND256BITAES-CBC-OPENSSL");
-
-        provider = getOptionalKeyAsType(map, SENSITIVE_PROPS_PROVIDER_KEY, String.class, SENSITIVE_PROPS_KEY, "BC");
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(SENSITIVE_PROPS_KEY_KEY, key);
+        result.put(SENSITIVE_PROPS_ALGORITHM_KEY, algorithm);
+        result.put(SENSITIVE_PROPS_PROVIDER_KEY, provider);
+        return result;
     }
 
     public String getKey() {

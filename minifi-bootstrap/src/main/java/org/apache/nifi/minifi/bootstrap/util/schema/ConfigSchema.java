@@ -17,9 +17,14 @@
 package org.apache.nifi.minifi.bootstrap.util.schema;
 
 import org.apache.nifi.minifi.bootstrap.util.schema.common.BaseSchema;
+import org.apache.nifi.web.api.dto.FlowSnippetDTO;
+import org.apache.nifi.web.api.dto.TemplateDTO;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.COMPONENT_STATUS_REPO_KEY;
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.CONNECTIONS_KEY;
@@ -51,6 +56,35 @@ public class ConfigSchema extends BaseSchema {
     private ProvenanceReportingSchema provenanceReportingProperties;
 
     private ProvenanceRepositorySchema provenanceRepositorySchema;
+
+    public ConfigSchema(TemplateDTO templateDTO) {
+        flowControllerProperties = new FlowControllerSchema(templateDTO);
+        coreProperties = new CorePropertiesSchema();
+        flowfileRepositoryProperties = new FlowFileRepositorySchema();
+        contentRepositoryProperties = new ContentRepositorySchema();
+        componentStatusRepositoryProperties = new ComponentStatusRepositorySchema();
+        securityProperties = new SecurityPropertiesSchema();
+
+        FlowSnippetDTO templateDTOSnippet = templateDTO.getSnippet();
+
+        this.processors = nullToEmpty(templateDTOSnippet.getProcessors()).stream()
+                .map(ProcessorSchema::new)
+                .sorted(Comparator.comparing(ProcessorSchema::getName))
+                .collect(Collectors.toList());
+
+        this.connections = nullToEmpty(templateDTOSnippet.getConnections()).stream()
+                .map(ConnectionSchema::new)
+                .sorted(Comparator.comparing(ConnectionSchema::getName))
+                .collect(Collectors.toList());
+
+        this.remoteProcessingGroups = nullToEmpty(templateDTOSnippet.getRemoteProcessGroups()).stream()
+                .map(RemoteProcessingGroupSchema::new)
+                .sorted(Comparator.comparing(RemoteProcessingGroupSchema::getName))
+                .collect(Collectors.toList());
+
+        provenanceReportingProperties = new ProvenanceReportingSchema(Collections.emptyMap());
+        provenanceRepositorySchema = new ProvenanceRepositorySchema();
+    }
 
     public ConfigSchema(Map map) {
         flowControllerProperties = getMapAsType(map, FLOW_CONTROLLER_PROPS_KEY, FlowControllerSchema.class, TOP_LEVEL_NAME, true);
@@ -105,6 +139,22 @@ public class ConfigSchema extends BaseSchema {
                 addIssuesIfNotNull(remoteProcessingGroupSchema);
             }
         }
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(FLOW_CONTROLLER_PROPS_KEY, flowControllerProperties.toMap());
+        putIfNotNull(result, CORE_PROPS_KEY, coreProperties);
+        putIfNotNull(result, FLOWFILE_REPO_KEY, flowfileRepositoryProperties);
+        putIfNotNull(result, CONTENT_REPO_KEY, contentRepositoryProperties);
+        putIfNotNull(result, PROVENANCE_REPO_KEY, provenanceRepositorySchema);
+        putIfNotNull(result, COMPONENT_STATUS_REPO_KEY, componentStatusRepositoryProperties);
+        putIfNotNull(result, SECURITY_PROPS_KEY, securityProperties);
+        putListIfNotNull(result, PROCESSORS_KEY, processors);
+        putListIfNotNull(result, CONNECTIONS_KEY, connections);
+        putListIfNotNull(result, REMOTE_PROCESSING_GROUPS_KEY, remoteProcessingGroups);
+        putIfNotNull(result, PROVENANCE_REPORTING_KEY, provenanceReportingProperties);
+        return result;
     }
 
     public FlowControllerSchema getFlowControllerProperties() {

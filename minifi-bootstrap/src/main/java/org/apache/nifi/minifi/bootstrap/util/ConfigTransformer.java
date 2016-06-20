@@ -17,7 +17,6 @@
 
 package org.apache.nifi.minifi.bootstrap.util;
 
-
 import org.apache.nifi.minifi.bootstrap.configuration.ConfigurationChangeException;
 import org.apache.nifi.minifi.bootstrap.exception.InvalidConfigurationException;
 import org.apache.nifi.minifi.bootstrap.util.schema.ComponentStatusRepositorySchema;
@@ -36,11 +35,22 @@ import org.apache.nifi.minifi.bootstrap.util.schema.SecurityPropertiesSchema;
 import org.apache.nifi.minifi.bootstrap.util.schema.SensitivePropsSchema;
 import org.apache.nifi.minifi.bootstrap.util.schema.SwapSchema;
 import org.apache.nifi.stream.io.ByteArrayOutputStream;
+import org.apache.nifi.web.api.dto.ConnectableDTO;
+import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.FlowSnippetDTO;
+import org.apache.nifi.web.api.dto.NiFiComponentDTO;
+import org.apache.nifi.web.api.dto.PortDTO;
+import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.error.YAMLException;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -58,6 +68,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
@@ -68,6 +79,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
 public final class ConfigTransformer {
@@ -85,7 +98,7 @@ public final class ConfigTransformer {
         transformConfigFile(ios, destPath);
     }
 
-    public static void transformConfigFile(InputStream sourceStream, String destPath) throws Exception {
+    public static Map<String, Object> loadYamlAsMap(InputStream sourceStream) throws InvalidConfigurationException, IOException {
         try {
             Yaml yaml = new Yaml();
 
@@ -94,28 +107,92 @@ public final class ConfigTransformer {
 
             // Verify the parsed object is a Map structure
             if (loadedObject instanceof Map) {
-                final Map<String, Object> loadedMap = (Map<String, Object>) loadedObject;
-                ConfigSchema configSchema = new ConfigSchema(loadedMap);
-                if (!configSchema.isValid()) {
-                    throw new InvalidConfigurationException("Failed to transform config file due to:" + configSchema.getValidationIssuesAsString());
-                }
-
-                // Create nifi.properties and flow.xml.gz in memory
-                ByteArrayOutputStream nifiPropertiesOutputStream = new ByteArrayOutputStream();
-                writeNiFiProperties(configSchema, nifiPropertiesOutputStream);
-
-                DOMSource flowXml = createFlowXml(configSchema);
-
-                // Write nifi.properties and flow.xml.gz
-                writeNiFiPropertiesFile(nifiPropertiesOutputStream, destPath);
-
-                writeFlowXmlFile(flowXml, destPath);
+                return (Map<String, Object>) loadedObject;
             } else {
                 throw new InvalidConfigurationException("Provided YAML configuration is not a Map");
             }
         } finally {
-            if (sourceStream != null) {
-                sourceStream.close();
+            sourceStream.close();
+        }
+    }
+
+    public static ConfigSchema loadConfigSchema(InputStream sourceStream) throws IOException, InvalidConfigurationException {
+        return new ConfigSchema(loadYamlAsMap(sourceStream));
+    }
+
+    public static void transformConfigFile(InputStream sourceStream, String destPath) throws Exception {
+        ConfigSchema configSchema = loadConfigSchema(sourceStream);
+        if (!configSchema.isValid()) {
+            throw new InvalidConfigurationException("Failed to transform config file due to:" + configSchema.getValidationIssuesAsString());
+        }
+
+        // Create nifi.properties and flow.xml.gz in memory
+        ByteArrayOutputStream nifiPropertiesOutputStream = new ByteArrayOutputStream();
+        writeNiFiProperties(configSchema, nifiPropertiesOutputStream);
+
+        DOMSource flowXml = createFlowXml(configSchema);
+
+        // Write nifi.properties and flow.xml.gz
+        writeNiFiPropertiesFile(nifiPropertiesOutputStream, destPath);
+
+        writeFlowXmlFile(flowXml, destPath);
+    }
+
+    public static Map<String, Object> transformTemplateToMap(InputStream source) throws JAXBException, IOException {
+        try {
+            TemplateDTO templateDTO = (TemplateDTO) JAXBContext.newInstance(TemplateDTO.class).createUnmarshaller().unmarshal(source);
+            DumperOptions dumperOptions = new DumperOptions();
+            dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+
+            FlowSnippetDTO flowSnippetDTO = templateDTO.getSnippet();
+            Set<ConnectionDTO> connections = flowSnippetDTO.getConnections();
+            if (connections != null) {
+                Map<String, String> connectableNameMap = new HashMap<>();
+                Set<ProcessorDTO> processorDTOs = flowSnippetDTO.getProcessors();
+                if (processorDTOs != null) {
+                    connectableNameMap.putAll(processorDTOs.stream().collect(Collectors.toMap(NiFiComponentDTO::getId, ProcessorDTO::getName)));
+                }
+                Set<PortDTO> inputPorts = flowSnippetDTO.getInputPorts();
+                if (inputPorts != null) {
+                    connectableNameMap.putAll(inputPorts.stream().collect(Collectors.toMap(NiFiComponentDTO::getId, PortDTO::getName)));
+                }
+                Set<PortDTO> outputPorts = flowSnippetDTO.getOutputPorts();
+                if (outputPorts!= null) {
+                    connectableNameMap.putAll(outputPorts.stream().collect(Collectors.toMap(NiFiComponentDTO::getId, PortDTO::getName)));
+                }
+                for (ConnectionDTO connection : connections) {
+                    setName(connectableNameMap, connection.getSource());
+                    setName(connectableNameMap, connection.getDestination());
+                }
+            }
+
+            return new ConfigSchema(templateDTO).toMap();
+        } finally {
+            source.close();
+        }
+    }
+
+    public static void transformTemplate(InputStream source, OutputStream output) throws JAXBException, IOException {
+        DumperOptions dumperOptions = new DumperOptions();
+        dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+
+        Yaml yaml = new Yaml(new ConfigRepresenter(), dumperOptions);
+
+        Map<String, Object> yamlMap = transformTemplateToMap(source);
+        try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(output)) {
+            try {
+                yaml.dump(yamlMap, outputStreamWriter);
+            } catch (YAMLException e) {
+                throw new IOException(e);
+            }
+        }
+    }
+
+    private static void setName(Map<String, String> connectableNameMap, ConnectableDTO connectableDTO) {
+        if (connectableDTO != null) {
+            String name = connectableNameMap.get(connectableDTO.getId());
+            if (name != null) {
+                connectableDTO.setName(name);
             }
         }
     }
