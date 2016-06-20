@@ -54,6 +54,11 @@ limitations under the License.
             <artifactId>snakeyaml</artifactId>
             <version>1.17</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.nifi.minifi</groupId>
+            <artifactId>minifi-commons-schema</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
@@ -78,7 +83,6 @@ limitations under the License.
         <dependency>
             <groupId>org.apache.nifi</groupId>
             <artifactId>nifi-framework-core</artifactId>
-            <version>0.6.0</version>
             <exclusions>
                 <!-- excluding for IDE purposes, this jar doesn't wind up in the lib/bootstrap folder so isn't safe to use in bootstrap project -->
                 <exclusion>
