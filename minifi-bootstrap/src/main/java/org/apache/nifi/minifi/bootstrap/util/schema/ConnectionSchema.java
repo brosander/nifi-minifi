@@ -17,8 +17,11 @@
 package org.apache.nifi.minifi.bootstrap.util.schema;
 
 import org.apache.nifi.minifi.bootstrap.util.schema.common.BaseSchema;
+import org.apache.nifi.web.api.dto.ConnectionDTO;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.CONNECTIONS_KEY;
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.NAME_KEY;
@@ -35,16 +38,40 @@ public class ConnectionSchema extends BaseSchema {
     public static final String FLOWFILE_EXPIRATION__KEY = "flowfile expiration";
     public static final String QUEUE_PRIORITIZER_CLASS_KEY = "queue prioritizer class";
 
+    public static final int DEFAULT_MAX_WORK_QUEUE_SIZE = 0;
+    public static final String DEFAULT_MAX_QUEUE_DATA_SIZE = "0 MB";
+    public static final String DEFAULT_FLOWFILE_EXPIRATION = "0 sec";
+
     private String name;
     private String sourceName;
     private String sourceRelationshipName;
     private String destinationName;
-    private Number maxWorkQueueSize = 0;
-    private String maxWorkQueueDataSize = "0 MB";
-    private String flowfileExpiration = "0 sec";
-    private String queuePrioritizerClass = "";
+
+    private Number maxWorkQueueSize = DEFAULT_MAX_WORK_QUEUE_SIZE;
+    private String maxWorkQueueDataSize = DEFAULT_MAX_QUEUE_DATA_SIZE;
+    private String flowfileExpiration = DEFAULT_FLOWFILE_EXPIRATION;
+    private String queuePrioritizerClass;
 
     public ConnectionSchema() {
+    }
+
+    public ConnectionSchema(ConnectionDTO connectionDTO) {
+        this.name = connectionDTO.getName();
+        this.sourceName = connectionDTO.getSource().getName();
+        Set<String> selectedRelationships = connectionDTO.getSelectedRelationships();
+        if (selectedRelationships != null && selectedRelationships.size() > 0) {
+            this.sourceRelationshipName = selectedRelationships.iterator().next();
+        } else {
+            this.sourceRelationshipName = null;
+        }
+        this.destinationName = connectionDTO.getDestination().getName();
+        this.maxWorkQueueSize = connectionDTO.getBackPressureObjectThreshold();
+        this.maxWorkQueueDataSize = connectionDTO.getBackPressureDataSizeThreshold();
+        this.flowfileExpiration = connectionDTO.getFlowFileExpiration();
+        List<String> prioritizers = connectionDTO.getPrioritizers();
+        if (prioritizers != null && prioritizers.size() > 0) {
+            this.queuePrioritizerClass = prioritizers.size() > 0 ? prioritizers.get(0) : "";
+        }
     }
 
     public ConnectionSchema(Map map) {
@@ -53,10 +80,25 @@ public class ConnectionSchema extends BaseSchema {
         sourceRelationshipName = getRequiredKeyAsType(map, SOURCE_RELATIONSHIP_NAME_KEY, String.class, CONNECTIONS_KEY);
         destinationName = getRequiredKeyAsType(map, DESTINATION_NAME_KEY, String.class, CONNECTIONS_KEY);
 
-        maxWorkQueueSize = getOptionalKeyAsType(map, MAX_WORK_QUEUE_SIZE_KEY, Number.class, CONNECTIONS_KEY, 0);
-        maxWorkQueueDataSize = getOptionalKeyAsType(map, MAX_WORK_QUEUE_DATA_SIZE_KEY, String.class, CONNECTIONS_KEY, "0 MB");
-        flowfileExpiration = getOptionalKeyAsType(map, FLOWFILE_EXPIRATION__KEY, String.class, CONNECTIONS_KEY, "0 sec");
+        maxWorkQueueSize = getOptionalKeyAsType(map, MAX_WORK_QUEUE_SIZE_KEY, Number.class, CONNECTIONS_KEY, DEFAULT_MAX_WORK_QUEUE_SIZE);
+        maxWorkQueueDataSize = getOptionalKeyAsType(map, MAX_WORK_QUEUE_DATA_SIZE_KEY, String.class, CONNECTIONS_KEY, DEFAULT_MAX_QUEUE_DATA_SIZE);
+        flowfileExpiration = getOptionalKeyAsType(map, FLOWFILE_EXPIRATION__KEY, String.class, CONNECTIONS_KEY, DEFAULT_FLOWFILE_EXPIRATION);
         queuePrioritizerClass = getOptionalKeyAsType(map, QUEUE_PRIORITIZER_CLASS_KEY, String.class, CONNECTIONS_KEY, "");
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(NAME_KEY, name);
+        result.put(SOURCE_NAME_KEY, sourceName);
+        result.put(SOURCE_RELATIONSHIP_NAME_KEY, sourceRelationshipName);
+        result.put(DESTINATION_NAME_KEY, destinationName);
+
+        result.put(MAX_WORK_QUEUE_SIZE_KEY, maxWorkQueueSize);
+        result.put(MAX_WORK_QUEUE_DATA_SIZE_KEY, maxWorkQueueDataSize);
+        result.put(FLOWFILE_EXPIRATION__KEY, flowfileExpiration);
+        result.put(QUEUE_PRIORITIZER_CLASS_KEY, queuePrioritizerClass);
+        return result;
     }
 
     public String getName() {

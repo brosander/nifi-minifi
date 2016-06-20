@@ -37,41 +37,59 @@ public class ProvenanceReportingSchema extends BaseSchema {
     public static final String ORIGINATING_URL_KEY = "originating url";
     public static final String BATCH_SIZE_KEY = "batch size";
 
-    private String comment;
+    public static final String DEFAULT_ORGINATING_URL = "http://${hostname(true)}:8080/nifi";
+    public static final String DEFAULT_TIMEOUT = "30 secs";
+    public static final int DEFAULT_BATCH_SIZE = 1000;
+    public static final boolean DEFAULT_USE_COMPRESSION = true;
+
     private String schedulingStrategy;
     private String schedulingPeriod;
     private String destinationUrl;
     private String portName;
-    private String originatingUrl = "http://${hostname(true)}:8080/nifi";
-    private Boolean useCompression = true;
-    private String timeout = "30 secs";
-    private Number batchSize = 1000;
+
+    private String comment;
+    private String originatingUrl = DEFAULT_ORGINATING_URL;
+    private Boolean useCompression = DEFAULT_USE_COMPRESSION;
+    private String timeout = DEFAULT_TIMEOUT;
+    private Number batchSize = DEFAULT_BATCH_SIZE;
 
     public ProvenanceReportingSchema() {
     }
 
     public ProvenanceReportingSchema(Map map) {
-        comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, PROVENANCE_REPORTING_KEY, null);
-
         schedulingStrategy = getRequiredKeyAsType(map, SCHEDULING_STRATEGY_KEY, String.class, PROVENANCE_REPORTING_KEY);
-        try {
-            SchedulingStrategy.valueOf(schedulingStrategy);
-        } catch (IllegalArgumentException e) {
-            addValidationIssue(SCHEDULING_STRATEGY_KEY, PROVENANCE_REPORTING_KEY, "it is not a valid scheduling strategy");
+        if (schedulingStrategy != null) {
+            try {
+                SchedulingStrategy.valueOf(schedulingStrategy);
+            } catch (IllegalArgumentException e) {
+                addValidationIssue(SCHEDULING_STRATEGY_KEY, PROVENANCE_REPORTING_KEY, "it is not a valid scheduling strategy");
+            }
         }
 
         schedulingPeriod = getRequiredKeyAsType(map, SCHEDULING_PERIOD_KEY, String.class, PROVENANCE_REPORTING_KEY);
-
         destinationUrl = getRequiredKeyAsType(map, DESTINATION_URL_KEY, String.class, PROVENANCE_REPORTING_KEY);
         portName = getRequiredKeyAsType(map, PORT_NAME_KEY, String.class, PROVENANCE_REPORTING_KEY);
 
-        originatingUrl = getOptionalKeyAsType(map, ORIGINATING_URL_KEY, String.class, PROVENANCE_REPORTING_KEY, "http://${hostname(true)}:8080/nifi");
+        comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, PROVENANCE_REPORTING_KEY, "");
+        originatingUrl = getOptionalKeyAsType(map, ORIGINATING_URL_KEY, String.class, PROVENANCE_REPORTING_KEY, DEFAULT_ORGINATING_URL);
+        useCompression = getOptionalKeyAsType(map, USE_COMPRESSION_KEY, Boolean.class, PROVENANCE_REPORTING_KEY, DEFAULT_USE_COMPRESSION);
+        timeout = getOptionalKeyAsType(map, TIMEOUT_KEY, String.class, PROVENANCE_REPORTING_KEY, DEFAULT_TIMEOUT);
+        batchSize = getOptionalKeyAsType(map, BATCH_SIZE_KEY, Number.class, PROVENANCE_REPORTING_KEY, DEFAULT_BATCH_SIZE);
+    }
 
-        useCompression = getOptionalKeyAsType(map, USE_COMPRESSION_KEY, Boolean.class, PROVENANCE_REPORTING_KEY, true);
-
-        timeout = getOptionalKeyAsType(map, TIMEOUT_KEY, String.class, PROVENANCE_REPORTING_KEY, "30 secs");
-
-        batchSize = getOptionalKeyAsType(map, BATCH_SIZE_KEY, Number.class, PROVENANCE_REPORTING_KEY, 1000);
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(COMMENT_KEY, comment);
+        result.put(SCHEDULING_STRATEGY_KEY, schedulingStrategy);
+        result.put(SCHEDULING_PERIOD_KEY, schedulingPeriod);
+        result.put(DESTINATION_URL_KEY, destinationUrl);
+        result.put(PORT_NAME_KEY, portName);
+        result.put(ORIGINATING_URL_KEY, originatingUrl);
+        result.put(USE_COMPRESSION_KEY, useCompression);
+        result.put(TIMEOUT_KEY, timeout);
+        result.put(BATCH_SIZE_KEY, batchSize);
+        return result;
     }
 
     public String getComment() {

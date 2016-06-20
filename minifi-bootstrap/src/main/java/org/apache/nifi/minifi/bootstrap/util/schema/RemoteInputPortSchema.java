@@ -17,6 +17,7 @@
 package org.apache.nifi.minifi.bootstrap.util.schema;
 
 import org.apache.nifi.minifi.bootstrap.util.schema.common.BaseSchema;
+import org.apache.nifi.web.api.dto.RemoteProcessGroupPortDTO;
 
 import java.util.Map;
 
@@ -31,23 +32,47 @@ import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonProperty
  *
  */
 public class RemoteInputPortSchema extends BaseSchema {
+    public static final String DEFAULT_COMMENT = "";
+    public static final int DEFAULT_MAX_CONCURRENT_TASKS = 1;
+    public static final boolean DEFAULT_USE_COMPRESSION = true;
 
     private String id;
     private String name;
-    private String comment = "";
-    private Number maxConcurrentTasks = 1;
-    private Boolean useCompression = true;
+
+    private String comment = DEFAULT_COMMENT;
+    private Number maxConcurrentTasks = DEFAULT_MAX_CONCURRENT_TASKS;
+    private Boolean useCompression = DEFAULT_USE_COMPRESSION;
 
     public RemoteInputPortSchema() {
+    }
+
+    public RemoteInputPortSchema(RemoteProcessGroupPortDTO remoteProcessGroupPortDTO) {
+        this.id = remoteProcessGroupPortDTO.getId();
+        this.name = remoteProcessGroupPortDTO.getName();
+
+        this.comment = remoteProcessGroupPortDTO.getComments();
+        this.maxConcurrentTasks = remoteProcessGroupPortDTO.getConcurrentlySchedulableTaskCount();
+        this.useCompression = remoteProcessGroupPortDTO.getUseCompression();
     }
 
     public RemoteInputPortSchema(Map map) {
         id = getRequiredKeyAsType(map, ID_KEY, String.class, INPUT_PORTS_KEY);
         name = getRequiredKeyAsType(map, NAME_KEY, String.class, INPUT_PORTS_KEY);
 
-        comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, INPUT_PORTS_KEY, "");
-        maxConcurrentTasks = getOptionalKeyAsType(map, MAX_CONCURRENT_TASKS_KEY, Number.class, INPUT_PORTS_KEY, 1);
-        useCompression = getOptionalKeyAsType(map, USE_COMPRESSION_KEY, Boolean.class, INPUT_PORTS_KEY, true);
+        comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, INPUT_PORTS_KEY, DEFAULT_COMMENT);
+        maxConcurrentTasks = getOptionalKeyAsType(map, MAX_CONCURRENT_TASKS_KEY, Number.class, INPUT_PORTS_KEY, DEFAULT_MAX_CONCURRENT_TASKS);
+        useCompression = getOptionalKeyAsType(map, USE_COMPRESSION_KEY, Boolean.class, INPUT_PORTS_KEY, DEFAULT_USE_COMPRESSION);
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(ID_KEY, id);
+        result.put(NAME_KEY, name);
+        result.put(COMMENT_KEY, comment);
+        result.put(MAX_CONCURRENT_TASKS_KEY, maxConcurrentTasks);
+        result.put(USE_COMPRESSION_KEY, useCompression);
+        return result;
     }
 
     public String getId() {

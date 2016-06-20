@@ -32,25 +32,38 @@ public class SwapSchema extends BaseSchema {
     public static final String OUT_PERIOD_KEY = "out period";
     public static final String OUT_THREADS_KEY = "out threads";
 
-    private Number threshold = 20000;
-    private String inPeriod = "5 sec";
-    private Number inThreads = 1;
-    private String outPeriod = "5 sec";
-    private Number outThreads = 4;
+    public static final int DEFAULT_THRESHOLD = 20000;
+    public static final String DEFAULT_IN_PERIOD = "5 sec";
+    public static final int DEFAULT_IN_THREADS = 1;
+    public static final String DEFAULT_OUT_PERIOD = "5 sec";
+    public static final int DEFAULT_OUT_THREADS = 4;
+
+    private Number threshold = DEFAULT_THRESHOLD;
+    private String inPeriod = DEFAULT_IN_PERIOD;
+    private Number inThreads = DEFAULT_IN_THREADS;
+    private String outPeriod = DEFAULT_OUT_PERIOD;
+    private Number outThreads = DEFAULT_OUT_THREADS;
 
     public SwapSchema() {
     }
 
     public SwapSchema(Map map) {
-        threshold = getOptionalKeyAsType(map, THRESHOLD_KEY, Number.class, SWAP_PROPS_KEY, 20000);
+        threshold = getOptionalKeyAsType(map, THRESHOLD_KEY, Number.class, SWAP_PROPS_KEY, DEFAULT_THRESHOLD);
+        inPeriod = getOptionalKeyAsType(map, IN_PERIOD_KEY, String.class, SWAP_PROPS_KEY, DEFAULT_IN_PERIOD);
+        inThreads = getOptionalKeyAsType(map, IN_THREADS_KEY, Number.class, SWAP_PROPS_KEY, DEFAULT_IN_THREADS);
+        outPeriod = getOptionalKeyAsType(map, OUT_PERIOD_KEY, String.class, SWAP_PROPS_KEY, DEFAULT_OUT_PERIOD);
+        outThreads = getOptionalKeyAsType(map, OUT_THREADS_KEY, Number.class, SWAP_PROPS_KEY, DEFAULT_OUT_THREADS);
+    }
 
-        inPeriod = getOptionalKeyAsType(map, IN_PERIOD_KEY, String.class, SWAP_PROPS_KEY, "5 sec");
-
-        inThreads = getOptionalKeyAsType(map, IN_THREADS_KEY, Number.class, SWAP_PROPS_KEY, 1);
-
-        outPeriod = getOptionalKeyAsType(map, OUT_PERIOD_KEY, String.class, SWAP_PROPS_KEY, "5 sec");
-
-        outThreads = getOptionalKeyAsType(map, OUT_THREADS_KEY, Number.class, SWAP_PROPS_KEY, 4);
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(THRESHOLD_KEY, threshold);
+        result.put(IN_PERIOD_KEY, inPeriod);
+        result.put(IN_THREADS_KEY, inThreads);
+        result.put(OUT_PERIOD_KEY, outPeriod);
+        result.put(OUT_THREADS_KEY, outThreads);
+        return result;
     }
 
     public Number getThreshold() {

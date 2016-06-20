@@ -17,6 +17,7 @@
 package org.apache.nifi.minifi.bootstrap.util.schema;
 
 import org.apache.nifi.minifi.bootstrap.util.schema.common.BaseSchema;
+import org.apache.nifi.web.api.dto.TemplateDTO;
 
 import java.util.Map;
 
@@ -30,15 +31,27 @@ import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonProperty
 public class FlowControllerSchema extends BaseSchema {
 
     private String name;
-    private String comment = "";
+    private String comment;
 
     public FlowControllerSchema() {
     }
 
+    public FlowControllerSchema(TemplateDTO templateDTO) {
+        this.name = templateDTO.getName();
+        this.comment = templateDTO.getDescription();
+    }
+
     public FlowControllerSchema(Map map) {
         name = getRequiredKeyAsType(map, NAME_KEY, String.class, FLOW_CONTROLLER_PROPS_KEY);
-
         comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, FLOW_CONTROLLER_PROPS_KEY, "");
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(NAME_KEY, name);
+        result.put(COMMENT_KEY, comment);
+        return result;
     }
 
     public String getName() {
