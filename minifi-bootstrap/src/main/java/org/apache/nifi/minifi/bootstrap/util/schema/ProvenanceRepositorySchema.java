@@ -24,17 +24,18 @@ import java.util.Map;
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.PROVENANCE_REPO_KEY;
 
 public class ProvenanceRepositorySchema extends BaseSchema {
-
-
     public static final String PROVENANCE_REPO_ROLLOVER_TIME_KEY = "provenance rollover time";
 
-    private String provenanceRepoRolloverTime = "1 min";
+    public static final String DEFAULT_PROVENANCE_ROLLOVER_TIME = "1 min";
+
+    private String provenanceRepoRolloverTime = DEFAULT_PROVENANCE_ROLLOVER_TIME;
 
     public ProvenanceRepositorySchema(){
     }
 
     public ProvenanceRepositorySchema(Map map) {
-        provenanceRepoRolloverTime = getOptionalKeyAsType(map, PROVENANCE_REPO_ROLLOVER_TIME_KEY, String.class, PROVENANCE_REPO_KEY, "1 min");
+        provenanceRepoRolloverTime = getOptionalKeyAsType(map, PROVENANCE_REPO_ROLLOVER_TIME_KEY, String.class,
+                PROVENANCE_REPO_KEY, DEFAULT_PROVENANCE_ROLLOVER_TIME);
     }
 
     @Override

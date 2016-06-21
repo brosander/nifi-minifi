@@ -67,15 +67,15 @@ public class BaseSchema {
     }
 
     /******* Value Access/Interpretation helper methods *******/
-    public <T> T getOptionalKeyAsType(Map valueMap, String key, Class targetClass, String wrapperName, T defaultValue) {
+    public <T> T getOptionalKeyAsType(Map valueMap, String key, Class<T> targetClass, String wrapperName, T defaultValue) {
         return getKeyAsType(valueMap, key, targetClass, wrapperName, false, defaultValue);
     }
 
-    public <T> T getRequiredKeyAsType(Map valueMap, String key, Class targetClass, String wrapperName) {
+    public <T> T getRequiredKeyAsType(Map valueMap, String key, Class<T> targetClass, String wrapperName) {
         return getKeyAsType(valueMap, key, targetClass, wrapperName, true, null);
     }
 
-    <T> T getKeyAsType(Map valueMap, String key, Class targetClass, String wrapperName, boolean required, T defaultValue) {
+    <T> T getKeyAsType(Map valueMap, String key, Class<T> targetClass, String wrapperName, boolean required, T defaultValue) {
         Object value = valueMap.get(key);
         if (value == null) {
             if (defaultValue != null) {
@@ -94,27 +94,27 @@ public class BaseSchema {
     }
 
 
-    public <T> T getMapAsType(Map valueMap, String key, Class targetClass, String wrapperName, boolean required) {
+    public <T> T getMapAsType(Map valueMap, String key, Class<T> targetClass, String wrapperName, boolean required) {
         Object obj = valueMap.get(key);
         return interpretValueAsType(obj, key, targetClass, wrapperName, required);
     }
 
-    public void transformListToType(List list, String simpleListType, Class targetClass, String wrapperName){
+    public <T> void transformListToType(List<T> list, String simpleListType, Class<T> targetClass, String wrapperName){
         for (int i = 0; i < list.size(); i++) {
-            Object obj = interpretValueAsType(list.get(i), simpleListType + " number " + i, targetClass, wrapperName, false);
+            T obj = interpretValueAsType(list.get(i), simpleListType + " number " + i, targetClass, wrapperName, false);
             if (obj != null) {
                 list.set(i, obj);
             }
         }
     }
 
-    private <T> T interpretValueAsType(Object obj, String key, Class targetClass, String wrapperName, boolean required) {
+    private <T> T interpretValueAsType(Object obj, String key, Class<T> targetClass, String wrapperName, boolean required) {
         if (obj == null) {
             if (required){
                 addValidationIssue(key, wrapperName, "it is a required property but was not found");
             } else {
                 try {
-                    return (T) targetClass.newInstance();
+                    return targetClass.newInstance();
                 } catch (InstantiationException | IllegalAccessException e) {
                     addValidationIssue(key, wrapperName, "it is optional and when attempting to create it the following exception was thrown:" + e.getMessage());
                 }

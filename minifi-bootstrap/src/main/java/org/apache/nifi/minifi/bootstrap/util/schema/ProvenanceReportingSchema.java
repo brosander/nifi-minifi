@@ -21,6 +21,7 @@ import org.apache.nifi.scheduling.SchedulingStrategy;
 
 import java.util.Map;
 
+import static org.apache.nifi.minifi.bootstrap.util.schema.RemoteProcessingGroupSchema.DEFAULT_COMMENT;
 import static org.apache.nifi.minifi.bootstrap.util.schema.RemoteProcessingGroupSchema.TIMEOUT_KEY;
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.COMMENT_KEY;
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.PROVENANCE_REPORTING_KEY;
@@ -37,22 +38,27 @@ public class ProvenanceReportingSchema extends BaseSchema {
     public static final String ORIGINATING_URL_KEY = "originating url";
     public static final String BATCH_SIZE_KEY = "batch size";
 
-    private String comment = "";
-    private String schedulingStrategy = "";
-    private String schedulingPeriod = "";
-    private String destinationUrl = "";
-    private String portName = "";
-    private String originatingUrl = "http://${hostname(true)}:8080/nifi";
-    private Boolean useCompression = true;
-    private String timeout = "30 secs";
-    private Number batchSize = 1000;
+    public static final String DEFAULT_COMMENT = "";
+    public static final String DEFAULT_ORGINATING_URL = "http://${hostname(true)}:8080/nifi";
+    public static final String DEFAULT_TIMEOUT = "30 secs";
+    public static final int DEFAULT_BATCH_SIZE = 1000;
+    public static final boolean DEFAULT_USE_COMPRESSION = true;
+
+    private String schedulingStrategy;
+    private String schedulingPeriod;
+    private String destinationUrl;
+    private String portName;
+
+    private String comment = DEFAULT_COMMENT;
+    private String originatingUrl = DEFAULT_ORGINATING_URL;
+    private Boolean useCompression = DEFAULT_USE_COMPRESSION;
+    private String timeout = DEFAULT_TIMEOUT;
+    private Number batchSize = DEFAULT_BATCH_SIZE;
 
     public ProvenanceReportingSchema() {
     }
 
     public ProvenanceReportingSchema(Map map) {
-        comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, PROVENANCE_REPORTING_KEY, null);
-
         schedulingStrategy = getRequiredKeyAsType(map, SCHEDULING_STRATEGY_KEY, String.class, PROVENANCE_REPORTING_KEY);
         try {
             SchedulingStrategy.valueOf(schedulingStrategy);
@@ -61,17 +67,14 @@ public class ProvenanceReportingSchema extends BaseSchema {
         }
 
         schedulingPeriod = getRequiredKeyAsType(map, SCHEDULING_PERIOD_KEY, String.class, PROVENANCE_REPORTING_KEY);
-
         destinationUrl = getRequiredKeyAsType(map, DESTINATION_URL_KEY, String.class, PROVENANCE_REPORTING_KEY);
         portName = getRequiredKeyAsType(map, PORT_NAME_KEY, String.class, PROVENANCE_REPORTING_KEY);
 
-        originatingUrl = getOptionalKeyAsType(map, ORIGINATING_URL_KEY, String.class, PROVENANCE_REPORTING_KEY, "http://${hostname(true)}:8080/nifi");
-
-        useCompression = getOptionalKeyAsType(map, USE_COMPRESSION_KEY, Boolean.class, PROVENANCE_REPORTING_KEY, true);
-
-        timeout = getOptionalKeyAsType(map, TIMEOUT_KEY, String.class, PROVENANCE_REPORTING_KEY, "30 secs");
-
-        batchSize = getOptionalKeyAsType(map, BATCH_SIZE_KEY, Number.class, PROVENANCE_REPORTING_KEY, 1000);
+        comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, PROVENANCE_REPORTING_KEY, DEFAULT_COMMENT);
+        originatingUrl = getOptionalKeyAsType(map, ORIGINATING_URL_KEY, String.class, PROVENANCE_REPORTING_KEY, DEFAULT_ORGINATING_URL);
+        useCompression = getOptionalKeyAsType(map, USE_COMPRESSION_KEY, Boolean.class, PROVENANCE_REPORTING_KEY, DEFAULT_USE_COMPRESSION);
+        timeout = getOptionalKeyAsType(map, TIMEOUT_KEY, String.class, PROVENANCE_REPORTING_KEY, DEFAULT_TIMEOUT);
+        batchSize = getOptionalKeyAsType(map, BATCH_SIZE_KEY, Number.class, PROVENANCE_REPORTING_KEY, DEFAULT_BATCH_SIZE);
     }
 
     @Override

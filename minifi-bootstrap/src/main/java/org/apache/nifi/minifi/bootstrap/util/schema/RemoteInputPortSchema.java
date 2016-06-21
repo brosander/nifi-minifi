@@ -31,12 +31,16 @@ import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonProperty
  *
  */
 public class RemoteInputPortSchema extends BaseSchema {
+    public static final String DEFAULT_COMMENT = "";
+    public static final int DEFAULT_MAX_CONCURRENT_TASKS = 1;
+    public static final boolean DEFAULT_USE_COMPRESSION = true;
 
     private String id;
     private String name;
-    private String comment = "";
-    private Number maxConcurrentTasks = 1;
-    private Boolean useCompression = true;
+
+    private String comment = DEFAULT_COMMENT;
+    private Number maxConcurrentTasks = DEFAULT_MAX_CONCURRENT_TASKS;
+    private Boolean useCompression = DEFAULT_USE_COMPRESSION;
 
     public RemoteInputPortSchema() {
     }
@@ -45,9 +49,9 @@ public class RemoteInputPortSchema extends BaseSchema {
         id = getRequiredKeyAsType(map, ID_KEY, String.class, INPUT_PORTS_KEY);
         name = getRequiredKeyAsType(map, NAME_KEY, String.class, INPUT_PORTS_KEY);
 
-        comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, INPUT_PORTS_KEY, "");
-        maxConcurrentTasks = getOptionalKeyAsType(map, MAX_CONCURRENT_TASKS_KEY, Number.class, INPUT_PORTS_KEY, 1);
-        useCompression = getOptionalKeyAsType(map, USE_COMPRESSION_KEY, Boolean.class, INPUT_PORTS_KEY, true);
+        comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, INPUT_PORTS_KEY, DEFAULT_COMMENT);
+        maxConcurrentTasks = getOptionalKeyAsType(map, MAX_CONCURRENT_TASKS_KEY, Number.class, INPUT_PORTS_KEY, DEFAULT_MAX_CONCURRENT_TASKS);
+        useCompression = getOptionalKeyAsType(map, USE_COMPRESSION_KEY, Boolean.class, INPUT_PORTS_KEY, DEFAULT_USE_COMPRESSION);
     }
 
     @Override

@@ -35,32 +35,33 @@ public class RemoteProcessingGroupSchema extends BaseSchema {
     public static final String URL_KEY = "url";
     public static final String TIMEOUT_KEY = "timeout";
 
+    public static final String DEFAULT_COMMENT = "";
+    public static final String DEFAULT_TIMEOUT = "30 secs";
+    public static final String DEFAULT_YIELD_PERIOD = "10 sec";
+
     private String name;
-    private String comment = "";
     private String url;
-    private String timeout = "30 secs";
-    private String yieldPeriod = "10 sec";
     private List<RemoteInputPortSchema> inputPorts;
+
+    private String comment = DEFAULT_COMMENT;
+    private String timeout = DEFAULT_TIMEOUT;
+    private String yieldPeriod = DEFAULT_YIELD_PERIOD;
 
     public RemoteProcessingGroupSchema() {
     }
 
     public RemoteProcessingGroupSchema(RemoteProcessGroupDTO remoteProcessGroupDTO) {
         this.name = remoteProcessGroupDTO.getName();
-        this.comment = remoteProcessGroupDTO.getComments();
         this.url = remoteProcessGroupDTO.getTargetUri();
-        this.timeout = remoteProcessGroupDTO.getCommunicationsTimeout();
         this.inputPorts = null;//TODO
+
+        this.comment = remoteProcessGroupDTO.getComments();
+        this.timeout = remoteProcessGroupDTO.getCommunicationsTimeout();
     }
 
     public RemoteProcessingGroupSchema(Map map) {
         name = getRequiredKeyAsType(map, NAME_KEY, String.class, REMOTE_PROCESSING_GROUPS_KEY);
         url = getRequiredKeyAsType(map, URL_KEY, String.class, REMOTE_PROCESSING_GROUPS_KEY);
-
-        comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, REMOTE_PROCESSING_GROUPS_KEY, "");
-        timeout = getOptionalKeyAsType(map, TIMEOUT_KEY, String.class, REMOTE_PROCESSING_GROUPS_KEY, "30 secs");
-        yieldPeriod = getOptionalKeyAsType(map, YIELD_PERIOD_KEY, String.class, REMOTE_PROCESSING_GROUPS_KEY, "10 sec");
-
         inputPorts = getRequiredKeyAsType(map, INPUT_PORTS_KEY, List.class, REMOTE_PROCESSING_GROUPS_KEY);
         if (inputPorts != null) {
             transformListToType(inputPorts, "input port", RemoteInputPortSchema.class, INPUT_PORTS_KEY);
@@ -69,6 +70,10 @@ public class RemoteProcessingGroupSchema extends BaseSchema {
                 addIssuesIfNotNull(remoteInputPortSchema);
             }
         }
+
+        comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, REMOTE_PROCESSING_GROUPS_KEY, DEFAULT_COMMENT);
+        timeout = getOptionalKeyAsType(map, TIMEOUT_KEY, String.class, REMOTE_PROCESSING_GROUPS_KEY, DEFAULT_TIMEOUT);
+        yieldPeriod = getOptionalKeyAsType(map, YIELD_PERIOD_KEY, String.class, REMOTE_PROCESSING_GROUPS_KEY, DEFAULT_YIELD_PERIOD);
     }
 
     @Override

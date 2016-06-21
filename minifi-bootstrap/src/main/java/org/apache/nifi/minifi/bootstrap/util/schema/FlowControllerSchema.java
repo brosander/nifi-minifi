@@ -29,17 +29,18 @@ import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonProperty
  *
  */
 public class FlowControllerSchema extends BaseSchema {
+    public static final String DEFAULT_NAME = "MiNiFi Flow";
+    public static final String DEFAULT_COMMENT = "";
 
-    private String name = "MiNiFi Flow";
-    private String comment = "";
+    private String name = DEFAULT_NAME;
+    private String comment = DEFAULT_COMMENT;
 
     public FlowControllerSchema() {
     }
 
     public FlowControllerSchema(Map map) {
         name = getRequiredKeyAsType(map, NAME_KEY, String.class, FLOW_CONTROLLER_PROPS_KEY);
-
-        comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, FLOW_CONTROLLER_PROPS_KEY, "");
+        comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, FLOW_CONTROLLER_PROPS_KEY, DEFAULT_COMMENT);
     }
 
     @Override

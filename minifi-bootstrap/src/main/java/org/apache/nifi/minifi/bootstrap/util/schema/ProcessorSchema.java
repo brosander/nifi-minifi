@@ -45,18 +45,23 @@ public class ProcessorSchema extends BaseSchema {
     public static final String RUN_DURATION_NANOS_KEY = "run duration nanos";
     public static final String AUTO_TERMINATED_RELATIONSHIPS_LIST_KEY = "auto-terminated relationships list";
     public static final String PROCESSOR_PROPS_KEY = "Properties";
-
+    public static final int DEFAULT_MAX_CONCURRENT_TASKS = 1;
+    public static final String DEFAULT_PENALIZATION_PERIOD = "30 sec";
+    public static final String DEFAULT_YIELD_DURATION = "1 sec";
+    public static final int DEFAULT_RUN_DURATION_NANOS = 0;
+    public static final List<String> DEFAULT_AUTO_TERMINATED_RELATIONSHIPS_LIST = Collections.emptyList();
+    public static final Map<String, Object> DEFAULT_PROPERTIES = Collections.emptyMap();
 
     private String name;
     private String processorClass;
-    private Number maxConcurrentTasks = 1;
     private String schedulingStrategy;
     private String schedulingPeriod;
-    private String penalizationPeriod = "30 sec";
-    private String yieldPeriod = "1 sec";
-    private Number runDurationNanos = 0;
-    private List<String> autoTerminatedRelationshipsList = Collections.emptyList();
-    private Map<String, Object> properties = Collections.emptyMap();
+    private Number maxConcurrentTasks = DEFAULT_MAX_CONCURRENT_TASKS;
+    private String penalizationPeriod = DEFAULT_PENALIZATION_PERIOD;
+    private String yieldPeriod = DEFAULT_YIELD_DURATION;
+    private Number runDurationNanos = DEFAULT_RUN_DURATION_NANOS;
+    private List<String> autoTerminatedRelationshipsList = DEFAULT_AUTO_TERMINATED_RELATIONSHIPS_LIST;
+    private Map<String, Object> properties = DEFAULT_PROPERTIES;
 
     public ProcessorSchema() {
     }
@@ -66,8 +71,9 @@ public class ProcessorSchema extends BaseSchema {
 
         this.name = processorDTO.getName();
         this.processorClass = processorDTO.getType();
-        this.maxConcurrentTasks = processorDTOConfig.getConcurrentlySchedulableTaskCount();
         this.schedulingStrategy = processorDTOConfig.getSchedulingStrategy();
+
+        this.maxConcurrentTasks = processorDTOConfig.getConcurrentlySchedulableTaskCount();
         this.schedulingPeriod = processorDTOConfig.getSchedulingPeriod();
         this.penalizationPeriod = processorDTOConfig.getPenaltyDuration();
         this.yieldPeriod = processorDTOConfig.getYieldDuration();
@@ -82,27 +88,20 @@ public class ProcessorSchema extends BaseSchema {
     public ProcessorSchema(Map map) {
         name = getRequiredKeyAsType(map, NAME_KEY, String.class, PROCESSORS_KEY);
         processorClass = getRequiredKeyAsType(map, CLASS_KEY, String.class, PROCESSORS_KEY);
-
-        maxConcurrentTasks = getOptionalKeyAsType(map, MAX_CONCURRENT_TASKS_KEY, Number.class, PROCESSORS_KEY, 1);
-
         schedulingStrategy = getRequiredKeyAsType(map, SCHEDULING_STRATEGY_KEY, String.class, PROCESSORS_KEY);
         try {
             SchedulingStrategy.valueOf(schedulingStrategy);
         } catch (IllegalArgumentException e) {
             addValidationIssue(SCHEDULING_STRATEGY_KEY, PROCESSORS_KEY, "it is not a valid scheduling strategy");
         }
-
         schedulingPeriod = getRequiredKeyAsType(map, SCHEDULING_PERIOD_KEY, String.class, PROCESSORS_KEY);
 
-        penalizationPeriod = getOptionalKeyAsType(map, PENALIZATION_PERIOD_KEY, String.class, PROCESSORS_KEY, "30 sec");
-
-        yieldPeriod = getOptionalKeyAsType(map, YIELD_PERIOD_KEY, String.class, PROCESSORS_KEY, "1 sec");
-
-        runDurationNanos = getOptionalKeyAsType(map, RUN_DURATION_NANOS_KEY, Number.class, PROCESSORS_KEY, 0);
-
-        autoTerminatedRelationshipsList = getOptionalKeyAsType(map, AUTO_TERMINATED_RELATIONSHIPS_LIST_KEY, List.class, PROCESSORS_KEY, null);
-
-        properties = getOptionalKeyAsType(map, PROCESSOR_PROPS_KEY, Map.class, PROCESSORS_KEY, null);
+        maxConcurrentTasks = getOptionalKeyAsType(map, MAX_CONCURRENT_TASKS_KEY, Number.class, PROCESSORS_KEY, DEFAULT_MAX_CONCURRENT_TASKS);
+        penalizationPeriod = getOptionalKeyAsType(map, PENALIZATION_PERIOD_KEY, String.class, PROCESSORS_KEY, DEFAULT_PENALIZATION_PERIOD);
+        yieldPeriod = getOptionalKeyAsType(map, YIELD_PERIOD_KEY, String.class, PROCESSORS_KEY, DEFAULT_YIELD_DURATION);
+        runDurationNanos = getOptionalKeyAsType(map, RUN_DURATION_NANOS_KEY, Number.class, PROCESSORS_KEY, DEFAULT_RUN_DURATION_NANOS);
+        autoTerminatedRelationshipsList = getOptionalKeyAsType(map, AUTO_TERMINATED_RELATIONSHIPS_LIST_KEY, List.class, PROCESSORS_KEY, DEFAULT_AUTO_TERMINATED_RELATIONSHIPS_LIST);
+        properties = getOptionalKeyAsType(map, PROCESSOR_PROPS_KEY, Map.class, PROCESSORS_KEY, DEFAULT_PROPERTIES);
     }
 
     @Override
