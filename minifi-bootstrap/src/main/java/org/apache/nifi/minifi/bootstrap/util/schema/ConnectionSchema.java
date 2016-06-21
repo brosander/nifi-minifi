@@ -19,7 +19,9 @@ package org.apache.nifi.minifi.bootstrap.util.schema;
 import org.apache.nifi.minifi.bootstrap.util.schema.common.BaseSchema;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.CONNECTIONS_KEY;
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.NAME_KEY;
@@ -51,12 +53,20 @@ public class ConnectionSchema extends BaseSchema {
     public ConnectionSchema(ConnectionDTO connectionDTO) {
         this.name = connectionDTO.getName();
         this.sourceName = connectionDTO.getSource().getName();
-        this.sourceRelationshipName = null; //TODO
-        this.destinationName = connectionDTO.getDestination().getName();
+        Set<String> selectedRelationships = connectionDTO.getSelectedRelationships();
+        if (selectedRelationships != null && selectedRelationships.size() > 0) {
+            this.sourceRelationshipName = selectedRelationships.iterator().next();
+        } else {
+            this.sourceRelationshipName = null;
+        }
+        this.destinationName = connectionDTO.getDestination().getId();
         this.maxWorkQueueSize = connectionDTO.getBackPressureObjectThreshold();
         this.maxWorkQueueDataSize = connectionDTO.getBackPressureDataSizeThreshold();
         this.flowfileExpiration = connectionDTO.getFlowFileExpiration();
-        this.queuePrioritizerClass = ""; // TODO: connectionDTO.getPrioritizers();
+        List<String> prioritizers = connectionDTO.getPrioritizers();
+        if (prioritizers != null && prioritizers.size() > 0) {
+            this.queuePrioritizerClass = prioritizers.size() > 0 ? prioritizers.get(0) : "";
+        }
     }
 
     public ConnectionSchema(Map map) {
@@ -69,6 +79,21 @@ public class ConnectionSchema extends BaseSchema {
         maxWorkQueueDataSize = getOptionalKeyAsType(map, MAX_WORK_QUEUE_DATA_SIZE_KEY, String.class, CONNECTIONS_KEY, "0 MB");
         flowfileExpiration = getOptionalKeyAsType(map, FLOWFILE_EXPIRATION__KEY, String.class, CONNECTIONS_KEY, "0 sec");
         queuePrioritizerClass = getOptionalKeyAsType(map, QUEUE_PRIORITIZER_CLASS_KEY, String.class, CONNECTIONS_KEY, "");
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(NAME_KEY, name);
+        result.put(SOURCE_NAME_KEY, sourceName);
+        result.put(SOURCE_RELATIONSHIP_NAME_KEY, sourceRelationshipName);
+        result.put(DESTINATION_NAME_KEY, destinationName);
+
+        result.put(MAX_WORK_QUEUE_SIZE_KEY, maxWorkQueueSize);
+        result.put(MAX_WORK_QUEUE_DATA_SIZE_KEY, maxWorkQueueDataSize);
+        result.put(FLOWFILE_EXPIRATION__KEY, flowfileExpiration);
+        result.put(QUEUE_PRIORITIZER_CLASS_KEY, queuePrioritizerClass);
+        return result;
     }
 
     public String getName() {

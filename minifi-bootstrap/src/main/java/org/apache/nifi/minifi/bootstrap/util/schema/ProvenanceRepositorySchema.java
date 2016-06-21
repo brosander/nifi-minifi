@@ -37,6 +37,13 @@ public class ProvenanceRepositorySchema extends BaseSchema {
         provenanceRepoRolloverTime = getOptionalKeyAsType(map, PROVENANCE_REPO_ROLLOVER_TIME_KEY, String.class, PROVENANCE_REPO_KEY, "1 min");
     }
 
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(PROVENANCE_REPO_ROLLOVER_TIME_KEY, provenanceRepoRolloverTime);
+        return result;
+    }
+
     public String getProvenanceRepoRolloverTimeKey() {
         return provenanceRepoRolloverTime;
     }

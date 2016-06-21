@@ -48,7 +48,7 @@ public class RemoteProcessingGroupSchema extends BaseSchema {
     public RemoteProcessingGroupSchema(RemoteProcessGroupDTO remoteProcessGroupDTO) {
         this.name = remoteProcessGroupDTO.getName();
         this.comment = remoteProcessGroupDTO.getComments();
-        this.url = remoteProcessGroupDTO.getUri(); // TODO: targetURI?
+        this.url = remoteProcessGroupDTO.getTargetUri();
         this.timeout = remoteProcessGroupDTO.getCommunicationsTimeout();
         this.inputPorts = null;//TODO
     }
@@ -69,6 +69,18 @@ public class RemoteProcessingGroupSchema extends BaseSchema {
                 addIssuesIfNotNull(remoteInputPortSchema);
             }
         }
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(NAME_KEY, name);
+        result.put(URL_KEY, url);
+        result.put(COMMENT_KEY, comment);
+        result.put(TIMEOUT_KEY, timeout);
+        result.put(YIELD_PERIOD_KEY, yieldPeriod);
+        putListIfNotNull(result, INPUT_PORTS_KEY, inputPorts);
+        return result;
     }
 
     public String getName() {

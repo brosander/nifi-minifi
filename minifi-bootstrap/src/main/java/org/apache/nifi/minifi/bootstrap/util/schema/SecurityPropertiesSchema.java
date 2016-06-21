@@ -20,6 +20,7 @@ import org.apache.nifi.minifi.bootstrap.util.schema.common.BaseSchema;
 import org.apache.nifi.util.StringUtils;
 
 import java.util.Map;
+import java.util.TreeMap;
 
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.SECURITY_PROPS_KEY;
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.SENSITIVE_PROPS_KEY;
@@ -114,6 +115,20 @@ public class SecurityPropertiesSchema extends BaseSchema {
         sensitiveProps = getMapAsType(map, SENSITIVE_PROPS_KEY, SensitivePropsSchema.class, SECURITY_PROPS_KEY, false);
 
         addIssuesIfNotNull(sensitiveProps);
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(KEYSTORE_KEY, keystore);
+        result.put(KEYSTORE_TYPE_KEY, keystoreType);
+        result.put(KEY_PASSWORD_KEY, keystorePassword);
+        result.put(TRUSTSTORE_KEY, truststore);
+        result.put(TRUSTSTORE_TYPE_KEY, truststoreType);
+        result.put(TRUSTSTORE_PASSWORD_KEY, truststorePassword);
+        result.put(SSL_PROTOCOL_KEY, sslProtocol);
+        putIfNotNull(result, SENSITIVE_PROPS_KEY, sensitiveProps);
+        return result;
     }
 
     private boolean validateStoreType(String store) {

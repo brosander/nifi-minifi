@@ -50,6 +50,16 @@ public class FlowFileRepositorySchema extends BaseSchema {
         addIssuesIfNotNull(swapProperties);
     }
 
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(PARTITIONS_KEY, partitions);
+        result.put(CHECKPOINT_INTERVAL_KEY, checkpointInterval);
+        result.put(ALWAYS_SYNC_KEY, alwaysSync);
+        putIfNotNull(result, SWAP_PROPS_KEY, swapProperties);
+        return result;
+    }
+
     public Number getPartitions() {
         return partitions;
     }
