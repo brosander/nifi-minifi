@@ -17,6 +17,7 @@
 package org.apache.nifi.minifi.bootstrap.util.schema;
 
 import org.apache.nifi.minifi.bootstrap.util.schema.common.BaseSchema;
+import org.apache.nifi.web.api.dto.RemoteProcessGroupPortDTO;
 
 import java.util.Map;
 
@@ -43,6 +44,15 @@ public class RemoteInputPortSchema extends BaseSchema {
     private Boolean useCompression = DEFAULT_USE_COMPRESSION;
 
     public RemoteInputPortSchema() {
+    }
+
+    public RemoteInputPortSchema(RemoteProcessGroupPortDTO remoteProcessGroupPortDTO) {
+        this.id = remoteProcessGroupPortDTO.getId();
+        this.name = remoteProcessGroupPortDTO.getName();
+
+        this.comment = remoteProcessGroupPortDTO.getComments();
+        this.maxConcurrentTasks = remoteProcessGroupPortDTO.getConcurrentlySchedulableTaskCount();
+        this.useCompression = remoteProcessGroupPortDTO.getUseCompression();
     }
 
     public RemoteInputPortSchema(Map map) {

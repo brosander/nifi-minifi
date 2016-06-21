@@ -17,10 +17,12 @@
 package org.apache.nifi.minifi.bootstrap.util.schema;
 
 import org.apache.nifi.minifi.bootstrap.util.schema.common.BaseSchema;
+import org.apache.nifi.web.api.dto.RemoteProcessGroupContentsDTO;
 import org.apache.nifi.web.api.dto.RemoteProcessGroupDTO;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.COMMENT_KEY;
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.INPUT_PORTS_KEY;
@@ -53,7 +55,11 @@ public class RemoteProcessingGroupSchema extends BaseSchema {
     public RemoteProcessingGroupSchema(RemoteProcessGroupDTO remoteProcessGroupDTO) {
         this.name = remoteProcessGroupDTO.getName();
         this.url = remoteProcessGroupDTO.getTargetUri();
-        this.inputPorts = null;//TODO
+        RemoteProcessGroupContentsDTO remoteProcessGroupContentsDTO = remoteProcessGroupDTO.getContents();
+        if (remoteProcessGroupContentsDTO != null) {
+            this.inputPorts = nullToEmpty(remoteProcessGroupContentsDTO.getInputPorts()).stream()
+                    .map(RemoteInputPortSchema::new).collect(Collectors.toList());
+        }
 
         this.comment = remoteProcessGroupDTO.getComments();
         this.timeout = remoteProcessGroupDTO.getCommunicationsTimeout();

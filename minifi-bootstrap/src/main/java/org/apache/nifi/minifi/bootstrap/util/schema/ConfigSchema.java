@@ -61,7 +61,7 @@ public class ConfigSchema extends BaseSchema {
     }
 
     public ConfigSchema(Template template) {
-        flowControllerProperties = new FlowControllerSchema();
+        flowControllerProperties = new FlowControllerSchema(template.getDetails());
         coreProperties = new CorePropertiesSchema();
         flowfileRepositoryProperties = new FlowFileRepositorySchema();
         contentRepositoryProperties = new ContentRepositorySchema();
