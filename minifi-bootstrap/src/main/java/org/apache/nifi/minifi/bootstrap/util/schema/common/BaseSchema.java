@@ -19,9 +19,14 @@ package org.apache.nifi.minifi.bootstrap.util.schema.common;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BaseSchema {
 
@@ -130,5 +135,33 @@ public class BaseSchema {
             }
         }
         return null;
+    }
+
+    public Map<String, Object> toMap() {
+        return new LinkedHashMap<>();
+    }
+
+    public void putIfNotNull(Map valueMap, String key, BaseSchema schema) {
+        if (schema != null) {
+            valueMap.put(key, schema.toMap());
+        }
+    }
+
+    public void putListIfNotNull(Map valueMap, String key, List<? extends BaseSchema> list) {
+        if (list != null) {
+            valueMap.put(key, list.stream().map(BaseSchema::toMap).collect(Collectors.toList()));
+        }
+    }
+
+    public <T> List<T> nullToEmpty(List<T> list) {
+        return list == null ? Collections.emptyList() : list;
+    }
+
+    public <T> Set<T> nullToEmpty(Set<T> set) {
+        return set == null ? Collections.emptySet() : set;
+    }
+
+    public <K, V> Map<K, V> nullToEmpty(Map<K, V> map) {
+        return map == null ? Collections.emptyMap() : map;
     }
 }

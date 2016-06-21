@@ -53,6 +53,17 @@ public class SwapSchema extends BaseSchema {
         outThreads = getOptionalKeyAsType(map, OUT_THREADS_KEY, Number.class, SWAP_PROPS_KEY, 4);
     }
 
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(THRESHOLD_KEY, threshold);
+        result.put(IN_PERIOD_KEY, inPeriod);
+        result.put(IN_THREADS_KEY, inThreads);
+        result.put(OUT_PERIOD_KEY, outPeriod);
+        result.put(OUT_THREADS_KEY, outThreads);
+        return result;
+    }
+
     public Number getThreshold() {
         return threshold;
     }

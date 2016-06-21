@@ -43,6 +43,15 @@ public class ContentRepositorySchema extends BaseSchema {
         alwaysSync = getOptionalKeyAsType(map, ALWAYS_SYNC_KEY, Boolean.class, CONTENT_REPO_KEY, false);
     }
 
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(CONTENT_CLAIM_MAX_APPENDABLE_SIZE_KEY, contentClaimMaxAppendableSize);
+        result.put(CONTENT_CLAIM_MAX_FLOW_FILES_KEY, contentClaimMaxFlowFiles);
+        result.put(ALWAYS_SYNC_KEY, alwaysSync);
+        return result;
+    }
+
     public String getContentClaimMaxAppendableSize() {
         return contentClaimMaxAppendableSize;
     }

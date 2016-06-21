@@ -42,6 +42,14 @@ public class FlowControllerSchema extends BaseSchema {
         comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, FLOW_CONTROLLER_PROPS_KEY, "");
     }
 
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(NAME_KEY, name);
+        result.put(COMMENT_KEY, comment);
+        return result;
+    }
+
     public String getName() {
         return name;
     }

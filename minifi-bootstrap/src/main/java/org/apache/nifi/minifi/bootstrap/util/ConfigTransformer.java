@@ -19,6 +19,7 @@ package org.apache.nifi.minifi.bootstrap.util;
 
 
 import org.apache.nifi.controller.FlowSerializationException;
+import org.apache.nifi.controller.Template;
 import org.apache.nifi.minifi.bootstrap.configuration.ConfigurationChangeException;
 import org.apache.nifi.minifi.bootstrap.exception.InvalidConfigurationException;
 import org.apache.nifi.minifi.bootstrap.util.schema.ComponentStatusRepositorySchema;
@@ -37,11 +38,16 @@ import org.apache.nifi.minifi.bootstrap.util.schema.SecurityPropertiesSchema;
 import org.apache.nifi.minifi.bootstrap.util.schema.SensitivePropsSchema;
 import org.apache.nifi.minifi.bootstrap.util.schema.SwapSchema;
 import org.apache.nifi.stream.io.ByteArrayOutputStream;
+import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.representer.Representer;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -56,6 +62,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -117,6 +124,17 @@ public final class ConfigTransformer {
             if (sourceStream != null) {
                 sourceStream.close();
             }
+        }
+    }
+
+    public static void transformTemplate(InputStream sourceStream, String destPath) throws JAXBException, IOException {
+        TemplateDTO templateDTO = (TemplateDTO) JAXBContext.newInstance(TemplateDTO.class).createUnmarshaller().unmarshal(sourceStream);
+        DumperOptions dumperOptions = new DumperOptions();
+        dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+
+        Yaml yaml = new Yaml(dumperOptions);
+        try (FileWriter fileWriter = new FileWriter(destPath)) {
+            yaml.dump(new ConfigSchema(new Template(templateDTO)).toMap(), fileWriter);
         }
     }
 

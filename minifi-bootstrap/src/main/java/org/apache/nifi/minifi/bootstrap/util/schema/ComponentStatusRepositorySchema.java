@@ -40,6 +40,14 @@ public class ComponentStatusRepositorySchema extends BaseSchema {
         snapshotFrequency = getOptionalKeyAsType(map, SNAPSHOT_FREQUENCY_KEY, String.class, COMPONENT_STATUS_REPO_KEY, "1 min");
     }
 
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(BUFFER_SIZE_KEY, bufferSize);
+        result.put(SNAPSHOT_FREQUENCY_KEY, snapshotFrequency);
+        return result;
+    }
+
     public Number getBufferSize() {
         return bufferSize;
     }

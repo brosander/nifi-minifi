@@ -45,6 +45,15 @@ public class SensitivePropsSchema extends BaseSchema {
         provider = getOptionalKeyAsType(map, SENSITIVE_PROPS_PROVIDER_KEY, String.class, SENSITIVE_PROPS_KEY, "BC");
     }
 
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(SENSITIVE_PROPS_KEY_KEY, key);
+        result.put(SENSITIVE_PROPS_ALGORITHM_KEY, algorithm);
+        result.put(SENSITIVE_PROPS_PROVIDER_KEY, provider);
+        return result;
+    }
+
     public String getKey() {
         return key;
     }

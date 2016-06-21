@@ -50,6 +50,17 @@ public class RemoteInputPortSchema extends BaseSchema {
         useCompression = getOptionalKeyAsType(map, USE_COMPRESSION_KEY, Boolean.class, INPUT_PORTS_KEY, true);
     }
 
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(ID_KEY, id);
+        result.put(NAME_KEY, name);
+        result.put(COMMENT_KEY, comment);
+        result.put(MAX_CONCURRENT_TASKS_KEY, maxConcurrentTasks);
+        result.put(USE_COMPRESSION_KEY, useCompression);
+        return result;
+    }
+
     public String getId() {
         return id;
     }

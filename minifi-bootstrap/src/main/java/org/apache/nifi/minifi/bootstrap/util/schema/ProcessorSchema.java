@@ -18,12 +18,15 @@ package org.apache.nifi.minifi.bootstrap.util.schema;
 
 import org.apache.nifi.minifi.bootstrap.util.schema.common.BaseSchema;
 import org.apache.nifi.scheduling.SchedulingStrategy;
+import org.apache.nifi.web.api.dto.ProcessorConfigDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.RelationshipDTO;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.MAX_CONCURRENT_TASKS_KEY;
@@ -59,19 +62,21 @@ public class ProcessorSchema extends BaseSchema {
     }
 
     public ProcessorSchema(ProcessorDTO processorDTO) {
+        ProcessorConfigDTO processorDTOConfig = processorDTO.getConfig();
+
         this.name = processorDTO.getName();
         this.processorClass = processorDTO.getType();
-        this.maxConcurrentTasks = processorDTO.getConfig().getConcurrentlySchedulableTaskCount();
-        this.schedulingStrategy = processorDTO.getConfig().getSchedulingStrategy();
-        this.schedulingPeriod = processorDTO.getConfig().getSchedulingPeriod();
-        this.penalizationPeriod = processorDTO.getConfig().getPenaltyDuration();
-        this.yieldPeriod = processorDTO.getConfig().getYieldDuration();
-        this.runDurationNanos = processorDTO.getConfig().getRunDurationMillis() * 1000;
-        this.autoTerminatedRelationshipsList = processorDTO.getRelationships().stream()
+        this.maxConcurrentTasks = processorDTOConfig.getConcurrentlySchedulableTaskCount();
+        this.schedulingStrategy = processorDTOConfig.getSchedulingStrategy();
+        this.schedulingPeriod = processorDTOConfig.getSchedulingPeriod();
+        this.penalizationPeriod = processorDTOConfig.getPenaltyDuration();
+        this.yieldPeriod = processorDTOConfig.getYieldDuration();
+        this.runDurationNanos = processorDTOConfig.getRunDurationMillis() * 1000;
+        this.autoTerminatedRelationshipsList = nullToEmpty(processorDTO.getRelationships()).stream()
                 .filter(RelationshipDTO::isAutoTerminate)
                 .map(RelationshipDTO::getName)
                 .collect(Collectors.toList());
-        // TODO: properties
+        this.properties = new HashMap<>(nullToEmpty(processorDTOConfig.getProperties()));
     }
 
     public ProcessorSchema(Map map) {
@@ -98,6 +103,22 @@ public class ProcessorSchema extends BaseSchema {
         autoTerminatedRelationshipsList = getOptionalKeyAsType(map, AUTO_TERMINATED_RELATIONSHIPS_LIST_KEY, List.class, PROCESSORS_KEY, null);
 
         properties = getOptionalKeyAsType(map, PROCESSOR_PROPS_KEY, Map.class, PROCESSORS_KEY, null);
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(NAME_KEY, name);
+        result.put(CLASS_KEY, processorClass);
+        result.put(MAX_CONCURRENT_TASKS_KEY, maxConcurrentTasks);
+        result.put(SCHEDULING_STRATEGY_KEY, schedulingStrategy);
+        result.put(SCHEDULING_PERIOD_KEY, schedulingPeriod);
+        result.put(PENALIZATION_PERIOD_KEY, penalizationPeriod);
+        result.put(YIELD_PERIOD_KEY, yieldPeriod);
+        result.put(RUN_DURATION_NANOS_KEY, runDurationNanos);
+        result.put(AUTO_TERMINATED_RELATIONSHIPS_LIST_KEY, autoTerminatedRelationshipsList);
+        result.put(PROCESSOR_PROPS_KEY, new TreeMap<>(properties));
+        return result;
     }
 
     public String getName() {

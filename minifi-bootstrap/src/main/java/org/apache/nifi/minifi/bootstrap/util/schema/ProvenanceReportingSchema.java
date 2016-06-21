@@ -74,6 +74,21 @@ public class ProvenanceReportingSchema extends BaseSchema {
         batchSize = getOptionalKeyAsType(map, BATCH_SIZE_KEY, Number.class, PROVENANCE_REPORTING_KEY, 1000);
     }
 
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = super.toMap();
+        result.put(COMMENT_KEY, comment);
+        result.put(SCHEDULING_STRATEGY_KEY, schedulingStrategy);
+        result.put(SCHEDULING_PERIOD_KEY, schedulingPeriod);
+        result.put(DESTINATION_URL_KEY, destinationUrl);
+        result.put(PORT_NAME_KEY, portName);
+        result.put(ORIGINATING_URL_KEY, originatingUrl);
+        result.put(USE_COMPRESSION_KEY, useCompression);
+        result.put(TIMEOUT_KEY, timeout);
+        result.put(BATCH_SIZE_KEY, batchSize);
+        return result;
+    }
+
     public String getComment() {
         return comment;
     }
