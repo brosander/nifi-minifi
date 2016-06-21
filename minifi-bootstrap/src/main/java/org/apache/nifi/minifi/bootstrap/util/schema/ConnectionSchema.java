@@ -59,7 +59,7 @@ public class ConnectionSchema extends BaseSchema {
         } else {
             this.sourceRelationshipName = null;
         }
-        this.destinationName = connectionDTO.getDestination().getId();
+        this.destinationName = connectionDTO.getDestination().getName();
         this.maxWorkQueueSize = connectionDTO.getBackPressureObjectThreshold();
         this.maxWorkQueueDataSize = connectionDTO.getBackPressureDataSizeThreshold();
         this.flowfileExpiration = connectionDTO.getFlowFileExpiration();

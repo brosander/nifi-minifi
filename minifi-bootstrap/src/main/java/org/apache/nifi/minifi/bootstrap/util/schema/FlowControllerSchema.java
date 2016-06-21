@@ -30,7 +30,7 @@ import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonProperty
  */
 public class FlowControllerSchema extends BaseSchema {
 
-    private String name;
+    private String name = "MiNiFi Flow";
     private String comment = "";
 
     public FlowControllerSchema() {
