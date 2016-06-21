@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import org.apache.nifi.minifi.bootstrap.exception.InvalidConfigurationException;
@@ -208,8 +209,8 @@ public class TestConfigTransformer {
     @Test
     public void testTransformTemplatesToYAML() throws IOException, JAXBException {
         for (File file : new File("/Users/brosander/Github/nifi-templates/templates/").listFiles((dir, name) -> name.endsWith(".xml"))) {
-            try (FileInputStream fileInputStream = new FileInputStream(file)) {
-                ConfigTransformer.transformTemplate(fileInputStream, file.getName() + ".yaml");
+            try (FileInputStream fileInputStream = new FileInputStream(file); FileWriter fileWriter = new FileWriter(file.getName() + ".yaml")) {
+                ConfigTransformer.transformTemplate(fileInputStream, fileWriter);
             }
         }
     }

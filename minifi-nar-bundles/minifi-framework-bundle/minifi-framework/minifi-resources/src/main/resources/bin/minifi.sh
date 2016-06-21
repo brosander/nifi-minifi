@@ -233,7 +233,7 @@ case "$1" in
     install)
         install "$@"
         ;;
-    start|stop|run|status|dump|env)
+    start|stop|run|status|dump|env|transform)
         main "$@"
         ;;
     restart)

@@ -71,8 +71,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -136,7 +138,7 @@ public final class ConfigTransformer {
         }
     }
 
-    public static void transformTemplate(InputStream sourceStream, String destPath) throws JAXBException, IOException {
+    public static void transformTemplate(InputStream sourceStream, Writer output) throws JAXBException, IOException {
         TemplateDTO templateDTO = (TemplateDTO) JAXBContext.newInstance(TemplateDTO.class).createUnmarshaller().unmarshal(sourceStream);
         DumperOptions dumperOptions = new DumperOptions();
         dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
@@ -156,9 +158,7 @@ public final class ConfigTransformer {
         }
 
         Yaml yaml = new Yaml(dumperOptions);
-        try (FileWriter fileWriter = new FileWriter(destPath)) {
-            yaml.dump(new ConfigSchema(new Template(templateDTO)).toMap(), fileWriter);
-        }
+        yaml.dump(new ConfigSchema(new Template(templateDTO)).toMap(), output);
     }
 
     private static void setName(Map<String, String> connectableNameMap, ConnectableDTO connectableDTO) {
