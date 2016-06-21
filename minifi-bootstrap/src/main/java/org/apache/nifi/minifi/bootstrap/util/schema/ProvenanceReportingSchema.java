@@ -37,11 +37,11 @@ public class ProvenanceReportingSchema extends BaseSchema {
     public static final String ORIGINATING_URL_KEY = "originating url";
     public static final String BATCH_SIZE_KEY = "batch size";
 
-    private String comment;
-    private String schedulingStrategy;
-    private String schedulingPeriod;
-    private String destinationUrl;
-    private String portName;
+    private String comment = "";
+    private String schedulingStrategy = "";
+    private String schedulingPeriod = "";
+    private String destinationUrl = "";
+    private String portName = "";
     private String originatingUrl = "http://${hostname(true)}:8080/nifi";
     private Boolean useCompression = true;
     private String timeout = "30 secs";

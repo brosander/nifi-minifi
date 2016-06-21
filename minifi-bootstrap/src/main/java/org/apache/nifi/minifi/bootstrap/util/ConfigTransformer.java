@@ -38,6 +38,11 @@ import org.apache.nifi.minifi.bootstrap.util.schema.SecurityPropertiesSchema;
 import org.apache.nifi.minifi.bootstrap.util.schema.SensitivePropsSchema;
 import org.apache.nifi.minifi.bootstrap.util.schema.SwapSchema;
 import org.apache.nifi.stream.io.ByteArrayOutputStream;
+import org.apache.nifi.web.api.dto.ConnectableDTO;
+import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.FlowSnippetDTO;
+import org.apache.nifi.web.api.dto.NiFiComponentDTO;
+import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -75,6 +80,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
 public final class ConfigTransformer {
@@ -132,9 +141,32 @@ public final class ConfigTransformer {
         DumperOptions dumperOptions = new DumperOptions();
         dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 
+        FlowSnippetDTO flowSnippetDTO = templateDTO.getSnippet();
+        Set<ConnectionDTO> connections = flowSnippetDTO.getConnections();
+        if (connections != null) {
+            Map<String, String> connectableNameMap = new HashMap<>();
+            Set<ProcessorDTO> processorDTOs = flowSnippetDTO.getProcessors();
+            if (processorDTOs != null) {
+                connectableNameMap.putAll(processorDTOs.stream().collect(Collectors.toMap(NiFiComponentDTO::getId, ProcessorDTO::getName)));
+            }
+            for (ConnectionDTO connection : connections) {
+                setName(connectableNameMap, connection.getSource());
+                setName(connectableNameMap, connection.getDestination());
+            }
+        }
+
         Yaml yaml = new Yaml(dumperOptions);
         try (FileWriter fileWriter = new FileWriter(destPath)) {
             yaml.dump(new ConfigSchema(new Template(templateDTO)).toMap(), fileWriter);
+        }
+    }
+
+    private static void setName(Map<String, String> connectableNameMap, ConnectableDTO connectableDTO) {
+        if (connectableDTO != null) {
+            String name = connectableNameMap.get(connectableDTO.getId());
+            if (name != null) {
+                connectableDTO.setName(name);
+            }
         }
     }
 
