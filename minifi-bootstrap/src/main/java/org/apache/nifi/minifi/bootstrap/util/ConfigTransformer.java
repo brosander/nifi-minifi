@@ -100,7 +100,7 @@ public final class ConfigTransformer {
         transformConfigFile(ios, destPath);
     }
 
-    public static void transformConfigFile(InputStream sourceStream, String destPath) throws Exception {
+    public static ConfigSchema loadConfigSchema(InputStream sourceStream) throws IOException, InvalidConfigurationException {
         try {
             Yaml yaml = new Yaml();
 
@@ -110,29 +110,31 @@ public final class ConfigTransformer {
             // Verify the parsed object is a Map structure
             if (loadedObject instanceof Map) {
                 final Map<String, Object> loadedMap = (Map<String, Object>) loadedObject;
-                ConfigSchema configSchema = new ConfigSchema(loadedMap);
-                if (!configSchema.isValid()) {
-                    throw new InvalidConfigurationException("Failed to transform config file due to:" + configSchema.getValidationIssuesAsString());
-                }
-
-                // Create nifi.properties and flow.xml.gz in memory
-                ByteArrayOutputStream nifiPropertiesOutputStream = new ByteArrayOutputStream();
-                writeNiFiProperties(configSchema, nifiPropertiesOutputStream);
-
-                DOMSource flowXml = createFlowXml(configSchema);
-
-                // Write nifi.properties and flow.xml.gz
-                writeNiFiPropertiesFile(nifiPropertiesOutputStream, destPath);
-
-                writeFlowXmlFile(flowXml, destPath);
+                return new ConfigSchema(loadedMap);
             } else {
                 throw new InvalidConfigurationException("Provided YAML configuration is not a Map");
             }
         } finally {
-            if (sourceStream != null) {
-                sourceStream.close();
-            }
+            sourceStream.close();
         }
+    }
+
+    public static void transformConfigFile(InputStream sourceStream, String destPath) throws Exception {
+        ConfigSchema configSchema = loadConfigSchema(sourceStream);
+        if (!configSchema.isValid()) {
+            throw new InvalidConfigurationException("Failed to transform config file due to:" + configSchema.getValidationIssuesAsString());
+        }
+
+        // Create nifi.properties and flow.xml.gz in memory
+        ByteArrayOutputStream nifiPropertiesOutputStream = new ByteArrayOutputStream();
+        writeNiFiProperties(configSchema, nifiPropertiesOutputStream);
+
+        DOMSource flowXml = createFlowXml(configSchema);
+
+        // Write nifi.properties and flow.xml.gz
+        writeNiFiPropertiesFile(nifiPropertiesOutputStream, destPath);
+
+        writeFlowXmlFile(flowXml, destPath);
     }
 
     public static void transformTemplate(Reader source, Writer output) throws JAXBException, IOException {

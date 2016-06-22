@@ -17,11 +17,16 @@
 
 package org.apache.nifi.minifi.bootstrap.util;
 
+import org.apache.nifi.minifi.bootstrap.exception.InvalidConfigurationException;
+import org.apache.nifi.minifi.bootstrap.util.schema.ConfigSchema;
+
 import javax.xml.bind.JAXBException;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Map;
@@ -34,6 +39,8 @@ public class TemplateUtil {
     public static final int ERR_UNABLE_TO_OPEN_INPUT = 3;
     public static final int ERR_UNABLE_TO_READ_TEMPLATE = 4;
     public static final int ERR_UNABLE_TO_TRANFORM_TEMPLATE = 5;
+    public static final int ERR_UNABLE_TO_PARSE_CONFIG = 6;
+    public static final int ERR_INVALID_CONFIG = 7;
 
     public static final int SUCCESS = 0;
 
@@ -54,6 +61,38 @@ public class TemplateUtil {
         System.err.print(TemplateUtil.class.getCanonicalName());
         System.err.println(" transform INPUT_FILE OUTPUT_FILE");
         System.err.println();
+    }
+
+    public static int validate(String[] args) {
+        if (args.length != 2) {
+            printTransformUsage();
+            return ERR_INVALID_ARGS;
+        }
+        try (InputStream inputStream = new FileInputStream(args[1])) {
+            try {
+                ConfigSchema configSchema = ConfigTransformer.loadConfigSchema(inputStream);
+                if (!configSchema.isValid()) {
+                    configSchema.getValidationIssues().forEach(s -> System.err.println(s));
+                }
+                System.err.println();
+                return ERR_INVALID_CONFIG;
+            } catch (InvalidConfigurationException e) {
+                System.err.println("Unable to load configuration. (" + e + ")");
+                System.err.println();
+                printTransformUsage();
+                return ERR_UNABLE_TO_PARSE_CONFIG;
+            }
+        } catch (FileNotFoundException e) {
+            System.err.println("Unable to open file " + args[1] + " for reading. (" + e + ")");
+            System.err.println();
+            printTransformUsage();
+            return ERR_UNABLE_TO_OPEN_INPUT;
+        } catch (IOException e) {
+            System.err.println("Error closing input. (" + e + ")");
+            System.err.println();
+        }
+
+        return SUCCESS;
     }
 
     public static int transform(String[] args) {
@@ -109,6 +148,7 @@ public class TemplateUtil {
     public Map<String, Command> createCommandMap() {
         Map<String, Command> result = new TreeMap<>();
         result.put("transform", new Command(TemplateUtil::transform, "Transform template xml into MiNiFi config YAML"));
+        result.put("validate", new Command(TemplateUtil::validate, "Validate config YAML"));
         return result;
     }
 

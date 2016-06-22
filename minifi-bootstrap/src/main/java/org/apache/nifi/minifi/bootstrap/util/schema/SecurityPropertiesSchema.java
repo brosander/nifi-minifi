@@ -17,10 +17,8 @@
 package org.apache.nifi.minifi.bootstrap.util.schema;
 
 import org.apache.nifi.minifi.bootstrap.util.schema.common.BaseSchema;
-import org.apache.nifi.util.StringUtils;
 
 import java.util.Map;
-import java.util.TreeMap;
 
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.SECURITY_PROPS_KEY;
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.SENSITIVE_PROPS_KEY;
@@ -65,7 +63,7 @@ public class SecurityPropertiesSchema extends BaseSchema {
         keystore = getOptionalKeyAsType(map, KEYSTORE_KEY, String.class, SECURITY_PROPS_KEY, DEFAULT_KEYSTORE);
 
         keystoreType = getOptionalKeyAsType(map, KEYSTORE_TYPE_KEY, String.class, SECURITY_PROPS_KEY, DEFAULT_KEYSTORE_TYPE);
-        if (keystoreType != null) {
+        if (!isEmpty(keystoreType)) {
             if (validateStoreType(keystoreType)) {
                 addValidationIssue(KEYSTORE_TYPE_KEY, SECURITY_PROPS_KEY, "it is not a supported type (must be either PKCS12 or JKS format)");
             }
@@ -78,7 +76,7 @@ public class SecurityPropertiesSchema extends BaseSchema {
         truststore = getOptionalKeyAsType(map, TRUSTSTORE_KEY, String.class, SECURITY_PROPS_KEY, DEFAULT_TRUSTSTORE);
 
         truststoreType = getOptionalKeyAsType(map, TRUSTSTORE_TYPE_KEY, String.class, SECURITY_PROPS_KEY, DEFAULT_TRUSTSTORE_TYPE);
-        if (truststoreType != null) {
+        if (!isEmpty(truststoreType)) {
             if (validateStoreType(truststoreType)) {
                 addValidationIssue(TRUSTSTORE_TYPE_KEY, SECURITY_PROPS_KEY, "it is not a supported type (must be either PKCS12 or JKS format)");
             }
@@ -87,7 +85,7 @@ public class SecurityPropertiesSchema extends BaseSchema {
         truststorePassword = getOptionalKeyAsType(map, TRUSTSTORE_PASSWORD_KEY, String.class, SECURITY_PROPS_KEY, DEFAULT_TRUSTSTORE_PASSWORD);
 
         sslProtocol = getOptionalKeyAsType(map, SSL_PROTOCOL_KEY, String.class, SECURITY_PROPS_KEY, DEFAULT_SSL_PROTOCOL);
-        if (!StringUtils.isEmpty(sslProtocol)) {
+        if (!isEmpty(sslProtocol)) {
             switch (sslProtocol) {
                 case "SSL":
                     break;
@@ -107,14 +105,14 @@ public class SecurityPropertiesSchema extends BaseSchema {
                     addValidationIssue(SSL_PROTOCOL_KEY, SECURITY_PROPS_KEY, "it is not an allowable value of SSL protocol");
                     break;
             }
-            if (StringUtils.isEmpty(keystore)) {
+            if (isEmpty(keystore)) {
                 validationIssues.add("When the '" + SSL_PROTOCOL_KEY + "' key of '" + SECURITY_PROPS_KEY + "' is set, the '" + KEYSTORE_KEY + "' must also be set");
             } else if (keystoreType == null || keystorePassword == null || keyPassword == null) {
                 validationIssues.add("When the '" + KEYSTORE_KEY + "' key of '" + SECURITY_PROPS_KEY + "' is set, the '" + KEYSTORE_TYPE_KEY + "', '" + KEYSTORE_PASSWORD_KEY +
                         "' and '" + KEY_PASSWORD_KEY + "' all must also be set");
             }
 
-            if (!StringUtils.isEmpty(truststore) && (truststoreType == null || truststorePassword == null)) {
+            if (!isEmpty(truststore) && (isEmpty(truststoreType) || isEmpty(truststorePassword))) {
                 validationIssues.add("When the '" + TRUSTSTORE_KEY + "' key of '" + SECURITY_PROPS_KEY + "' is set, the '" + TRUSTSTORE_TYPE_KEY + "' and '" +
                         TRUSTSTORE_PASSWORD_KEY + "' must also be set");
             }
@@ -181,5 +179,9 @@ public class SecurityPropertiesSchema extends BaseSchema {
 
     public SensitivePropsSchema getSensitiveProps() {
         return sensitiveProps;
+    }
+
+    private boolean isEmpty(String val) {
+        return val == null || val.isEmpty();
     }
 }
