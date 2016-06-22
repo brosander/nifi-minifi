@@ -22,8 +22,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Map;
@@ -34,9 +32,10 @@ public class TemplateUtil {
     public static final int ERR_INVALID_ARGS = 1;
     public static final int ERR_UNABLE_TO_OPEN_OUTPUT = 2;
     public static final int ERR_UNABLE_TO_OPEN_INPUT = 3;
-    public static final int SUCCESS = 0;
     public static final int ERR_UNABLE_TO_READ_TEMPLATE = 4;
     public static final int ERR_UNABLE_TO_TRANFORM_TEMPLATE = 5;
+
+    public static final int SUCCESS = 0;
 
     private final Map<String, Command> commandMap;
 
@@ -49,74 +48,62 @@ public class TemplateUtil {
     }
 
     public static void printTransformUsage() {
-
+        System.err.println("Transform Usage:");
+        System.err.println();
+        System.err.print("java ");
+        System.err.print(TemplateUtil.class.getCanonicalName());
+        System.err.println(" transform INPUT_FILE OUTPUT_FILE");
+        System.err.println();
     }
 
     public static int transform(String[] args) {
-        Reader reader;
-        Writer writer;
-        if (args.length < 3 || args[2].equals("-")) {
-            writer = new PrintWriter(System.out);
-        } else {
-            try {
-                writer = new FileWriter(args[2]);
-            } catch (IOException e) {
-                System.err.println("Unable to open file " + args[2] + " for writing. (" + e + ")");
-                System.err.println();
-                printTransformUsage();
-                return ERR_UNABLE_TO_OPEN_OUTPUT;
-            }
+        if (args.length != 3) {
+            printTransformUsage();
+            return ERR_INVALID_ARGS;
         }
-
-        if (args.length < 2 || args[1].equals("-")) {
-            reader = new InputStreamReader(System.in);
-        } else {
-            try {
-                reader = new FileReader(args[1]);
+        try (Reader reader = new FileReader(args[1])) {
+            try (Writer writer = new FileWriter(args[2])) {
+                try {
+                    ConfigTransformer.transformTemplate(reader, writer);
+                } catch (JAXBException e) {
+                    System.err.println("Error reading template. (" + e + ")");
+                    System.err.println();
+                    printTransformUsage();
+                    return ERR_UNABLE_TO_READ_TEMPLATE;
+                } catch (IOException e) {
+                    System.err.println("Error transforming template to YAML. (" + e + ")");
+                    System.err.println();
+                    printTransformUsage();
+                    return ERR_UNABLE_TO_TRANFORM_TEMPLATE;
+                }
             } catch (FileNotFoundException e) {
                 System.err.println("Unable to open file " + args[2] + " for writing. (" + e + ")");
                 System.err.println();
                 printTransformUsage();
-                return ERR_UNABLE_TO_OPEN_INPUT;
-            }
-        }
-
-        try {
-            ConfigTransformer.transformTemplate(reader, writer);
-        } catch (JAXBException e) {
-            System.err.println("Error reading template. (" + e + ")");
-            System.err.println();
-            printTransformUsage();
-            return ERR_UNABLE_TO_READ_TEMPLATE;
-        } catch (IOException e) {
-            System.err.println("Error transforming template to YAML. (" + e + ")");
-            System.err.println();
-            printTransformUsage();
-            return ERR_UNABLE_TO_TRANFORM_TEMPLATE;
-        } finally {
-            try {
-                reader.close();
-            } catch (IOException e) {
-                System.err.println("Error closing input. (" + e + ")");
-                System.err.println();
-            }
-            try {
-                writer.close();
+                return ERR_UNABLE_TO_OPEN_OUTPUT;
             } catch (IOException e) {
                 System.err.println("Error closing output. (" + e + ")");
                 System.err.println();
             }
+        } catch (FileNotFoundException e) {
+            System.err.println("Unable to open file " + args[1] + " for reading. (" + e + ")");
+            System.err.println();
+            printTransformUsage();
+            return ERR_UNABLE_TO_OPEN_INPUT;
+        } catch (IOException e) {
+            System.err.println("Error closing input. (" + e + ")");
+            System.err.println();
         }
 
         return SUCCESS;
     }
 
     public int execute(String[] args) {
-        if (args.length < 1 || !commandMap.containsKey(args[1].toLowerCase())) {
+        if (args.length < 1 || !commandMap.containsKey(args[0].toLowerCase())) {
             printUsage();
             return ERR_INVALID_ARGS;
         }
-        return commandMap.get(args[1].toLowerCase()).function.apply(args);
+        return commandMap.get(args[0].toLowerCase()).function.apply(args);
     }
 
     public Map<String, Command> createCommandMap() {
