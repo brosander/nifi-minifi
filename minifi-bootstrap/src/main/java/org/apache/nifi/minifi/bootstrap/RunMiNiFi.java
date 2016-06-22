@@ -21,15 +21,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.io.Reader;
-import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -113,7 +110,6 @@ public class RunMiNiFi {
 
     public static final String NOTIFIER_PROPERTY_PREFIX = "nifi.minifi.notifier";
     public static final String NOTIFIER_COMPONENTS_KEY = NOTIFIER_PROPERTY_PREFIX + ".components";
-    public static final String BASE_JAVA_CMD = "java org.apache.nifi.minifi.bootstrap.RunMiNiFi ";
 
     private volatile boolean autoRestartNiFi = true;
     private volatile int ccPort = -1;
@@ -162,8 +158,7 @@ public class RunMiNiFi {
     private static void printUsage() {
         System.out.println("Usage:");
         System.out.println();
-        System.out.print(BASE_JAVA_CMD);
-        System.out.println("<command> [options]");
+        System.out.println("java org.apache.nifi.minifi.bootstrap.RunMiNiFi <command> [options]");
         System.out.println();
         System.out.println("Valid commands include:");
         System.out.println("");
@@ -173,7 +168,6 @@ public class RunMiNiFi {
         System.out.println("Status : Determine if there is a running instance of Apache MiNiFi");
         System.out.println("Dump : Write a Thread Dump to the file specified by [options], or to the log if no file is given");
         System.out.println("Run : Start a new instance of Apache MiNiFi and monitor the Process, restarting if the instance dies");
-        System.out.println("Transform: Transform template xml into MiNiFi config YAML");
         System.out.println();
     }
 
@@ -202,7 +196,6 @@ public class RunMiNiFi {
             case "dump":
             case "restart":
             case "env":
-            case "transform":
                 break;
             default:
                 printUsage();
@@ -235,43 +228,7 @@ public class RunMiNiFi {
             case "env":
                 runMiNiFi.env();
                 break;
-            case "transform":
-                System.exit(runMiNiFi.transform(args));
-                break;
         }
-    }
-
-    private static void printTransformUsage() {
-        System.out.println("Usage:");
-        System.out.println();
-        System.out.print(BASE_JAVA_CMD);
-        System.out.println(" transform YOUR_TEMPLATE.xml [OUTPUT_FILENAME]");
-        System.out.println();
-    }
-
-    private int transform(String[] args) {
-        Writer output;
-        if (args.length == 3) {
-            try {
-                output = new FileWriter(args[2]);
-            } catch (IOException e) {
-                System.err.println("Unable to open " + args[2] + " for writing. (" + e.toString() + ")");
-                System.err.println();
-                printTransformUsage();
-                return 1;
-            }
-        } else {
-            output = new PrintWriter(System.out);
-        }
-        try (FileInputStream fileInputStream = new FileInputStream(args[1]); Writer writer = output) {
-            ConfigTransformer.transformTemplate(fileInputStream, writer);
-        } catch (Exception e) {
-            System.err.println("Error transforming file: " + e.toString());
-            System.err.println();
-            printTransformUsage();
-            return 1;
-        }
-        return 0;
     }
 
     private static File getBootstrapConfFile() {
