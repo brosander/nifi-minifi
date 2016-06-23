@@ -209,7 +209,7 @@ run() {
     echo
 
 
-   (cd "${MINIFI_HOME}" && ${sudo_cmd_prefix} "${JAVA}" -cp "${BOOTSTRAP_CLASSPATH}" -Xms12m -Xmx24m -Dorg.apache.nifi.minifi.bootstrap.config.file="${BOOTSTRAP_CONF}" org.apache.nifi.minifi.bootstrap.util.TemplateUtil $@)
+   (cd "${MINIFI_HOME}" && ${sudo_cmd_prefix} "${JAVA}" -cp "${BOOTSTRAP_CLASSPATH}" -Xms12m -Xmx24m -Dorg.apache.nifi.minifi.bootstrap.config.file="${BOOTSTRAP_CONF}" org.apache.nifi.minifi.bootstrap.util.ConfigMain $@)
 }
 
 

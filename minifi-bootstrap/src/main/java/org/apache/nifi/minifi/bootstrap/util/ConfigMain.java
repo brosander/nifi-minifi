@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Function;
 
-public class TemplateUtil {
+public class ConfigMain {
     public static final int ERR_INVALID_ARGS = 1;
     public static final int ERR_UNABLE_TO_OPEN_OUTPUT = 2;
     public static final int ERR_UNABLE_TO_OPEN_INPUT = 3;
@@ -50,25 +50,25 @@ public class TemplateUtil {
     private final PathInputStreamFactory pathInputStreamFactory;
     private final PathOutputStreamFactory pathOutputStreamFactory;
 
-    public TemplateUtil() {
+    public ConfigMain() {
         this(FileInputStream::new, FileOutputStream::new);
     }
 
-    public TemplateUtil(PathInputStreamFactory pathInputStreamFactory, PathOutputStreamFactory pathOutputStreamFactory) {
+    public ConfigMain(PathInputStreamFactory pathInputStreamFactory, PathOutputStreamFactory pathOutputStreamFactory) {
         this.pathInputStreamFactory = pathInputStreamFactory;
         this.pathOutputStreamFactory = pathOutputStreamFactory;
         this.commandMap = createCommandMap();
     }
 
     public static void main(String[] args) {
-        System.exit(new TemplateUtil().execute(args));
+        System.exit(new ConfigMain().execute(args));
     }
 
     public static void printValidateUsage() {
         System.out.println("Validate Usage:");
         System.out.println();
         System.out.print("java ");
-        System.out.print(TemplateUtil.class.getCanonicalName());
+        System.out.print(ConfigMain.class.getCanonicalName());
         System.out.println(" validate INPUT_FILE");
         System.out.println();
     }
@@ -109,7 +109,7 @@ public class TemplateUtil {
         System.out.println("Transform Usage:");
         System.out.println();
         System.out.print("java ");
-        System.out.print(TemplateUtil.class.getCanonicalName());
+        System.out.print(ConfigMain.class.getCanonicalName());
         System.out.println(" transform INPUT_FILE OUTPUT_FILE");
         System.out.println();
     }
@@ -175,7 +175,7 @@ public class TemplateUtil {
         System.out.println("Usage:");
         System.out.println();
         System.out.print("java ");
-        System.out.print(TemplateUtil.class.getCanonicalName());
+        System.out.print(ConfigMain.class.getCanonicalName());
         System.out.println(" <command> options");
         System.out.println();
         System.out.println("Valid commands include:");

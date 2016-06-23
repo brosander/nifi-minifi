@@ -34,14 +34,14 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TemplateUtilTest {
+public class ConfigMainTest {
     @Mock
     PathInputStreamFactory pathInputStreamFactory;
 
     @Mock
     PathOutputStreamFactory pathOutputStreamFactory;
 
-    TemplateUtil templateUtil;
+    ConfigMain configMain;
 
     String testInput;
 
@@ -49,93 +49,93 @@ public class TemplateUtilTest {
 
     @Before
     public void setup() {
-        templateUtil = new TemplateUtil(pathInputStreamFactory, pathOutputStreamFactory);
+        configMain = new ConfigMain(pathInputStreamFactory, pathOutputStreamFactory);
         testInput = "testInput";
         testOutput = "testOutput";
     }
 
     @Test
     public void testExecuteNoArgs() {
-        assertEquals(TemplateUtil.ERR_INVALID_ARGS, templateUtil.execute(new String[0]));
+        assertEquals(ConfigMain.ERR_INVALID_ARGS, configMain.execute(new String[0]));
     }
 
     @Test
     public void testExecuteInvalidCommand() {
-        assertEquals(TemplateUtil.ERR_INVALID_ARGS, templateUtil.execute(new String[]{"badCommand"}));
+        assertEquals(ConfigMain.ERR_INVALID_ARGS, configMain.execute(new String[]{"badCommand"}));
     }
 
     @Test
     public void testValidateInvalidCommand() {
-        assertEquals(TemplateUtil.ERR_INVALID_ARGS, templateUtil.execute(new String[]{TemplateUtil.VALIDATE}));
+        assertEquals(ConfigMain.ERR_INVALID_ARGS, configMain.execute(new String[]{ConfigMain.VALIDATE}));
     }
 
     @Test
     public void testValidateErrorOpeningInput() throws FileNotFoundException {
         when(pathInputStreamFactory.create(testInput)).thenThrow(new FileNotFoundException());
-        assertEquals(TemplateUtil.ERR_UNABLE_TO_OPEN_INPUT, templateUtil.execute(new String[]{TemplateUtil.VALIDATE, testInput}));
+        assertEquals(ConfigMain.ERR_UNABLE_TO_OPEN_INPUT, configMain.execute(new String[]{ConfigMain.VALIDATE, testInput}));
     }
 
     @Test
     public void testValidateUnableToParseConfig() throws FileNotFoundException {
         when(pathInputStreamFactory.create(testInput)).thenReturn(new ByteArrayInputStream("!@#$%^&".getBytes(Charsets.UTF_8)));
-        assertEquals(TemplateUtil.ERR_UNABLE_TO_PARSE_CONFIG, templateUtil.execute(new String[]{TemplateUtil.VALIDATE, testInput}));
+        assertEquals(ConfigMain.ERR_UNABLE_TO_PARSE_CONFIG, configMain.execute(new String[]{ConfigMain.VALIDATE, testInput}));
     }
 
     @Test
     public void testValidateInvalidConfig() throws FileNotFoundException {
         when(pathInputStreamFactory.create(testInput)).thenAnswer(invocation ->
-                TemplateUtilTest.class.getClassLoader().getResourceAsStream("config-malformed-field.yml"));
-        assertEquals(TemplateUtil.ERR_INVALID_CONFIG, templateUtil.execute(new String[]{TemplateUtil.VALIDATE, testInput}));
+                ConfigMainTest.class.getClassLoader().getResourceAsStream("config-malformed-field.yml"));
+        assertEquals(ConfigMain.ERR_INVALID_CONFIG, configMain.execute(new String[]{ConfigMain.VALIDATE, testInput}));
     }
 
     @Test
     public void testTransformInvalidCommand() {
-        assertEquals(TemplateUtil.ERR_INVALID_ARGS, templateUtil.execute(new String[]{TemplateUtil.TRANSFORM}));
+        assertEquals(ConfigMain.ERR_INVALID_ARGS, configMain.execute(new String[]{ConfigMain.TRANSFORM}));
     }
 
     @Test
     public void testValidateSuccess() throws FileNotFoundException {
         when(pathInputStreamFactory.create(testInput)).thenAnswer(invocation ->
-                TemplateUtilTest.class.getClassLoader().getResourceAsStream("config.yml"));
-        assertEquals(TemplateUtil.SUCCESS, templateUtil.execute(new String[]{TemplateUtil.VALIDATE, testInput}));
+                ConfigMainTest.class.getClassLoader().getResourceAsStream("config.yml"));
+        assertEquals(ConfigMain.SUCCESS, configMain.execute(new String[]{ConfigMain.VALIDATE, testInput}));
     }
 
     @Test
     public void testTransformErrorOpeningInput() throws FileNotFoundException {
         when(pathInputStreamFactory.create(testInput)).thenThrow(new FileNotFoundException());
-        assertEquals(TemplateUtil.ERR_UNABLE_TO_OPEN_INPUT, templateUtil.execute(new String[]{TemplateUtil.TRANSFORM, testInput, testOutput}));
+        assertEquals(ConfigMain.ERR_UNABLE_TO_OPEN_INPUT, configMain.execute(new String[]{ConfigMain.TRANSFORM, testInput, testOutput}));
     }
 
     @Test
     public void testTransformErrorOpeningOutput() throws FileNotFoundException {
         when(pathOutputStreamFactory.create(testOutput)).thenThrow(new FileNotFoundException());
-        assertEquals(TemplateUtil.ERR_UNABLE_TO_OPEN_OUTPUT, templateUtil.execute(new String[]{TemplateUtil.TRANSFORM, testInput, testOutput}));
+        assertEquals(ConfigMain.ERR_UNABLE_TO_OPEN_OUTPUT, configMain.execute(new String[]{ConfigMain.TRANSFORM, testInput, testOutput}));
     }
 
     @Test
     public void testTransformErrorReadingTemplate() throws FileNotFoundException {
         when(pathInputStreamFactory.create(testInput)).thenAnswer(invocation -> new ByteArrayInputStream("malformed xml".getBytes(Charsets.UTF_8)));
-        assertEquals(TemplateUtil.ERR_UNABLE_TO_READ_TEMPLATE, templateUtil.execute(new String[]{TemplateUtil.TRANSFORM, testInput, testOutput}));
+        assertEquals(ConfigMain.ERR_UNABLE_TO_READ_TEMPLATE, configMain.execute(new String[]{ConfigMain.TRANSFORM, testInput, testOutput}));
     }
 
     @Test
     public void testTransformErrorTransformingTemplate() throws FileNotFoundException {
         when(pathInputStreamFactory.create(testInput)).thenAnswer(invocation ->
-                TemplateUtilTest.class.getClassLoader().getResourceAsStream("Working_with_Logs.xml"));
+                ConfigMainTest.class.getClassLoader().getResourceAsStream("Working_with_Logs.xml"));
         when(pathOutputStreamFactory.create(testOutput)).thenAnswer(invocation -> new OutputStream() {
             @Override
             public void write(int b) throws IOException {
                 throw new IOException();
             }
         });
-        assertEquals(TemplateUtil.ERR_UNABLE_TO_TRANFORM_TEMPLATE, templateUtil.execute(new String[]{TemplateUtil.TRANSFORM, testInput, testOutput}));
+        assertEquals(ConfigMain.ERR_UNABLE_TO_TRANFORM_TEMPLATE, configMain.execute(new String[]{ConfigMain.TRANSFORM, testInput, testOutput}));
     }
 
     @Test
     public void testTransformSuccess() throws FileNotFoundException {
         when(pathInputStreamFactory.create(testInput)).thenAnswer(invocation ->
-                TemplateUtilTest.class.getClassLoader().getResourceAsStream("Working_with_Logs.xml"));
+                ConfigMainTest.class.getClassLoader().getResourceAsStream("Working_with_Logs.xml"));
         when(pathOutputStreamFactory.create(testOutput)).thenAnswer(invocation -> new ByteArrayOutputStream());
-        assertEquals(TemplateUtil.SUCCESS, templateUtil.execute(new String[]{TemplateUtil.TRANSFORM, testInput, testOutput}));
+        assertEquals(ConfigMain.SUCCESS, configMain.execute(new String[]{ConfigMain.TRANSFORM, testInput, testOutput}));
     }
 }
