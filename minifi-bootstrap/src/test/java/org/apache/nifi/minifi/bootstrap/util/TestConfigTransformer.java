@@ -211,7 +211,7 @@ public class TestConfigTransformer {
     @Test
     public void testTransformRoundTrip() throws IOException, JAXBException, InvalidConfigurationException {
         Map<String, Object> templateMap = ConfigTransformer.transformTemplateToMap(getClass().getClassLoader().getResourceAsStream("Working_with_Logs.xml"));
-        Map<String, Object> yamlMap = ConfigTransformer.loadYamlAsMap(getClass().getClassLoader().getResourceAsStream("Working_with_Logs.yaml"));
+        Map<String, Object> yamlMap = ConfigTransformer.loadYamlAsMap(getClass().getClassLoader().getResourceAsStream("Working_with_Logs.yml"));
         assertNoMapDifferences(templateMap, yamlMap);
     }
 

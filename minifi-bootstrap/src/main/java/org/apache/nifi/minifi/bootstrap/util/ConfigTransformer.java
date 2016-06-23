@@ -42,6 +42,7 @@ import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.NiFiComponentDTO;
+import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.w3c.dom.DOMException;
@@ -72,9 +73,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -154,6 +153,14 @@ public final class ConfigTransformer {
                 Set<ProcessorDTO> processorDTOs = flowSnippetDTO.getProcessors();
                 if (processorDTOs != null) {
                     connectableNameMap.putAll(processorDTOs.stream().collect(Collectors.toMap(NiFiComponentDTO::getId, ProcessorDTO::getName)));
+                }
+                Set<PortDTO> inputPorts = flowSnippetDTO.getInputPorts();
+                if (inputPorts != null) {
+                    connectableNameMap.putAll(inputPorts.stream().collect(Collectors.toMap(NiFiComponentDTO::getId, PortDTO::getName)));
+                }
+                Set<PortDTO> outputPorts = flowSnippetDTO.getOutputPorts();
+                if (outputPorts!= null) {
+                    connectableNameMap.putAll(outputPorts.stream().collect(Collectors.toMap(NiFiComponentDTO::getId, PortDTO::getName)));
                 }
                 for (ConnectionDTO connection : connections) {
                     setName(connectableNameMap, connection.getSource());

@@ -17,7 +17,6 @@
 package org.apache.nifi.minifi.bootstrap.util.schema;
 
 import org.apache.nifi.minifi.bootstrap.util.schema.common.BaseSchema;
-import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 
 import java.util.Map;

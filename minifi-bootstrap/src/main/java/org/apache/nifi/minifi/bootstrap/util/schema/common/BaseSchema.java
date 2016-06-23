@@ -19,7 +19,6 @@ package org.apache.nifi.minifi.bootstrap.util.schema.common;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;

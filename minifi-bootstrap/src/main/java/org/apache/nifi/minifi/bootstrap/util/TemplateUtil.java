@@ -64,18 +64,18 @@ public class TemplateUtil {
         System.exit(new TemplateUtil().execute(args));
     }
 
-    public static void printTransformUsage() {
-        System.out.println("Transform Usage:");
+    public static void printValidateUsage() {
+        System.out.println("Validate Usage:");
         System.out.println();
         System.out.print("java ");
         System.out.print(TemplateUtil.class.getCanonicalName());
-        System.out.println(" transform INPUT_FILE OUTPUT_FILE");
+        System.out.println(" validate INPUT_FILE");
         System.out.println();
     }
 
     public int validate(String[] args) {
         if (args.length != 2) {
-            printTransformUsage();
+            printValidateUsage();
             return ERR_INVALID_ARGS;
         }
         try (InputStream inputStream = pathInputStreamFactory.create(args[1])) {
@@ -89,13 +89,13 @@ public class TemplateUtil {
             } catch (InvalidConfigurationException|YAMLException e) {
                 System.out.println("Unable to load configuration. (" + e + ")");
                 System.out.println();
-                printTransformUsage();
+                printValidateUsage();
                 return ERR_UNABLE_TO_PARSE_CONFIG;
             }
         } catch (FileNotFoundException e) {
             System.out.println("Unable to open file " + args[1] + " for reading. (" + e + ")");
             System.out.println();
-            printTransformUsage();
+            printValidateUsage();
             return ERR_UNABLE_TO_OPEN_INPUT;
         } catch (IOException e) {
             System.out.println("Error closing input. (" + e + ")");
@@ -103,6 +103,15 @@ public class TemplateUtil {
         }
 
         return SUCCESS;
+    }
+
+    public static void printTransformUsage() {
+        System.out.println("Transform Usage:");
+        System.out.println();
+        System.out.print("java ");
+        System.out.print(TemplateUtil.class.getCanonicalName());
+        System.out.println(" transform INPUT_FILE OUTPUT_FILE");
+        System.out.println();
     }
 
     public int transform(String[] args) {

@@ -96,6 +96,8 @@ limitations under the License.
                     <excludes combine.children="append">
                         <exclude>src/test/resources/config.yml</exclude>
                         <exclude>src/test/resources/config-invalid.yml</exclude>
+                        <exclude>src/test/resources/config-invalid.yml</exclude>
+                        <exclude>src/test/resources/config-invalid.yml</exclude>
                     </excludes>
                 </configuration>
             </plugin>
