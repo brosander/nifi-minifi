@@ -49,6 +49,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.representer.BaseRepresenter;
 import org.yaml.snakeyaml.representer.Representer;
 
 import javax.xml.bind.JAXBContext;
@@ -156,7 +157,7 @@ public final class ConfigTransformer {
             }
         }
 
-        Yaml yaml = new Yaml(dumperOptions);
+        Yaml yaml = new Yaml(new ConfigRepresenter(), dumperOptions);
         yaml.dump(new ConfigSchema(new Template(templateDTO)).toMap(), output);
     }
 

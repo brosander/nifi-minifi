@@ -30,10 +30,9 @@ import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonProperty
  *
  */
 public class FlowControllerSchema extends BaseSchema {
-    public static final String DEFAULT_COMMENT = "";
 
     private String name;
-    private String comment = DEFAULT_COMMENT;
+    private String comment;
 
     public FlowControllerSchema() {
     }
@@ -45,7 +44,7 @@ public class FlowControllerSchema extends BaseSchema {
 
     public FlowControllerSchema(Map map) {
         name = getRequiredKeyAsType(map, NAME_KEY, String.class, FLOW_CONTROLLER_PROPS_KEY);
-        comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, FLOW_CONTROLLER_PROPS_KEY, DEFAULT_COMMENT);
+        comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, FLOW_CONTROLLER_PROPS_KEY, "");
     }
 
     @Override

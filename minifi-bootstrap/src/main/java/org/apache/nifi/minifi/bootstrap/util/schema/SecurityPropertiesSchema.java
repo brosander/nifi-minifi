@@ -36,23 +36,14 @@ public class SecurityPropertiesSchema extends BaseSchema {
     public static final String TRUSTSTORE_PASSWORD_KEY = "truststore password";
     public static final String SSL_PROTOCOL_KEY = "ssl protocol";
 
-    public static final String DEFAULT_KEYSTORE = "";
-    public static final String DEFAULT_KEYSTORE_TYPE = "";
-    public static final String DEFAULT_KEYSTORE_PASSWORD = "";
-    public static final String DEFAULT_KEY_PASSWORD = "";
-    public static final String DEFAULT_TRUSTSTORE = "";
-    public static final String DEFAULT_TRUSTSTORE_TYPE = "";
-    public static final String DEFAULT_TRUSTSTORE_PASSWORD = "";
-    public static final String DEFAULT_SSL_PROTOCOL = "";
-
-    private String keystore = DEFAULT_KEYSTORE;
-    private String keystoreType = DEFAULT_KEYSTORE_TYPE;
-    private String keystorePassword = DEFAULT_KEYSTORE_PASSWORD;
-    private String keyPassword = DEFAULT_KEY_PASSWORD;
-    private String truststore = DEFAULT_TRUSTSTORE;
-    private String truststoreType = DEFAULT_TRUSTSTORE_TYPE;
-    private String truststorePassword = DEFAULT_TRUSTSTORE_PASSWORD;
-    private String sslProtocol = DEFAULT_SSL_PROTOCOL;
+    private String keystore ;
+    private String keystoreType;
+    private String keystorePassword;
+    private String keyPassword;
+    private String truststore;
+    private String truststoreType;
+    private String truststorePassword;
+    private String sslProtocol;
     private SensitivePropsSchema sensitiveProps;
 
     public SecurityPropertiesSchema() {
@@ -60,31 +51,31 @@ public class SecurityPropertiesSchema extends BaseSchema {
     }
 
     public SecurityPropertiesSchema(Map map) {
-        keystore = getOptionalKeyAsType(map, KEYSTORE_KEY, String.class, SECURITY_PROPS_KEY, DEFAULT_KEYSTORE);
+        keystore = getOptionalKeyAsType(map, KEYSTORE_KEY, String.class, SECURITY_PROPS_KEY, "");
 
-        keystoreType = getOptionalKeyAsType(map, KEYSTORE_TYPE_KEY, String.class, SECURITY_PROPS_KEY, DEFAULT_KEYSTORE_TYPE);
+        keystoreType = getOptionalKeyAsType(map, KEYSTORE_TYPE_KEY, String.class, SECURITY_PROPS_KEY, "");
         if (!isEmpty(keystoreType)) {
             if (validateStoreType(keystoreType)) {
                 addValidationIssue(KEYSTORE_TYPE_KEY, SECURITY_PROPS_KEY, "it is not a supported type (must be either PKCS12 or JKS format)");
             }
         }
 
-        keystorePassword = getOptionalKeyAsType(map, KEYSTORE_PASSWORD_KEY, String.class, SECURITY_PROPS_KEY, DEFAULT_KEYSTORE_PASSWORD);
+        keystorePassword = getOptionalKeyAsType(map, KEYSTORE_PASSWORD_KEY, String.class, SECURITY_PROPS_KEY, "");
 
-        keyPassword = getOptionalKeyAsType(map, KEY_PASSWORD_KEY, String.class, SECURITY_PROPS_KEY, DEFAULT_KEY_PASSWORD);
+        keyPassword = getOptionalKeyAsType(map, KEY_PASSWORD_KEY, String.class, SECURITY_PROPS_KEY, "");
 
-        truststore = getOptionalKeyAsType(map, TRUSTSTORE_KEY, String.class, SECURITY_PROPS_KEY, DEFAULT_TRUSTSTORE);
+        truststore = getOptionalKeyAsType(map, TRUSTSTORE_KEY, String.class, SECURITY_PROPS_KEY, "");
 
-        truststoreType = getOptionalKeyAsType(map, TRUSTSTORE_TYPE_KEY, String.class, SECURITY_PROPS_KEY, DEFAULT_TRUSTSTORE_TYPE);
+        truststoreType = getOptionalKeyAsType(map, TRUSTSTORE_TYPE_KEY, String.class, SECURITY_PROPS_KEY, "");
         if (!isEmpty(truststoreType)) {
             if (validateStoreType(truststoreType)) {
                 addValidationIssue(TRUSTSTORE_TYPE_KEY, SECURITY_PROPS_KEY, "it is not a supported type (must be either PKCS12 or JKS format)");
             }
         }
 
-        truststorePassword = getOptionalKeyAsType(map, TRUSTSTORE_PASSWORD_KEY, String.class, SECURITY_PROPS_KEY, DEFAULT_TRUSTSTORE_PASSWORD);
+        truststorePassword = getOptionalKeyAsType(map, TRUSTSTORE_PASSWORD_KEY, String.class, SECURITY_PROPS_KEY, "");
 
-        sslProtocol = getOptionalKeyAsType(map, SSL_PROTOCOL_KEY, String.class, SECURITY_PROPS_KEY, DEFAULT_SSL_PROTOCOL);
+        sslProtocol = getOptionalKeyAsType(map, SSL_PROTOCOL_KEY, String.class, SECURITY_PROPS_KEY, "");
         if (!isEmpty(sslProtocol)) {
             switch (sslProtocol) {
                 case "SSL":

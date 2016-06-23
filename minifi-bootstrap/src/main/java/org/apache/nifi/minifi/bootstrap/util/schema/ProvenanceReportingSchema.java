@@ -21,7 +21,6 @@ import org.apache.nifi.scheduling.SchedulingStrategy;
 
 import java.util.Map;
 
-import static org.apache.nifi.minifi.bootstrap.util.schema.RemoteProcessingGroupSchema.DEFAULT_COMMENT;
 import static org.apache.nifi.minifi.bootstrap.util.schema.RemoteProcessingGroupSchema.TIMEOUT_KEY;
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.COMMENT_KEY;
 import static org.apache.nifi.minifi.bootstrap.util.schema.common.CommonPropertyKeys.PROVENANCE_REPORTING_KEY;
@@ -38,7 +37,6 @@ public class ProvenanceReportingSchema extends BaseSchema {
     public static final String ORIGINATING_URL_KEY = "originating url";
     public static final String BATCH_SIZE_KEY = "batch size";
 
-    public static final String DEFAULT_COMMENT = "";
     public static final String DEFAULT_ORGINATING_URL = "http://${hostname(true)}:8080/nifi";
     public static final String DEFAULT_TIMEOUT = "30 secs";
     public static final int DEFAULT_BATCH_SIZE = 1000;
@@ -49,7 +47,7 @@ public class ProvenanceReportingSchema extends BaseSchema {
     private String destinationUrl;
     private String portName;
 
-    private String comment = DEFAULT_COMMENT;
+    private String comment;
     private String originatingUrl = DEFAULT_ORGINATING_URL;
     private Boolean useCompression = DEFAULT_USE_COMPRESSION;
     private String timeout = DEFAULT_TIMEOUT;
@@ -60,17 +58,19 @@ public class ProvenanceReportingSchema extends BaseSchema {
 
     public ProvenanceReportingSchema(Map map) {
         schedulingStrategy = getRequiredKeyAsType(map, SCHEDULING_STRATEGY_KEY, String.class, PROVENANCE_REPORTING_KEY);
-        try {
-            SchedulingStrategy.valueOf(schedulingStrategy);
-        } catch (IllegalArgumentException e) {
-            addValidationIssue(SCHEDULING_STRATEGY_KEY, PROVENANCE_REPORTING_KEY, "it is not a valid scheduling strategy");
+        if (schedulingStrategy != null) {
+            try {
+                SchedulingStrategy.valueOf(schedulingStrategy);
+            } catch (IllegalArgumentException e) {
+                addValidationIssue(SCHEDULING_STRATEGY_KEY, PROVENANCE_REPORTING_KEY, "it is not a valid scheduling strategy");
+            }
         }
 
         schedulingPeriod = getRequiredKeyAsType(map, SCHEDULING_PERIOD_KEY, String.class, PROVENANCE_REPORTING_KEY);
         destinationUrl = getRequiredKeyAsType(map, DESTINATION_URL_KEY, String.class, PROVENANCE_REPORTING_KEY);
         portName = getRequiredKeyAsType(map, PORT_NAME_KEY, String.class, PROVENANCE_REPORTING_KEY);
 
-        comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, PROVENANCE_REPORTING_KEY, DEFAULT_COMMENT);
+        comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, PROVENANCE_REPORTING_KEY, "");
         originatingUrl = getOptionalKeyAsType(map, ORIGINATING_URL_KEY, String.class, PROVENANCE_REPORTING_KEY, DEFAULT_ORGINATING_URL);
         useCompression = getOptionalKeyAsType(map, USE_COMPRESSION_KEY, Boolean.class, PROVENANCE_REPORTING_KEY, DEFAULT_USE_COMPRESSION);
         timeout = getOptionalKeyAsType(map, TIMEOUT_KEY, String.class, PROVENANCE_REPORTING_KEY, DEFAULT_TIMEOUT);

@@ -41,7 +41,6 @@ public class ConnectionSchema extends BaseSchema {
     public static final int DEFAULT_MAX_WORK_QUEUE_SIZE = 0;
     public static final String DEFAULT_MAX_QUEUE_DATA_SIZE = "0 MB";
     public static final String DEFAULT_FLOWFILE_EXPIRATION = "0 sec";
-    public static final String DEFAULT_QUEUE_PRIORITIZER_CLASS = "";
 
     private String name;
     private String sourceName;
@@ -51,7 +50,7 @@ public class ConnectionSchema extends BaseSchema {
     private Number maxWorkQueueSize = DEFAULT_MAX_WORK_QUEUE_SIZE;
     private String maxWorkQueueDataSize = DEFAULT_MAX_QUEUE_DATA_SIZE;
     private String flowfileExpiration = DEFAULT_FLOWFILE_EXPIRATION;
-    private String queuePrioritizerClass = DEFAULT_QUEUE_PRIORITIZER_CLASS;
+    private String queuePrioritizerClass;
 
     public ConnectionSchema() {
     }
@@ -84,7 +83,7 @@ public class ConnectionSchema extends BaseSchema {
         maxWorkQueueSize = getOptionalKeyAsType(map, MAX_WORK_QUEUE_SIZE_KEY, Number.class, CONNECTIONS_KEY, DEFAULT_MAX_WORK_QUEUE_SIZE);
         maxWorkQueueDataSize = getOptionalKeyAsType(map, MAX_WORK_QUEUE_DATA_SIZE_KEY, String.class, CONNECTIONS_KEY, DEFAULT_MAX_QUEUE_DATA_SIZE);
         flowfileExpiration = getOptionalKeyAsType(map, FLOWFILE_EXPIRATION__KEY, String.class, CONNECTIONS_KEY, DEFAULT_FLOWFILE_EXPIRATION);
-        queuePrioritizerClass = getOptionalKeyAsType(map, QUEUE_PRIORITIZER_CLASS_KEY, String.class, CONNECTIONS_KEY, DEFAULT_QUEUE_PRIORITIZER_CLASS);
+        queuePrioritizerClass = getOptionalKeyAsType(map, QUEUE_PRIORITIZER_CLASS_KEY, String.class, CONNECTIONS_KEY, "");
     }
 
     @Override
