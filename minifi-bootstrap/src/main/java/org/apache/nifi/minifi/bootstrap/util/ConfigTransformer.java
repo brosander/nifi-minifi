@@ -49,8 +49,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.representer.BaseRepresenter;
-import org.yaml.snakeyaml.representer.Representer;
+import org.yaml.snakeyaml.error.YAMLException;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -71,6 +70,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
@@ -101,7 +101,7 @@ public final class ConfigTransformer {
         transformConfigFile(ios, destPath);
     }
 
-    public static ConfigSchema loadConfigSchema(InputStream sourceStream) throws IOException, InvalidConfigurationException {
+    public static Map<String, Object> loadYamlAsMap(InputStream sourceStream) throws InvalidConfigurationException, IOException {
         try {
             Yaml yaml = new Yaml();
 
@@ -110,14 +110,17 @@ public final class ConfigTransformer {
 
             // Verify the parsed object is a Map structure
             if (loadedObject instanceof Map) {
-                final Map<String, Object> loadedMap = (Map<String, Object>) loadedObject;
-                return new ConfigSchema(loadedMap);
+                return (Map<String, Object>) loadedObject;
             } else {
                 throw new InvalidConfigurationException("Provided YAML configuration is not a Map");
             }
         } finally {
             sourceStream.close();
         }
+    }
+
+    public static ConfigSchema loadConfigSchema(InputStream sourceStream) throws IOException, InvalidConfigurationException {
+        return new ConfigSchema(loadYamlAsMap(sourceStream));
     }
 
     public static void transformConfigFile(InputStream sourceStream, String destPath) throws Exception {
@@ -138,27 +141,46 @@ public final class ConfigTransformer {
         writeFlowXmlFile(flowXml, destPath);
     }
 
-    public static void transformTemplate(Reader source, Writer output) throws JAXBException, IOException {
-        TemplateDTO templateDTO = (TemplateDTO) JAXBContext.newInstance(TemplateDTO.class).createUnmarshaller().unmarshal(source);
+    public static Map<String, Object> transformTemplateToMap(InputStream source) throws JAXBException, IOException {
+        try {
+            TemplateDTO templateDTO = (TemplateDTO) JAXBContext.newInstance(TemplateDTO.class).createUnmarshaller().unmarshal(source);
+            DumperOptions dumperOptions = new DumperOptions();
+            dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+
+            FlowSnippetDTO flowSnippetDTO = templateDTO.getSnippet();
+            Set<ConnectionDTO> connections = flowSnippetDTO.getConnections();
+            if (connections != null) {
+                Map<String, String> connectableNameMap = new HashMap<>();
+                Set<ProcessorDTO> processorDTOs = flowSnippetDTO.getProcessors();
+                if (processorDTOs != null) {
+                    connectableNameMap.putAll(processorDTOs.stream().collect(Collectors.toMap(NiFiComponentDTO::getId, ProcessorDTO::getName)));
+                }
+                for (ConnectionDTO connection : connections) {
+                    setName(connectableNameMap, connection.getSource());
+                    setName(connectableNameMap, connection.getDestination());
+                }
+            }
+
+            return new ConfigSchema(new Template(templateDTO)).toMap();
+        } finally {
+            source.close();
+        }
+    }
+
+    public static void transformTemplate(InputStream source, OutputStream output) throws JAXBException, IOException {
         DumperOptions dumperOptions = new DumperOptions();
         dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 
-        FlowSnippetDTO flowSnippetDTO = templateDTO.getSnippet();
-        Set<ConnectionDTO> connections = flowSnippetDTO.getConnections();
-        if (connections != null) {
-            Map<String, String> connectableNameMap = new HashMap<>();
-            Set<ProcessorDTO> processorDTOs = flowSnippetDTO.getProcessors();
-            if (processorDTOs != null) {
-                connectableNameMap.putAll(processorDTOs.stream().collect(Collectors.toMap(NiFiComponentDTO::getId, ProcessorDTO::getName)));
-            }
-            for (ConnectionDTO connection : connections) {
-                setName(connectableNameMap, connection.getSource());
-                setName(connectableNameMap, connection.getDestination());
+        Yaml yaml = new Yaml(new ConfigRepresenter(), dumperOptions);
+
+        Map<String, Object> yamlMap = transformTemplateToMap(source);
+        try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(output)) {
+            try {
+                yaml.dump(yamlMap, outputStreamWriter);
+            } catch (YAMLException e) {
+                throw new IOException(e);
             }
         }
-
-        Yaml yaml = new Yaml(new ConfigRepresenter(), dumperOptions);
-        yaml.dump(new ConfigSchema(new Template(templateDTO)).toMap(), output);
     }
 
     private static void setName(Map<String, String> connectableNameMap, ConnectableDTO connectableDTO) {
