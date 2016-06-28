@@ -53,6 +53,9 @@ public class ProvenanceReportingSchema extends BaseSchema {
     private String timeout = DEFAULT_TIMEOUT;
     private Number batchSize = DEFAULT_BATCH_SIZE;
 
+    public ProvenanceReportingSchema() {
+    }
+
     public ProvenanceReportingSchema(Map map) {
         schedulingStrategy = getRequiredKeyAsType(map, SCHEDULING_STRATEGY_KEY, String.class, PROVENANCE_REPORTING_KEY);
         if (schedulingStrategy != null) {

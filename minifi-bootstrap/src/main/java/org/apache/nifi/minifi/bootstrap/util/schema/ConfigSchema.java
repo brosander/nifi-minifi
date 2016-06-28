@@ -21,7 +21,6 @@ import org.apache.nifi.minifi.bootstrap.util.schema.common.BaseSchema;
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +83,7 @@ public class ConfigSchema extends BaseSchema {
                 .sorted(Comparator.comparing(RemoteProcessingGroupSchema::getName))
                 .collect(Collectors.toList());
 
-        provenanceReportingProperties = new ProvenanceReportingSchema(Collections.emptyMap());
+        provenanceReportingProperties = new ProvenanceReportingSchema();
         provenanceRepositorySchema = new ProvenanceRepositorySchema();
     }
 
