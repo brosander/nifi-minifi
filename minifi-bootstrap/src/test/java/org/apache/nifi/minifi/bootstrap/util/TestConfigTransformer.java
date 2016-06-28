@@ -216,7 +216,7 @@ public class TestConfigTransformer {
 
     private void assertNoMapDifferences(Map<String, Object> templateMap, Map<String, Object> yamlMap) {
         List<String> differences = new ArrayList<>();
-        getMapDifferences("", differences, templateMap, yamlMap);
+        getMapDifferences("", differences, yamlMap, templateMap);
         if (differences.size() > 0) {
             fail(String.join("\n", differences.toArray(new String[differences.size()])));
         }
