@@ -18,17 +18,11 @@
 package org.apache.nifi.minifi.bootstrap.util;
 
 import org.apache.nifi.minifi.bootstrap.exception.InvalidConfigurationException;
+import org.apache.nifi.minifi.commons.schema.exception.SchemaLoaderException;
 import org.junit.Test;
 
-import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -161,7 +155,7 @@ public class TestConfigTransformer {
         try {
             ConfigTransformer.transformConfigFile("./src/test/resources/config-invalid.yml", "./target/");
             fail("Invalid configuration file was not detected.");
-        } catch (InvalidConfigurationException e){
+        } catch (SchemaLoaderException e){
             assertEquals("Provided YAML configuration is not a Map", e.getMessage());
         }
     }
@@ -181,7 +175,7 @@ public class TestConfigTransformer {
         try {
             ConfigTransformer.transformConfigFile("./src/test/resources/config-empty.yml", "./target/");
             fail("Invalid configuration file was not detected.");
-        } catch (InvalidConfigurationException e){
+        } catch (SchemaLoaderException e){
             assertEquals("Provided YAML configuration is not a Map", e.getMessage());
         }
     }
@@ -204,79 +198,6 @@ public class TestConfigTransformer {
         } catch (InvalidConfigurationException e){
             assertEquals("Failed to transform config file due to:['scheduling strategy' in section 'Provenance Reporting' because it is not a valid scheduling strategy], ['class' in section " +
                     "'Processors' because it was not found and it is required], ['source name' in section 'Connections' because it was not found and it is required]", e.getMessage());
-        }
-    }
-
-    @Test
-    public void testTransformRoundTrip() throws IOException, JAXBException, InvalidConfigurationException {
-        Map<String, Object> templateMap = ConfigTransformer.transformTemplateToMap(getClass().getClassLoader().getResourceAsStream("Working_with_Logs.xml"));
-        Map<String, Object> yamlMap = ConfigTransformer.loadYamlAsMap(getClass().getClassLoader().getResourceAsStream("Working_with_Logs.yml"));
-        assertNoMapDifferences(templateMap, yamlMap);
-    }
-
-    private void assertNoMapDifferences(Map<String, Object> templateMap, Map<String, Object> yamlMap) {
-        List<String> differences = new ArrayList<>();
-        getMapDifferences("", differences, yamlMap, templateMap);
-        if (differences.size() > 0) {
-            fail(String.join("\n", differences.toArray(new String[differences.size()])));
-        }
-    }
-
-    private void getMapDifferences(String path, List<String> differences, Map<String, Object> expected, Map<String, Object> actual) {
-        for (Map.Entry<String, Object> stringObjectEntry : expected.entrySet()) {
-            String key = stringObjectEntry.getKey();
-            String newPath = path.isEmpty() ? key : path + "." + key;
-            if (!actual.containsKey(key)) {
-                differences.add("Missing key: " + newPath);
-            } else {
-                getObjectDifferences(newPath, differences, stringObjectEntry.getValue(), actual.get(key));
-            }
-        }
-
-        Set<String> extraKeys = new HashSet<>(actual.keySet());
-        extraKeys.removeAll(expected.keySet());
-        for (String extraKey : extraKeys) {
-            differences.add("Extra key: " + path + extraKey);
-        }
-    }
-
-    private void getListDifferences(String path, List<String> differences, List<Object> expected, List<Object> actual) {
-        if (expected.size() == actual.size()) {
-            for (int i = 0; i < expected.size(); i++) {
-                getObjectDifferences(path + "[" + i + "]", differences, expected.get(i), actual.get(i));
-            }
-        } else {
-            differences.add("Expect size of " + expected.size() + " for list at " + path + " but got " + actual.size());
-        }
-    }
-
-    private void getObjectDifferences(String path, List<String> differences, Object expectedValue, Object actualValue) {
-        if (expectedValue instanceof Map) {
-            if (actualValue instanceof Map) {
-                getMapDifferences(path, differences, (Map) expectedValue, (Map) actualValue);
-            } else {
-                differences.add("Expected map at " + path + " but got " + actualValue);
-            }
-        } else if (expectedValue instanceof List) {
-            if (actualValue instanceof List) {
-                getListDifferences(path, differences, (List) expectedValue, (List) actualValue);
-            } else {
-                differences.add("Expected map at " + path + " but got " + actualValue);
-            }
-        } else if (expectedValue == null) {
-            if (actualValue != null) {
-                differences.add("Expected null at " + path + " but got " + actualValue);
-            }
-        } else if (expectedValue instanceof Number) {
-            if (actualValue instanceof Number) {
-                if (!expectedValue.toString().equals(actualValue.toString())) {
-                    differences.add("Expected value of " + expectedValue + " at " + path + " but got " + actualValue);
-                }
-            } else {
-                differences.add("Expected Number at " + path + " but got " + actualValue);
-            }
-        } else if (!expectedValue.equals(actualValue)) {
-            differences.add("Expected " + expectedValue + " at " + path + " but got " + actualValue);
         }
     }
 }
