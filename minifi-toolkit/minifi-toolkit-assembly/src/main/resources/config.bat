@@ -21,7 +21,7 @@ rem Use JAVA_HOME if it's set; otherwise, just use java
 if "%JAVA_HOME%" == "" goto noJavaHome
 if not exist "%JAVA_HOME%\bin\java.exe" goto noJavaHome
 set JAVA_EXE=%JAVA_HOME%\bin\java.exe
-goto startMiNifi
+goto startConfig
 
 :noJavaHome
 echo The JAVA_HOME environment variable is not defined correctly.
