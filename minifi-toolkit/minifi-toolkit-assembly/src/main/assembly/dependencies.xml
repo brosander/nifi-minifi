@@ -21,13 +21,14 @@
         <format>tar.gz</format>
     </formats>
     <includeBaseDirectory>true</includeBaseDirectory>
-    <baseDirectory>minifi-${project.version}</baseDirectory>
+    <baseDirectory>minifi-toolkit-${project.version}</baseDirectory>
 
     <dependencySets>
         <!-- Write out all dependency artifacts to lib directory -->
         <dependencySet>
             <scope>runtime</scope>
             <outputDirectory>lib</outputDirectory>
+            <useProjectArtifact>false</useProjectArtifact>
             <directoryMode>0770</directoryMode>
             <fileMode>0660</fileMode>
         </dependencySet>
