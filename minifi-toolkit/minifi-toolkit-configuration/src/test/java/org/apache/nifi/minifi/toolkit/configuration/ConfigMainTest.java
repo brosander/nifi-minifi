@@ -18,7 +18,7 @@
 package org.apache.nifi.minifi.toolkit.configuration;
 
 import org.apache.commons.io.Charsets;
-import org.apache.nifi.minifi.commons.schema.SchemaLoader;
+import org.apache.nifi.minifi.commons.schema.serialization.SchemaLoader;
 import org.apache.nifi.minifi.commons.schema.exception.SchemaLoaderException;
 import org.junit.Before;
 import org.junit.Test;

@@ -17,15 +17,16 @@
 
 package org.apache.nifi.minifi.commons.schema;
 
+import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
 import org.apache.nifi.scheduling.SchedulingStrategy;
 
 import java.util.Map;
 
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.COMMENT_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.PROVENANCE_REPORTING_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.SCHEDULING_PERIOD_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.SCHEDULING_STRATEGY_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.USE_COMPRESSION_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.COMMENT_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.PROVENANCE_REPORTING_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.SCHEDULING_PERIOD_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.SCHEDULING_STRATEGY_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.USE_COMPRESSION_KEY;
 import static org.apache.nifi.minifi.commons.schema.RemoteProcessingGroupSchema.TIMEOUT_KEY;
 
 /**

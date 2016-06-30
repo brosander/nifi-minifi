@@ -17,11 +17,13 @@
 
 package org.apache.nifi.minifi.commons.schema;
 
+import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
+
 import java.util.Map;
 
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.ALWAYS_SYNC_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.FLOWFILE_REPO_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.SWAP_PROPS_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.ALWAYS_SYNC_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.FLOWFILE_REPO_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.SWAP_PROPS_KEY;
 
 /**
  *

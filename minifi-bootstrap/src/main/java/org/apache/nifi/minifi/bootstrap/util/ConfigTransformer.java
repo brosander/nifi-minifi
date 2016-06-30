@@ -31,7 +31,7 @@ import org.apache.nifi.minifi.commons.schema.ProvenanceReportingSchema;
 import org.apache.nifi.minifi.commons.schema.ProvenanceRepositorySchema;
 import org.apache.nifi.minifi.commons.schema.RemoteInputPortSchema;
 import org.apache.nifi.minifi.commons.schema.RemoteProcessingGroupSchema;
-import org.apache.nifi.minifi.commons.schema.SchemaLoader;
+import org.apache.nifi.minifi.commons.schema.serialization.SchemaLoader;
 import org.apache.nifi.minifi.commons.schema.SecurityPropertiesSchema;
 import org.apache.nifi.minifi.commons.schema.SensitivePropsSchema;
 import org.apache.nifi.minifi.commons.schema.SwapSchema;

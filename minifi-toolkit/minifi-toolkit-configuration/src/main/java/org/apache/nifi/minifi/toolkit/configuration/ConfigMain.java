@@ -19,8 +19,8 @@ package org.apache.nifi.minifi.toolkit.configuration;
 
 import org.apache.nifi.controller.Template;
 import org.apache.nifi.minifi.commons.schema.ConfigSchema;
-import org.apache.nifi.minifi.commons.schema.SchemaLoader;
-import org.apache.nifi.minifi.commons.schema.SchemaSaver;
+import org.apache.nifi.minifi.commons.schema.serialization.SchemaLoader;
+import org.apache.nifi.minifi.commons.schema.serialization.SchemaSaver;
 import org.apache.nifi.minifi.commons.schema.exception.SchemaLoaderException;
 import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;

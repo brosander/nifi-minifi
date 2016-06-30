@@ -17,13 +17,14 @@
 
 package org.apache.nifi.minifi.commons.schema;
 
+import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 
 import java.util.Map;
 
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.COMMENT_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.FLOW_CONTROLLER_PROPS_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.NAME_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.COMMENT_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.FLOW_CONTROLLER_PROPS_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.NAME_KEY;
 
 /**
  *

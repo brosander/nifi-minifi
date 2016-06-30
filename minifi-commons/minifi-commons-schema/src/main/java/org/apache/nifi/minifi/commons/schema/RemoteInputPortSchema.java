@@ -17,16 +17,17 @@
 
 package org.apache.nifi.minifi.commons.schema;
 
+import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
 import org.apache.nifi.web.api.dto.RemoteProcessGroupPortDTO;
 
 import java.util.Map;
 
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.COMMENT_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.ID_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.INPUT_PORTS_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.MAX_CONCURRENT_TASKS_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.NAME_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.USE_COMPRESSION_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.COMMENT_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.ID_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.INPUT_PORTS_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.MAX_CONCURRENT_TASKS_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.NAME_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.USE_COMPRESSION_KEY;
 
 /**
  *

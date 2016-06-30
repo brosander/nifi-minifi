@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.minifi.commons.schema;
+package org.apache.nifi.minifi.commons.schema.common;
 
 public class CommonPropertyKeys {
     public static final String CORE_PROPS_KEY = "Core Properties";

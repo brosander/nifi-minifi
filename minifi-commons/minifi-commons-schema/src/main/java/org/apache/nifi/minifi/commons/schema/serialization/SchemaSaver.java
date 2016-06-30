@@ -15,8 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.minifi.commons.schema;
+package org.apache.nifi.minifi.commons.schema.serialization;
 
+import org.apache.nifi.minifi.commons.schema.ConfigSchema;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;

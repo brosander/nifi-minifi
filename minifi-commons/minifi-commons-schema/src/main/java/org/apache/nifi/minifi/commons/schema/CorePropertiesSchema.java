@@ -17,10 +17,12 @@
 
 package org.apache.nifi.minifi.commons.schema;
 
+import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
+
 import java.util.Map;
 
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.CORE_PROPS_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.MAX_CONCURRENT_THREADS_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.CORE_PROPS_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.MAX_CONCURRENT_THREADS_KEY;
 
 /**
  *

@@ -17,6 +17,7 @@
 
 package org.apache.nifi.minifi.commons.schema;
 
+import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
 import org.apache.nifi.scheduling.SchedulingStrategy;
 import org.apache.nifi.web.api.dto.ProcessorConfigDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
@@ -29,12 +30,12 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.MAX_CONCURRENT_TASKS_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.NAME_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.PROCESSORS_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.SCHEDULING_PERIOD_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.SCHEDULING_STRATEGY_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.YIELD_PERIOD_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.MAX_CONCURRENT_TASKS_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.NAME_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.PROCESSORS_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.SCHEDULING_PERIOD_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.SCHEDULING_STRATEGY_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.YIELD_PERIOD_KEY;
 
 /**
  *

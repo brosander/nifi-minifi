@@ -17,10 +17,12 @@
 
 package org.apache.nifi.minifi.commons.schema;
 
+import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
+
 import java.util.Map;
 
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.SECURITY_PROPS_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.SENSITIVE_PROPS_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.SECURITY_PROPS_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.SENSITIVE_PROPS_KEY;
 
 /**
  *
