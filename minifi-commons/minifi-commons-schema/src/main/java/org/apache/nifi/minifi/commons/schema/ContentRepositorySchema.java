@@ -52,7 +52,7 @@ public class ContentRepositorySchema extends BaseSchema {
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> result = super.toMap();
+        Map<String, Object> result = mapSupplier.get();
         result.put(CONTENT_CLAIM_MAX_APPENDABLE_SIZE_KEY, contentClaimMaxAppendableSize);
         result.put(CONTENT_CLAIM_MAX_FLOW_FILES_KEY, contentClaimMaxFlowFiles);
         result.put(ALWAYS_SYNC_KEY, alwaysSync);

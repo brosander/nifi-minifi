@@ -144,7 +144,7 @@ public class ConfigSchema extends BaseSchema {
     }
 
     public Map<String, Object> toMap() {
-        Map<String, Object> result = super.toMap();
+        Map<String, Object> result = mapSupplier.get();
         result.put(FLOW_CONTROLLER_PROPS_KEY, flowControllerProperties.toMap());
         putIfNotNull(result, CORE_PROPS_KEY, coreProperties);
         putIfNotNull(result, FLOWFILE_REPO_KEY, flowfileRepositoryProperties);

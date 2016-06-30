@@ -49,7 +49,7 @@ public class SensitivePropsSchema extends BaseSchema {
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> result = super.toMap();
+        Map<String, Object> result = mapSupplier.get();
         result.put(SENSITIVE_PROPS_KEY_KEY, key);
         result.put(SENSITIVE_PROPS_ALGORITHM_KEY, algorithm);
         result.put(SENSITIVE_PROPS_PROVIDER_KEY, provider);

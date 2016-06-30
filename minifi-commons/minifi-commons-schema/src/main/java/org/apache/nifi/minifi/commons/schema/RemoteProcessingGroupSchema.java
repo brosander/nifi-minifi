@@ -82,7 +82,7 @@ public class RemoteProcessingGroupSchema extends BaseSchema {
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> result = super.toMap();
+        Map<String, Object> result = mapSupplier.get();
         result.put(NAME_KEY, name);
         result.put(URL_KEY, url);
         result.put(COMMENT_KEY, comment);

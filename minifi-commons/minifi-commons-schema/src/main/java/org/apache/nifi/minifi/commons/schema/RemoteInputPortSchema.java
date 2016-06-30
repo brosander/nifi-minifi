@@ -64,7 +64,7 @@ public class RemoteInputPortSchema extends BaseSchema {
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> result = super.toMap();
+        Map<String, Object> result = mapSupplier.get();
         result.put(ID_KEY, id);
         result.put(NAME_KEY, name);
         result.put(COMMENT_KEY, comment);

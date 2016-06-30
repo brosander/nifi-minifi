@@ -86,7 +86,7 @@ public class ConnectionSchema extends BaseSchema {
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> result = super.toMap();
+        Map<String, Object> result = mapSupplier.get();
         result.put(NAME_KEY, name);
         result.put(SOURCE_NAME_KEY, sourceName);
         result.put(SOURCE_RELATIONSHIP_NAME_KEY, sourceRelationshipName);

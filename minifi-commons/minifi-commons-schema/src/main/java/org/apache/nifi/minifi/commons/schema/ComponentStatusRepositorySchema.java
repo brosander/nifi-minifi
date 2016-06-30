@@ -43,7 +43,7 @@ public class ComponentStatusRepositorySchema extends BaseSchema {
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> result = super.toMap();
+        Map<String, Object> result = mapSupplier.get();
         result.put(BUFFER_SIZE_KEY, bufferSize);
         result.put(SNAPSHOT_FREQUENCY_KEY, snapshotFrequency);
         return result;
