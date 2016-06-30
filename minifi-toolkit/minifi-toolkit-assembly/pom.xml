@@ -26,7 +26,7 @@ limitations under the License.
     </parent>
     <artifactId>minifi-toolkit-assembly</artifactId>
     <packaging>pom</packaging>
-    <description>This is the assembly of Apache NiFi - MiNiFi</description>
+    <description>This is the assembly of Apache NiFi's - MiNiFi Toolkit</description>
     <build>
         <plugins>
             <plugin>
