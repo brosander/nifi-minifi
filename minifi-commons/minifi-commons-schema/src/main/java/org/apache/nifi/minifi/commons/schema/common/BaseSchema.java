@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class BaseSchema {
+public abstract class BaseSchema {
 
     /******* Validation Issue helper methods *******/
     public List<String> validationIssues = new LinkedList<>();
