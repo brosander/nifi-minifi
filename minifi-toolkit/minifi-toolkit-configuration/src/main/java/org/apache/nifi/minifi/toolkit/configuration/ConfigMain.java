@@ -94,7 +94,7 @@ public class ConfigMain {
         }
         try (InputStream inputStream = pathInputStreamFactory.create(args[1])) {
             try {
-                ConfigSchema configSchema = SchemaLoader.loadConfigSchema(inputStream);
+                ConfigSchema configSchema = SchemaLoader.loadConfigSchemaFromYaml(inputStream);
                 if (!configSchema.isValid()) {
                     configSchema.getValidationIssues().forEach(s -> System.out.println(s));
                     System.out.println();

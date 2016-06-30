@@ -86,7 +86,7 @@ public final class ConfigTransformer {
     }
 
     public static void transformConfigFile(InputStream sourceStream, String destPath) throws Exception {
-        ConfigSchema configSchema = SchemaLoader.loadConfigSchema(sourceStream);
+        ConfigSchema configSchema = SchemaLoader.loadConfigSchemaFromYaml(sourceStream);
         if (!configSchema.isValid()) {
             throw new InvalidConfigurationException("Failed to transform config file due to:" + configSchema.getValidationIssuesAsString());
         }
