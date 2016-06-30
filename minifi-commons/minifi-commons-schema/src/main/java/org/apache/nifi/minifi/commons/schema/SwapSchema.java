@@ -58,7 +58,7 @@ public class SwapSchema extends BaseSchema {
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> result = super.toMap();
+        Map<String, Object> result = mapSupplier.get();
         result.put(THRESHOLD_KEY, threshold);
         result.put(IN_PERIOD_KEY, inPeriod);
         result.put(IN_THREADS_KEY, inThreads);

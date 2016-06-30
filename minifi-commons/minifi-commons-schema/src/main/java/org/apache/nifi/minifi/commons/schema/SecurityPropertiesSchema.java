@@ -118,7 +118,7 @@ public class SecurityPropertiesSchema extends BaseSchema {
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> result = super.toMap();
+        Map<String, Object> result = mapSupplier.get();
         result.put(KEYSTORE_KEY, keystore);
         result.put(KEYSTORE_TYPE_KEY, keystoreType);
         result.put(KEY_PASSWORD_KEY, keystorePassword);

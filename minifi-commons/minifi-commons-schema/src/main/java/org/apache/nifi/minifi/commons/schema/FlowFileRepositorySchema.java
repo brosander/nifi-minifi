@@ -55,7 +55,7 @@ public class FlowFileRepositorySchema extends BaseSchema {
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> result = super.toMap();
+        Map<String, Object> result = mapSupplier.get();
         result.put(PARTITIONS_KEY, partitions);
         result.put(CHECKPOINT_INTERVAL_KEY, checkpointInterval);
         result.put(ALWAYS_SYNC_KEY, alwaysSync);

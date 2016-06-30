@@ -63,7 +63,7 @@ public class CorePropertiesSchema extends BaseSchema {
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> result = super.toMap();
+        Map<String, Object> result = mapSupplier.get();
         result.put(FLOW_CONTROLLER_SHUTDOWN_PERIOD_KEY, flowControllerGracefulShutdownPeriod);
         result.put(FLOW_SERVICE_WRITE_DELAY_INTERVAL_KEY, flowServiceWriteDelayInterval);
         result.put(ADMINISTRATIVE_YIELD_DURATION_KEY, administrativeYieldDuration);

@@ -80,7 +80,7 @@ public class ProvenanceReportingSchema extends BaseSchema {
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> result = super.toMap();
+        Map<String, Object> result = mapSupplier.get();
         result.put(COMMENT_KEY, comment);
         result.put(SCHEDULING_STRATEGY_KEY, schedulingStrategy);
         result.put(SCHEDULING_PERIOD_KEY, schedulingPeriod);

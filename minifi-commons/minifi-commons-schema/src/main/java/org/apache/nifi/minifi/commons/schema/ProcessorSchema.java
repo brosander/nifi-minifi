@@ -104,7 +104,7 @@ public class ProcessorSchema extends BaseSchema {
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> result = super.toMap();
+        Map<String, Object> result = mapSupplier.get();
         result.put(NAME_KEY, name);
         result.put(CLASS_KEY, processorClass);
         result.put(MAX_CONCURRENT_TASKS_KEY, maxConcurrentTasks);
