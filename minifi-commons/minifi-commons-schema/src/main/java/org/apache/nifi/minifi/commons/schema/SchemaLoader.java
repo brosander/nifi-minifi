@@ -46,7 +46,7 @@ public class SchemaLoader {
         }
     }
 
-    public static ConfigSchema loadConfigSchema(InputStream sourceStream) throws IOException, SchemaLoaderException {
+    public static ConfigSchema loadConfigSchemaFromYaml(InputStream sourceStream) throws IOException, SchemaLoaderException {
         return new ConfigSchema(loadYamlAsMap(sourceStream));
     }
 }
