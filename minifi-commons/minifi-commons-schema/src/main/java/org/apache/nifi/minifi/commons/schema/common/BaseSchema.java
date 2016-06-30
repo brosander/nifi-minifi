@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.minifi.commons.schema;
+package org.apache.nifi.minifi.commons.schema.common;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

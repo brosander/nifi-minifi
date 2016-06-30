@@ -18,6 +18,7 @@
 package org.apache.nifi.minifi.commons.schema;
 
 import org.apache.nifi.controller.Template;
+import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 
@@ -26,17 +27,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.COMPONENT_STATUS_REPO_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.CONNECTIONS_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.CONTENT_REPO_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.CORE_PROPS_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.FLOWFILE_REPO_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.FLOW_CONTROLLER_PROPS_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.PROCESSORS_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.PROVENANCE_REPORTING_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.PROVENANCE_REPO_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.REMOTE_PROCESSING_GROUPS_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.SECURITY_PROPS_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.COMPONENT_STATUS_REPO_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.CONNECTIONS_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.CONTENT_REPO_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.CORE_PROPS_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.FLOWFILE_REPO_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.FLOW_CONTROLLER_PROPS_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.PROCESSORS_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.PROVENANCE_REPORTING_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.PROVENANCE_REPO_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.REMOTE_PROCESSING_GROUPS_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.SECURITY_PROPS_KEY;
 
 /**
  *

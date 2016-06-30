@@ -17,14 +17,15 @@
 
 package org.apache.nifi.minifi.commons.schema;
 
+import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.CONNECTIONS_KEY;
-import static org.apache.nifi.minifi.commons.schema.CommonPropertyKeys.NAME_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.CONNECTIONS_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.NAME_KEY;
 
 /**
  *
