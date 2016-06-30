@@ -31,9 +31,7 @@ set JAVA_EXE=java
 goto startConfig
 
 :startConfig
-set CONFIG_ROOT=%~dp0..\
-pushd "%CONFIG_ROOT%"
-set LIB_DIR=lib
+set LIB_DIR=%~dp0..\lib
 
 SET JAVA_PARAMS=-cp %LIB_DIR%\* -Xms12m -Xmx24m %JAVA_ARGS% org.apache.nifi.minifi.toolkit.configuration.ConfigMain
 

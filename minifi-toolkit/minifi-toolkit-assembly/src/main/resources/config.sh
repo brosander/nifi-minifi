@@ -23,7 +23,7 @@
 
 SCRIPT_DIR=$(dirname "$0")
 SCRIPT_NAME=$(basename "$0")
-MINIFI_HOME=$(cd "${SCRIPT_DIR}" && cd .. && pwd)
+MINIFI_TOOLKIT_HOME=$(cd "${SCRIPT_DIR}" && cd .. && pwd)
 PROGNAME=$(basename "$0")
 
 
@@ -108,11 +108,11 @@ init() {
 }
 
 run() {
-    LIBS="${MINIFI_HOME}/lib/*"
+    LIBS="${MINIFI_TOOLKIT_HOME}/lib/*"
 
     sudo_cmd_prefix=""
     if $cygwin; then
-        MINIFI_HOME=$(cygpath --path --windows "${MINIFI_HOME}")
+        MINIFI_TOOLKIT_HOME=$(cygpath --path --windows "${MINIFI_TOOLKIT_HOME}")
         CLASSPATH=$(cygpath --path --windows "${LIBS}")
     else
         CLASSPATH="${LIBS}"
@@ -120,12 +120,12 @@ run() {
 
     echo
     echo "Java home: ${JAVA_HOME}"
-    echo "MiNiFi home: ${MINIFI_HOME}"
+    echo "MiNiFi Toolkit home: ${MINIFI_TOOLKIT_HOME}"
     echo
     echo
 
 
-   (cd "${MINIFI_HOME}" && "${JAVA}" -cp "${CLASSPATH}" -Xms12m -Xmx24m org.apache.nifi.minifi.toolkit.configuration.ConfigMain $@)
+   "${JAVA}" -cp "${CLASSPATH}" -Xms12m -Xmx24m org.apache.nifi.minifi.toolkit.configuration.ConfigMain $@
 }
 
 
