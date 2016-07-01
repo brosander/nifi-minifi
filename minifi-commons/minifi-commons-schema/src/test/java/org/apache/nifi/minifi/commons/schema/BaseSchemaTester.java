@@ -52,20 +52,4 @@ public abstract class BaseSchemaTester<Schema extends BaseSchema, DTO> {
     public void testFullyPopulatedSame() {
         assertDtoAndMapConstructorAreSame(0);
     }
-
-    public DTO getDto() {
-        return dto;
-    }
-
-    public Map<String, Object> getMap() {
-        return map;
-    }
-
-    public Schema createSchema(DTO dto) {
-        return dtoSchemaFunction.apply(dto);
-    }
-
-    public Schema createSchema(Map<String, Object> map) {
-        return mapSchemaFunction.apply(map);
-    }
 }
