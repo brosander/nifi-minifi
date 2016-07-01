@@ -173,8 +173,4 @@ public class SecurityPropertiesSchema extends BaseSchema {
     public SensitivePropsSchema getSensitiveProps() {
         return sensitiveProps;
     }
-
-    private static boolean isNullOrEmpty(final String string) {
-        return string == null || string.isEmpty();
-    }
 }

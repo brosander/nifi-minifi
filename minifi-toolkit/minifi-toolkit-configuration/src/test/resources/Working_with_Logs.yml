@@ -160,7 +160,7 @@ Processors:
     Delete Attributes Expression:
     log.type: nifi-app-logs
 Connections:
-- name: ''
+- name: MergeContent/merged/PutHDFS
   source name: MergeContent
   source relationship name: merged
   destination name: PutHDFS
@@ -168,47 +168,7 @@ Connections:
   max work queue data size: 0 MB
   flowfile expiration: 0 sec
   queue prioritizer class:
-- name: ''
-  source name: app logs
-  source relationship name:
-  destination name: UpdateAttribute
-  max work queue size: 0
-  max work queue data size: 0 MB
-  flowfile expiration: 0 sec
-  queue prioritizer class:
-- name: ''
-  source name: Tail User Log
-  source relationship name: success
-  destination name: user logs
-  max work queue size: 0
-  max work queue data size: 0 MB
-  flowfile expiration: 0 sec
-  queue prioritizer class:
-- name: ''
-  source name: UpdateAttribute
-  source relationship name: success
-  destination name: MergeContent
-  max work queue size: 0
-  max work queue data size: 0 MB
-  flowfile expiration: 0 sec
-  queue prioritizer class:
-- name: ''
-  source name: Tail App Log
-  source relationship name: success
-  destination name: app logs
-  max work queue size: 0
-  max work queue data size: 0 MB
-  flowfile expiration: 0 sec
-  queue prioritizer class:
-- name: ''
-  source name: UpdateAttribute
-  source relationship name: success
-  destination name: MergeContent
-  max work queue size: 0
-  max work queue data size: 0 MB
-  flowfile expiration: 0 sec
-  queue prioritizer class:
-- name: ''
+- name: PutHDFS/failure/PutHDFS
   source name: PutHDFS
   source relationship name: failure
   destination name: PutHDFS
@@ -216,7 +176,47 @@ Connections:
   max work queue data size: 0 MB
   flowfile expiration: 0 sec
   queue prioritizer class:
-- name: ''
+- name: Tail App Log/success/app logs
+  source name: Tail App Log
+  source relationship name: success
+  destination name: app logs
+  max work queue size: 0
+  max work queue data size: 0 MB
+  flowfile expiration: 0 sec
+  queue prioritizer class:
+- name: Tail User Log/success/user logs
+  source name: Tail User Log
+  source relationship name: success
+  destination name: user logs
+  max work queue size: 0
+  max work queue data size: 0 MB
+  flowfile expiration: 0 sec
+  queue prioritizer class:
+- name: UpdateAttribute/success/MergeContent
+  source name: UpdateAttribute
+  source relationship name: success
+  destination name: MergeContent
+  max work queue size: 0
+  max work queue data size: 0 MB
+  flowfile expiration: 0 sec
+  queue prioritizer class:
+- name: UpdateAttribute/success/MergeContent
+  source name: UpdateAttribute
+  source relationship name: success
+  destination name: MergeContent
+  max work queue size: 0
+  max work queue data size: 0 MB
+  flowfile expiration: 0 sec
+  queue prioritizer class:
+- name: app logs//UpdateAttribute
+  source name: app logs
+  source relationship name:
+  destination name: UpdateAttribute
+  max work queue size: 0
+  max work queue data size: 0 MB
+  flowfile expiration: 0 sec
+  queue prioritizer class:
+- name: user logs//UpdateAttribute
   source name: user logs
   source relationship name:
   destination name: UpdateAttribute

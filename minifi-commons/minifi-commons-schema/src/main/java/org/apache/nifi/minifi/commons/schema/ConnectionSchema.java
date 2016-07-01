@@ -59,6 +59,9 @@ public class ConnectionSchema extends BaseSchema {
         Set<String> selectedRelationships = connectionDTO.getSelectedRelationships();
         if (selectedRelationships != null && selectedRelationships.size() > 0) {
             this.sourceRelationshipName = selectedRelationships.iterator().next();
+            if (selectedRelationships.size() > 1) {
+                validationIssues.add("Connection: " + name + " has more than one selected relationship.  This is not supported by MiNiFi yet.");
+            }
         } else {
             this.sourceRelationshipName = null;
         }
