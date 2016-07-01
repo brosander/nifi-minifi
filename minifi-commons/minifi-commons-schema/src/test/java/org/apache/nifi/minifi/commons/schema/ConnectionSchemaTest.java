@@ -148,7 +148,7 @@ public class ConnectionSchemaTest extends BaseSchemaTester<ConnectionSchema, Con
     }
 
     @Override
-    protected void assertSchemaEquals(ConnectionSchema one, ConnectionSchema two) {
+    public void assertSchemaEquals(ConnectionSchema one, ConnectionSchema two) {
         assertEquals(one.getName(), two.getName());
         assertEquals(one.getSourceName(), two.getSourceName());
         assertEquals(one.getSourceRelationshipName(), two.getSourceRelationshipName());

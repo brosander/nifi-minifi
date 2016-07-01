@@ -211,7 +211,7 @@ Connections:
 Remote Processing Groups:
 - name: http://localhost:8080/nifi
   url: http://localhost:8080/nifi
-  comment:
+  comment: ''
   timeout: 30 sec
   yield period: 10 sec
   Input Ports:
