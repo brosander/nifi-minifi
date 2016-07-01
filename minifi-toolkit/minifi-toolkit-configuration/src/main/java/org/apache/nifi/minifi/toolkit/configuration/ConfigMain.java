@@ -19,6 +19,7 @@ package org.apache.nifi.minifi.toolkit.configuration;
 
 import org.apache.nifi.controller.Template;
 import org.apache.nifi.minifi.commons.schema.ConfigSchema;
+import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
 import org.apache.nifi.minifi.commons.schema.serialization.SchemaLoader;
 import org.apache.nifi.minifi.commons.schema.serialization.SchemaSaver;
 import org.apache.nifi.minifi.commons.schema.exception.SchemaLoaderException;
@@ -153,6 +154,25 @@ public class ConfigMain {
                 for (ConnectionDTO connection : connections) {
                     setName(connectableNameMap, connection.getSource());
                     setName(connectableNameMap, connection.getDestination());
+                }
+                for (ConnectionDTO connection : connections) {
+                    if (BaseSchema.isNullOrEmpty(connection.getName())) {
+                        StringBuilder name = new StringBuilder();
+                        ConnectableDTO connectionSource = connection.getSource();
+                        if (connectionSource != null) {
+                            name.append(connectionSource.getName());
+                        }
+                        name.append("/");
+                        if (connection.getSelectedRelationships() != null && connection.getSelectedRelationships().size() > 0) {
+                            name.append(connection.getSelectedRelationships().iterator().next());
+                        }
+                        name.append("/");
+                        ConnectableDTO connectionDestination = connection.getDestination();
+                        if (connectionDestination != null) {
+                            name.append(connectionDestination.getName());
+                        }
+                        connection.setName(name.toString());
+                    }
                 }
             }
 
