@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -49,7 +50,7 @@ public class ProcessorSchema extends BaseSchema {
     public static final int DEFAULT_MAX_CONCURRENT_TASKS = 1;
     public static final String DEFAULT_PENALIZATION_PERIOD = "30 sec";
     public static final String DEFAULT_YIELD_DURATION = "1 sec";
-    public static final int DEFAULT_RUN_DURATION_NANOS = 0;
+    public static final long DEFAULT_RUN_DURATION_NANOS = 0;
     public static final List<String> DEFAULT_AUTO_TERMINATED_RELATIONSHIPS_LIST = Collections.emptyList();
     public static final Map<String, Object> DEFAULT_PROPERTIES = Collections.emptyMap();
     public static final String IT_IS_NOT_A_VALID_SCHEDULING_STRATEGY = "it is not a valid scheduling strategy";
@@ -70,15 +71,17 @@ public class ProcessorSchema extends BaseSchema {
 
         this.name = getAndValidateNotNull(processorDTO::getName, NAME_KEY, PROCESSORS_KEY);
         this.processorClass = getAndValidateNotNull(processorDTO::getType, CLASS_KEY, PROCESSORS_KEY);
-        this.schedulingStrategy = getAndValidate(processorDTOConfig::getSchedulingStrategy,
-                s -> s != null && isSchedulingStrategy(s),
-                SCHEDULING_STRATEGY_KEY, PROCESSORS_KEY, IT_IS_NOT_A_VALID_SCHEDULING_STRATEGY);
+        this.schedulingStrategy = getAndValidateNotNull(processorDTOConfig::getSchedulingStrategy, SCHEDULING_STRATEGY_KEY, PROCESSORS_KEY);
+        if (schedulingStrategy != null && !isSchedulingStrategy(schedulingStrategy)) {
+            addValidationIssue(SCHEDULING_STRATEGY_KEY, PROCESSORS_KEY, IT_IS_NOT_A_VALID_SCHEDULING_STRATEGY);
+        }
         this.schedulingPeriod = getAndValidateNotNull(processorDTOConfig::getSchedulingPeriod, SCHEDULING_PERIOD_KEY, PROCESSORS_KEY);
 
-        this.maxConcurrentTasks = processorDTOConfig.getConcurrentlySchedulableTaskCount();
-        this.penalizationPeriod = processorDTOConfig.getPenaltyDuration();
-        this.yieldPeriod = processorDTOConfig.getYieldDuration();
-        this.runDurationNanos = processorDTOConfig.getRunDurationMillis() * 1000;
+        this.maxConcurrentTasks = Optional.ofNullable(processorDTOConfig.getConcurrentlySchedulableTaskCount()).orElse(DEFAULT_MAX_CONCURRENT_TASKS);
+        this.penalizationPeriod = Optional.ofNullable(processorDTOConfig.getPenaltyDuration()).orElse(DEFAULT_PENALIZATION_PERIOD);
+        this.yieldPeriod = Optional.ofNullable(processorDTOConfig.getYieldDuration()).orElse(DEFAULT_YIELD_DURATION);
+        Long runDurationMillis = processorDTOConfig.getRunDurationMillis();
+        this.runDurationNanos = runDurationMillis != null ? runDurationMillis * 1000 : DEFAULT_RUN_DURATION_NANOS;
         this.autoTerminatedRelationshipsList = nullToEmpty(processorDTO.getRelationships()).stream()
                 .filter(RelationshipDTO::isAutoTerminate)
                 .map(RelationshipDTO::getName)
