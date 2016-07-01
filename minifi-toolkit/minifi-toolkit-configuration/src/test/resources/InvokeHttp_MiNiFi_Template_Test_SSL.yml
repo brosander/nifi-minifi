@@ -49,7 +49,7 @@ Security Properties:
   truststore: /tmp/ssl/myTrustStore
   truststore type: JKS
   truststore password: ''
-  ssl protocol: ''
+  ssl protocol: TLS
   Sensitive Props:
     key:
     algorithm: PBEWITHMD5AND256BITAES-CBC-OPENSSL
