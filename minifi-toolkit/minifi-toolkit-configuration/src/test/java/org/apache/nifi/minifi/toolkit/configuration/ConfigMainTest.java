@@ -154,8 +154,8 @@ public class ConfigMainTest {
     }
 
     @Test
-    public void testTransformRoundTripSplunkProcessors() throws JAXBException, IOException, SchemaLoaderException {
-        transformRoundTrip("Splunk_Processors_with_Listen_TCP");
+    public void testTransformRoundInvokeHttpSsl() throws JAXBException, IOException, SchemaLoaderException {
+        transformRoundTrip("InvokeHttp_MiNiFi_Template_Test_SSL");
     }
 
     private void transformRoundTrip(String name) throws JAXBException, IOException, SchemaLoaderException {

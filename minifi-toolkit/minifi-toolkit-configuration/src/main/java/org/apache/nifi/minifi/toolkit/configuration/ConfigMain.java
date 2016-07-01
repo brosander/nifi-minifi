@@ -32,6 +32,9 @@ import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.NiFiComponentDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.RemoteProcessGroupContentsDTO;
+import org.apache.nifi.web.api.dto.RemoteProcessGroupDTO;
+import org.apache.nifi.web.api.dto.RemoteProcessGroupPortDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 
 import javax.xml.bind.JAXBContext;
@@ -43,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -142,13 +146,14 @@ public class ConfigMain {
             if (processorDTOs != null) {
                 connectableNameMap.putAll(processorDTOs.stream().collect(Collectors.toMap(NiFiComponentDTO::getId, ProcessorDTO::getName)));
             }
-            Set<PortDTO> inputPorts = flowSnippetDTO.getInputPorts();
-            if (inputPorts != null) {
-                connectableNameMap.putAll(inputPorts.stream().collect(Collectors.toMap(NiFiComponentDTO::getId, PortDTO::getName)));
-            }
-            Set<PortDTO> outputPorts = flowSnippetDTO.getOutputPorts();
-            if (outputPorts!= null) {
-                connectableNameMap.putAll(outputPorts.stream().collect(Collectors.toMap(NiFiComponentDTO::getId, PortDTO::getName)));
+
+            addPortDTOs(connectableNameMap, flowSnippetDTO.getInputPorts());
+            addPortDTOs(connectableNameMap, flowSnippetDTO.getOutputPorts());
+
+            for (RemoteProcessGroupDTO remoteProcessGroupDTO : flowSnippetDTO.getRemoteProcessGroups()) {
+                RemoteProcessGroupContentsDTO contents = remoteProcessGroupDTO.getContents();
+                addRemoteProcessGroupPortDTOs(connectableNameMap, contents.getInputPorts());
+                addRemoteProcessGroupPortDTOs(connectableNameMap, contents.getOutputPorts());
             }
             for (ConnectionDTO connection : connections) {
                 setName(connectableNameMap, connection.getSource());
@@ -214,6 +219,26 @@ public class ConfigMain {
             String name = connectableNameMap.get(connectableDTO.getId());
             if (name != null) {
                 connectableDTO.setName(name);
+            }
+        }
+    }
+
+    private static void addPortDTOs(Map<String, String> connectableNameMap, Collection<PortDTO> ports) {
+        addConnectables(connectableNameMap, ports, NiFiComponentDTO::getId, PortDTO::getName);
+    }
+
+    private static void addRemoteProcessGroupPortDTOs(Map<String, String> connectableNameMap, Collection<RemoteProcessGroupPortDTO> ports) {
+        addConnectables(connectableNameMap, ports, RemoteProcessGroupPortDTO::getId, RemoteProcessGroupPortDTO::getName);
+    }
+
+    private static <T> void addConnectables(Map<String, String> connectableNameMap, Collection<T> hasIdAndNames, Function<T, String> idGetter, Function<T, String> nameGetter) {
+        if (hasIdAndNames != null) {
+            for (T hasIdAndName : hasIdAndNames) {
+                String id = idGetter.apply(hasIdAndName);
+                String name = nameGetter.apply(hasIdAndName);
+                if (!BaseSchema.isNullOrEmpty(name)) {
+                    connectableNameMap.put(id, name);
+                }
             }
         }
     }

@@ -15,8 +15,6 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 #
-# chkconfig: 2345 20 80
-# description: Apache NiFi - MiNiFi
 #
 
 # Script structure inspired from Apache Karaf and other Apache projects with similar startup approaches

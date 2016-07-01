@@ -23,6 +23,7 @@ import org.apache.nifi.web.api.dto.ConnectionDTO;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.CONNECTIONS_KEY;
@@ -40,7 +41,7 @@ public class ConnectionSchema extends BaseSchema {
     public static final String FLOWFILE_EXPIRATION__KEY = "flowfile expiration";
     public static final String QUEUE_PRIORITIZER_CLASS_KEY = "queue prioritizer class";
 
-    public static final int DEFAULT_MAX_WORK_QUEUE_SIZE = 0;
+    public static final long DEFAULT_MAX_WORK_QUEUE_SIZE = 0;
     public static final String DEFAULT_MAX_QUEUE_DATA_SIZE = "0 MB";
     public static final String DEFAULT_FLOWFILE_EXPIRATION = "0 sec";
 
@@ -69,16 +70,16 @@ public class ConnectionSchema extends BaseSchema {
         }
         this.destinationName = getAndValidateNotNull(() -> connectionDTO.getDestination().getName(), DESTINATION_NAME_KEY, CONNECTIONS_KEY);
 
-        this.maxWorkQueueSize = connectionDTO.getBackPressureObjectThreshold();
-        this.maxWorkQueueDataSize = connectionDTO.getBackPressureDataSizeThreshold();
-        this.flowfileExpiration = connectionDTO.getFlowFileExpiration();
+        this.maxWorkQueueSize = Optional.ofNullable(connectionDTO.getBackPressureObjectThreshold()).orElse(DEFAULT_MAX_WORK_QUEUE_SIZE);
+        this.maxWorkQueueDataSize = Optional.ofNullable(connectionDTO.getBackPressureDataSizeThreshold()).orElse(DEFAULT_MAX_QUEUE_DATA_SIZE);
+        this.flowfileExpiration = Optional.ofNullable(connectionDTO.getFlowFileExpiration()).orElse(DEFAULT_FLOWFILE_EXPIRATION);
         this.queuePrioritizerClass = getAndValidate(() -> {
             List<String> prioritizers = connectionDTO.getPrioritizers();
             if (prioritizers == null || prioritizers.size() == 0) {
-                return null;
+                return "";
             }
             return prioritizers.get(0);
-        }, s -> s == null || connectionDTO.getPrioritizers().size() == 1, QUEUE_PRIORITIZER_CLASS_KEY, CONNECTIONS_KEY, " has more than one prioritizer");
+        }, s -> "".equals(s) || connectionDTO.getPrioritizers().size() == 1, QUEUE_PRIORITIZER_CLASS_KEY, CONNECTIONS_KEY, " has more than one prioritizer");
         if (ConnectableType.FUNNEL.name().equals(connectionDTO.getSource().getType())) {
             validationIssues.add("Connection " + name + " has type " + ConnectableType.FUNNEL.name() + " which is not supported by MiNiFi");
         }
