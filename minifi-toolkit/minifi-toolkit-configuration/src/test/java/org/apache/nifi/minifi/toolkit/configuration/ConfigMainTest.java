@@ -149,9 +149,18 @@ public class ConfigMainTest {
     }
 
     @Test
-    public void testTransformRoundTrip() throws IOException, JAXBException, SchemaLoaderException {
-        Map<String, Object> templateMap = ConfigMain.transformTemplateToSchema(getClass().getClassLoader().getResourceAsStream("Working_with_Logs.xml")).toMap();
-        Map<String, Object> yamlMap = SchemaLoader.loadYamlAsMap(getClass().getClassLoader().getResourceAsStream("Working_with_Logs.yml"));
+    public void testTransformRoundTripWorkingWithLogs() throws IOException, JAXBException, SchemaLoaderException {
+        transformRoundTrip("Working_with_Logs");
+    }
+
+    @Test
+    public void testTransformRoundTripSplunkProcessors() throws JAXBException, IOException, SchemaLoaderException {
+        transformRoundTrip("Splunk_Processors_with_Listen_TCP");
+    }
+
+    private void transformRoundTrip(String name) throws JAXBException, IOException, SchemaLoaderException {
+        Map<String, Object> templateMap = ConfigMain.transformTemplateToSchema(getClass().getClassLoader().getResourceAsStream(name + ".xml")).toMap();
+        Map<String, Object> yamlMap = SchemaLoader.loadYamlAsMap(getClass().getClassLoader().getResourceAsStream(name + ".yml"));
         assertNoMapDifferences(templateMap, yamlMap);
     }
 
