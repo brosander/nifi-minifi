@@ -121,7 +121,8 @@ public class SecurityPropertiesSchema extends BaseSchema {
         Map<String, Object> result = mapSupplier.get();
         result.put(KEYSTORE_KEY, keystore);
         result.put(KEYSTORE_TYPE_KEY, keystoreType);
-        result.put(KEY_PASSWORD_KEY, keystorePassword);
+        result.put(KEYSTORE_PASSWORD_KEY, keystorePassword);
+        result.put(KEY_PASSWORD_KEY, keyPassword);
         result.put(TRUSTSTORE_KEY, truststore);
         result.put(TRUSTSTORE_TYPE_KEY, truststoreType);
         result.put(TRUSTSTORE_PASSWORD_KEY, truststorePassword);

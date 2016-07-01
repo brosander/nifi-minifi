@@ -26,7 +26,6 @@
     <dependencySets>
         <!-- Write out all dependency artifacts to lib directory -->
         <dependencySet>
-            <scope>runtime</scope>
             <outputDirectory>lib</outputDirectory>
             <useProjectArtifact>false</useProjectArtifact>
             <directoryMode>0770</directoryMode>

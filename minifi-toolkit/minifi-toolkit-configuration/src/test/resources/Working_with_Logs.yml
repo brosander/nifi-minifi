@@ -44,6 +44,7 @@ Component Status Repository:
 Security Properties:
   keystore:
   keystore type:
+  keystore password:
   key password:
   truststore:
   truststore type:

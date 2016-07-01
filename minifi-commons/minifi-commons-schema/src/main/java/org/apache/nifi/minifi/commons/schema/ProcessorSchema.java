@@ -52,6 +52,7 @@ public class ProcessorSchema extends BaseSchema {
     public static final int DEFAULT_RUN_DURATION_NANOS = 0;
     public static final List<String> DEFAULT_AUTO_TERMINATED_RELATIONSHIPS_LIST = Collections.emptyList();
     public static final Map<String, Object> DEFAULT_PROPERTIES = Collections.emptyMap();
+    public static final String IT_IS_NOT_A_VALID_SCHEDULING_STRATEGY = "it is not a valid scheduling strategy";
 
     private String name;
     private String processorClass;
@@ -67,12 +68,14 @@ public class ProcessorSchema extends BaseSchema {
     public ProcessorSchema(ProcessorDTO processorDTO) {
         ProcessorConfigDTO processorDTOConfig = processorDTO.getConfig();
 
-        this.name = processorDTO.getName();
-        this.processorClass = processorDTO.getType();
-        this.schedulingStrategy = processorDTOConfig.getSchedulingStrategy();
+        this.name = getAndValidateNotNull(processorDTO::getName, NAME_KEY, PROCESSORS_KEY);
+        this.processorClass = getAndValidateNotNull(processorDTO::getType, CLASS_KEY, PROCESSORS_KEY);
+        this.schedulingStrategy = getAndValidate(processorDTOConfig::getSchedulingStrategy,
+                s -> s != null && isSchedulingStrategy(s),
+                SCHEDULING_STRATEGY_KEY, PROCESSORS_KEY, IT_IS_NOT_A_VALID_SCHEDULING_STRATEGY);
+        this.schedulingPeriod = getAndValidateNotNull(processorDTOConfig::getSchedulingPeriod, SCHEDULING_PERIOD_KEY, PROCESSORS_KEY);
 
         this.maxConcurrentTasks = processorDTOConfig.getConcurrentlySchedulableTaskCount();
-        this.schedulingPeriod = processorDTOConfig.getSchedulingPeriod();
         this.penalizationPeriod = processorDTOConfig.getPenaltyDuration();
         this.yieldPeriod = processorDTOConfig.getYieldDuration();
         this.runDurationNanos = processorDTOConfig.getRunDurationMillis() * 1000;
@@ -87,10 +90,8 @@ public class ProcessorSchema extends BaseSchema {
         name = getRequiredKeyAsType(map, NAME_KEY, String.class, PROCESSORS_KEY);
         processorClass = getRequiredKeyAsType(map, CLASS_KEY, String.class, PROCESSORS_KEY);
         schedulingStrategy = getRequiredKeyAsType(map, SCHEDULING_STRATEGY_KEY, String.class, PROCESSORS_KEY);
-        try {
-            SchedulingStrategy.valueOf(schedulingStrategy);
-        } catch (IllegalArgumentException e) {
-            addValidationIssue(SCHEDULING_STRATEGY_KEY, PROCESSORS_KEY, "it is not a valid scheduling strategy");
+        if (schedulingStrategy != null && !isSchedulingStrategy(schedulingStrategy)) {
+            addValidationIssue(SCHEDULING_STRATEGY_KEY, PROCESSORS_KEY, IT_IS_NOT_A_VALID_SCHEDULING_STRATEGY);
         }
         schedulingPeriod = getRequiredKeyAsType(map, SCHEDULING_PERIOD_KEY, String.class, PROCESSORS_KEY);
 
@@ -100,6 +101,15 @@ public class ProcessorSchema extends BaseSchema {
         runDurationNanos = getOptionalKeyAsType(map, RUN_DURATION_NANOS_KEY, Number.class, PROCESSORS_KEY, DEFAULT_RUN_DURATION_NANOS);
         autoTerminatedRelationshipsList = getOptionalKeyAsType(map, AUTO_TERMINATED_RELATIONSHIPS_LIST_KEY, List.class, PROCESSORS_KEY, DEFAULT_AUTO_TERMINATED_RELATIONSHIPS_LIST);
         properties = getOptionalKeyAsType(map, PROCESSOR_PROPS_KEY, Map.class, PROCESSORS_KEY, DEFAULT_PROPERTIES);
+    }
+
+    private static boolean isSchedulingStrategy(String string) {
+        try {
+            SchedulingStrategy.valueOf(string);
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
     }
 
     @Override

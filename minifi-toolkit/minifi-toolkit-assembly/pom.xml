@@ -44,9 +44,9 @@ limitations under the License.
                         <phase>package</phase>
                         <configuration>
                             <archiverConfig>
-                                <defaultDirectoryMode>0775</defaultDirectoryMode>
-                                <directoryMode>0775</directoryMode>
-                                <fileMode>0664</fileMode>
+                                <defaultDirectoryMode>0755</defaultDirectoryMode>
+                                <directoryMode>0755</directoryMode>
+                                <fileMode>0644</fileMode>
                             </archiverConfig>
                             <descriptors>
                                 <descriptor>src/main/assembly/dependencies.xml</descriptor>
