@@ -164,7 +164,7 @@ public class ProcessorSchemaTest extends BaseSchemaTester<ProcessorSchema, Proce
     }
 
     @Override
-    protected void assertSchemaEquals(ProcessorSchema one, ProcessorSchema two) {
+    public void assertSchemaEquals(ProcessorSchema one, ProcessorSchema two) {
         assertEquals(one.getName(), two.getName());
         assertEquals(one.getProcessorClass(), two.getProcessorClass());
         assertEquals(one.getSchedulingStrategy(), two.getSchedulingStrategy());

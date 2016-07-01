@@ -139,6 +139,15 @@ public class ConfigMain {
 
     private static void enrichTemplateDTO(TemplateDTO templateDTO) {
         FlowSnippetDTO flowSnippetDTO = templateDTO.getSnippet();
+
+        Set<RemoteProcessGroupDTO> remoteProcessGroups = flowSnippetDTO.getRemoteProcessGroups();
+        if (remoteProcessGroups != null) {
+            for (RemoteProcessGroupDTO remoteProcessGroupDTO : remoteProcessGroups) {
+                if (BaseSchema.isNullOrEmpty(remoteProcessGroupDTO.getName())) {
+                    remoteProcessGroupDTO.setName(remoteProcessGroupDTO.getTargetUri());
+                }
+            }
+        }
         Set<ConnectionDTO> connections = flowSnippetDTO.getConnections();
         if (connections != null) {
             Map<String, String> connectableNameMap = new HashMap<>();
@@ -150,10 +159,12 @@ public class ConfigMain {
             addPortDTOs(connectableNameMap, flowSnippetDTO.getInputPorts());
             addPortDTOs(connectableNameMap, flowSnippetDTO.getOutputPorts());
 
-            for (RemoteProcessGroupDTO remoteProcessGroupDTO : flowSnippetDTO.getRemoteProcessGroups()) {
-                RemoteProcessGroupContentsDTO contents = remoteProcessGroupDTO.getContents();
-                addRemoteProcessGroupPortDTOs(connectableNameMap, contents.getInputPorts());
-                addRemoteProcessGroupPortDTOs(connectableNameMap, contents.getOutputPorts());
+            if (remoteProcessGroups != null) {
+                for (RemoteProcessGroupDTO remoteProcessGroupDTO : remoteProcessGroups) {
+                    RemoteProcessGroupContentsDTO contents = remoteProcessGroupDTO.getContents();
+                    addRemoteProcessGroupPortDTOs(connectableNameMap, contents.getInputPorts());
+                    addRemoteProcessGroupPortDTOs(connectableNameMap, contents.getOutputPorts());
+                }
             }
             for (ConnectionDTO connection : connections) {
                 setName(connectableNameMap, connection.getSource());

@@ -62,7 +62,7 @@ public class FlowControllerSchemaTest extends BaseSchemaTester<FlowControllerSch
     }
 
     @Override
-    protected void assertSchemaEquals(FlowControllerSchema one, FlowControllerSchema two) {
+    public void assertSchemaEquals(FlowControllerSchema one, FlowControllerSchema two) {
         assertEquals(one.getName(), two.getName());
         assertEquals(one.getComment(), two.getComment());
     }
