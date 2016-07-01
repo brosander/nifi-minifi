@@ -25,10 +25,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public abstract class BaseSchema {
+    public static final String IT_WAS_NOT_FOUND_AND_IT_IS_REQUIRED = "it was not found and it is required";
     protected final Supplier<Map<String, Object>> mapSupplier;
 
     public BaseSchema() {
@@ -65,6 +67,18 @@ public abstract class BaseSchema {
         return stringBuilder.toString();
     }
 
+    public <T> T getAndValidateNotNull(Supplier<T> supplier, String keyName, String wrapperName) {
+        return getAndValidate(supplier, t -> t != null, keyName, wrapperName, IT_WAS_NOT_FOUND_AND_IT_IS_REQUIRED);
+    }
+
+    public <T> T getAndValidate(Supplier<T> supplier, Predicate<T> predicate, String keyName, String wrapperName, String reason) {
+        T result = supplier.get();
+        if (!predicate.test(result)) {
+            addValidationIssue(keyName, wrapperName, reason);
+        }
+        return result;
+    }
+
     public void addValidationIssue(String keyName, String wrapperName, String reason) {
         validationIssues.add("'" + keyName + "' in section '" + wrapperName + "' because " + reason);
     }
@@ -90,7 +104,7 @@ public abstract class BaseSchema {
             if (defaultValue != null) {
                 return defaultValue;
             } else if(required) {
-                addValidationIssue(key, wrapperName, "it was not found and it is required");
+                addValidationIssue(key, wrapperName, IT_WAS_NOT_FOUND_AND_IT_IS_REQUIRED);
             }
         } else {
             if (targetClass.isInstance(value)) {

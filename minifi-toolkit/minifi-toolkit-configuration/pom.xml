@@ -38,5 +38,15 @@ limitations under the License.
             <artifactId>nifi-framework-core</artifactId>
             <version>0.6.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.nifi</groupId>
+            <artifactId>nifi-ssl-context-service-api</artifactId>
+            <version>0.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.nifi</groupId>
+            <artifactId>nifi-ssl-context-service</artifactId>
+            <version>0.6.0</version>
+        </dependency>
     </dependencies>
 </project>

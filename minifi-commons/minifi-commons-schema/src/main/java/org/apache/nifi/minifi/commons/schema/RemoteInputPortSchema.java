@@ -45,8 +45,8 @@ public class RemoteInputPortSchema extends BaseSchema {
     private Boolean useCompression = DEFAULT_USE_COMPRESSION;
 
     public RemoteInputPortSchema(RemoteProcessGroupPortDTO remoteProcessGroupPortDTO) {
-        this.id = remoteProcessGroupPortDTO.getId();
-        this.name = remoteProcessGroupPortDTO.getName();
+        this.id = getAndValidateNotNull(remoteProcessGroupPortDTO::getId, ID_KEY, INPUT_PORTS_KEY);
+        this.name = getAndValidateNotNull(remoteProcessGroupPortDTO::getName, NAME_KEY, INPUT_PORTS_KEY);
 
         this.comment = remoteProcessGroupPortDTO.getComments();
         this.maxConcurrentTasks = remoteProcessGroupPortDTO.getConcurrentlySchedulableTaskCount();

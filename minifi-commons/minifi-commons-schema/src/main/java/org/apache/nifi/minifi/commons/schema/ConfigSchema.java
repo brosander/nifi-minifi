@@ -58,13 +58,17 @@ public class ConfigSchema extends BaseSchema {
 
     private ProvenanceRepositorySchema provenanceRepositorySchema;
 
-    public ConfigSchema(Template template) {
+    public ConfigSchema(Template template, Map<String, String> securityPropertiesMap) {
         flowControllerProperties = new FlowControllerSchema(template.getDetails());
         coreProperties = new CorePropertiesSchema();
         flowfileRepositoryProperties = new FlowFileRepositorySchema();
         contentRepositoryProperties = new ContentRepositorySchema();
         componentStatusRepositoryProperties = new ComponentStatusRepositorySchema();
-        securityProperties = new SecurityPropertiesSchema();
+        if (securityPropertiesMap == null || securityPropertiesMap.isEmpty()) {
+            securityProperties = new SecurityPropertiesSchema();
+        } else {
+            securityProperties = new SecurityPropertiesSchema(securityPropertiesMap);
+        }
 
         TemplateDTO templateDTO = template.getDetails();
         FlowSnippetDTO templateDTOSnippet = templateDTO.getSnippet();
@@ -86,6 +90,12 @@ public class ConfigSchema extends BaseSchema {
 
         provenanceReportingProperties = new ProvenanceReportingSchema();
         provenanceRepositorySchema = new ProvenanceRepositorySchema();
+
+        addIssuesIfNotNull(flowControllerProperties);
+        addIssuesIfNotNull(securityProperties);
+        this.processors.forEach(this::addIssuesIfNotNull);
+        this.connections.forEach(this::addIssuesIfNotNull);
+        this.remoteProcessingGroups.forEach(this::addIssuesIfNotNull);
     }
 
     public ConfigSchema(Map map) {

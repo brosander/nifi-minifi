@@ -34,8 +34,8 @@ public class FlowControllerSchema extends BaseSchema {
     private String comment;
 
     public FlowControllerSchema(TemplateDTO templateDTO) {
-        this.name = templateDTO.getName();
-        this.comment = templateDTO.getDescription();
+        this.name = getAndValidateNotNull(templateDTO::getName, NAME_KEY, FLOW_CONTROLLER_PROPS_KEY);
+        this.comment = getAndValidateNotNull(templateDTO::getDescription, COMMENT_KEY, FLOW_CONTROLLER_PROPS_KEY);
     }
 
     public FlowControllerSchema(Map map) {

@@ -51,9 +51,9 @@ public class RemoteProcessingGroupSchema extends BaseSchema {
     private String yieldPeriod = DEFAULT_YIELD_PERIOD;
 
     public RemoteProcessingGroupSchema(RemoteProcessGroupDTO remoteProcessGroupDTO) {
-        this.name = remoteProcessGroupDTO.getName();
-        this.url = remoteProcessGroupDTO.getTargetUri();
-        RemoteProcessGroupContentsDTO remoteProcessGroupContentsDTO = remoteProcessGroupDTO.getContents();
+        this.name = getAndValidateNotNull(remoteProcessGroupDTO::getName, NAME_KEY, REMOTE_PROCESSING_GROUPS_KEY);
+        this.url = getAndValidateNotNull(remoteProcessGroupDTO::getTargetUri, URL_KEY, REMOTE_PROCESSING_GROUPS_KEY);
+        RemoteProcessGroupContentsDTO remoteProcessGroupContentsDTO = getAndValidateNotNull(remoteProcessGroupDTO::getContents, INPUT_PORTS_KEY, REMOTE_PROCESSING_GROUPS_KEY);
         if (remoteProcessGroupContentsDTO != null) {
             this.inputPorts = nullToEmpty(remoteProcessGroupContentsDTO.getInputPorts()).stream()
                     .map(RemoteInputPortSchema::new).collect(Collectors.toList());
@@ -61,6 +61,7 @@ public class RemoteProcessingGroupSchema extends BaseSchema {
 
         this.comment = remoteProcessGroupDTO.getComments();
         this.timeout = remoteProcessGroupDTO.getCommunicationsTimeout();
+        this.yieldPeriod = remoteProcessGroupDTO.getYieldDuration();
     }
 
     public RemoteProcessingGroupSchema(Map map) {

@@ -19,18 +19,20 @@ package org.apache.nifi.minifi.toolkit.configuration;
 
 import org.apache.nifi.controller.Template;
 import org.apache.nifi.minifi.commons.schema.ConfigSchema;
+import org.apache.nifi.minifi.commons.schema.SecurityPropertiesSchema;
 import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
 import org.apache.nifi.minifi.commons.schema.serialization.SchemaLoader;
 import org.apache.nifi.minifi.commons.schema.serialization.SchemaSaver;
 import org.apache.nifi.minifi.commons.schema.exception.SchemaLoaderException;
+import org.apache.nifi.ssl.StandardSSLContextService;
 import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.NiFiComponentDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
-import org.yaml.snakeyaml.DumperOptions;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -40,7 +42,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -129,54 +133,77 @@ public class ConfigMain {
         System.out.println();
     }
 
+    private static void enrichTemplateDTO(TemplateDTO templateDTO) {
+        FlowSnippetDTO flowSnippetDTO = templateDTO.getSnippet();
+        Set<ConnectionDTO> connections = flowSnippetDTO.getConnections();
+        if (connections != null) {
+            Map<String, String> connectableNameMap = new HashMap<>();
+            Set<ProcessorDTO> processorDTOs = flowSnippetDTO.getProcessors();
+            if (processorDTOs != null) {
+                connectableNameMap.putAll(processorDTOs.stream().collect(Collectors.toMap(NiFiComponentDTO::getId, ProcessorDTO::getName)));
+            }
+            Set<PortDTO> inputPorts = flowSnippetDTO.getInputPorts();
+            if (inputPorts != null) {
+                connectableNameMap.putAll(inputPorts.stream().collect(Collectors.toMap(NiFiComponentDTO::getId, PortDTO::getName)));
+            }
+            Set<PortDTO> outputPorts = flowSnippetDTO.getOutputPorts();
+            if (outputPorts!= null) {
+                connectableNameMap.putAll(outputPorts.stream().collect(Collectors.toMap(NiFiComponentDTO::getId, PortDTO::getName)));
+            }
+            for (ConnectionDTO connection : connections) {
+                setName(connectableNameMap, connection.getSource());
+                setName(connectableNameMap, connection.getDestination());
+            }
+            for (ConnectionDTO connection : connections) {
+                if (BaseSchema.isNullOrEmpty(connection.getName())) {
+                    StringBuilder name = new StringBuilder();
+                    ConnectableDTO connectionSource = connection.getSource();
+                    if (connectionSource != null) {
+                        name.append(connectionSource.getName());
+                    }
+                    name.append("/");
+                    if (connection.getSelectedRelationships() != null && connection.getSelectedRelationships().size() > 0) {
+                        name.append(connection.getSelectedRelationships().iterator().next());
+                    }
+                    name.append("/");
+                    ConnectableDTO connectionDestination = connection.getDestination();
+                    if (connectionDestination != null) {
+                        name.append(connectionDestination.getName());
+                    }
+                    connection.setName(name.toString());
+                }
+            }
+        }
+    }
+
     public static ConfigSchema transformTemplateToSchema(InputStream source) throws JAXBException, IOException {
         try {
             TemplateDTO templateDTO = (TemplateDTO) JAXBContext.newInstance(TemplateDTO.class).createUnmarshaller().unmarshal(source);
-            DumperOptions dumperOptions = new DumperOptions();
-            dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+            enrichTemplateDTO(templateDTO);
+            Set<ControllerServiceDTO> controllerServices = templateDTO.getSnippet().getControllerServices();
+            Map<String, String> securityPropertiesSchemaMap = new HashMap<>();
+            List<String> controllerValidationIssues = new ArrayList<>();
+            if (controllerServices != null || controllerServices.size() > 0) {
+                for (ControllerServiceDTO controllerService : controllerServices) {
+                    if (StandardSSLContextService.class.getCanonicalName().equals(controllerService.getType())) {
+                        Map<String, String> properties = controllerService.getProperties();
+                        securityPropertiesSchemaMap.put(SecurityPropertiesSchema.KEYSTORE_KEY, properties.get(StandardSSLContextService.KEYSTORE.getName()));
+                        securityPropertiesSchemaMap.put(SecurityPropertiesSchema.KEYSTORE_PASSWORD_KEY, properties.get(StandardSSLContextService.KEYSTORE_PASSWORD.getName()));
+                        securityPropertiesSchemaMap.put(SecurityPropertiesSchema.KEYSTORE_TYPE_KEY, properties.get(StandardSSLContextService.KEYSTORE_TYPE.getName()));
 
-            FlowSnippetDTO flowSnippetDTO = templateDTO.getSnippet();
-            Set<ConnectionDTO> connections = flowSnippetDTO.getConnections();
-            if (connections != null) {
-                Map<String, String> connectableNameMap = new HashMap<>();
-                Set<ProcessorDTO> processorDTOs = flowSnippetDTO.getProcessors();
-                if (processorDTOs != null) {
-                    connectableNameMap.putAll(processorDTOs.stream().collect(Collectors.toMap(NiFiComponentDTO::getId, ProcessorDTO::getName)));
-                }
-                Set<PortDTO> inputPorts = flowSnippetDTO.getInputPorts();
-                if (inputPorts != null) {
-                    connectableNameMap.putAll(inputPorts.stream().collect(Collectors.toMap(NiFiComponentDTO::getId, PortDTO::getName)));
-                }
-                Set<PortDTO> outputPorts = flowSnippetDTO.getOutputPorts();
-                if (outputPorts!= null) {
-                    connectableNameMap.putAll(outputPorts.stream().collect(Collectors.toMap(NiFiComponentDTO::getId, PortDTO::getName)));
-                }
-                for (ConnectionDTO connection : connections) {
-                    setName(connectableNameMap, connection.getSource());
-                    setName(connectableNameMap, connection.getDestination());
-                }
-                for (ConnectionDTO connection : connections) {
-                    if (BaseSchema.isNullOrEmpty(connection.getName())) {
-                        StringBuilder name = new StringBuilder();
-                        ConnectableDTO connectionSource = connection.getSource();
-                        if (connectionSource != null) {
-                            name.append(connectionSource.getName());
-                        }
-                        name.append("/");
-                        if (connection.getSelectedRelationships() != null && connection.getSelectedRelationships().size() > 0) {
-                            name.append(connection.getSelectedRelationships().iterator().next());
-                        }
-                        name.append("/");
-                        ConnectableDTO connectionDestination = connection.getDestination();
-                        if (connectionDestination != null) {
-                            name.append(connectionDestination.getName());
-                        }
-                        connection.setName(name.toString());
+                        securityPropertiesSchemaMap.put(SecurityPropertiesSchema.TRUSTSTORE_KEY, properties.get(StandardSSLContextService.TRUSTSTORE.getName()));
+                        securityPropertiesSchemaMap.put(SecurityPropertiesSchema.TRUSTSTORE_PASSWORD_KEY, properties.get(StandardSSLContextService.TRUSTSTORE_PASSWORD.getName()));
+                        securityPropertiesSchemaMap.put(SecurityPropertiesSchema.TRUSTSTORE_TYPE_KEY, properties.get(StandardSSLContextService.TRUSTSTORE_TYPE.getName()));
+
+                        securityPropertiesSchemaMap.put(SecurityPropertiesSchema.SSL_PROTOCOL_KEY, properties.get(StandardSSLContextService.SSL_ALGORITHM.getName()));
+                    } else {
+                        controllerValidationIssues.add("Unsupported controller service " + controllerService.getName() + " of type " + controllerService.getType());
                     }
                 }
             }
-
-            return new ConfigSchema(new Template(templateDTO));
+            ConfigSchema configSchema = new ConfigSchema(new Template(templateDTO), securityPropertiesSchemaMap);
+            configSchema.validationIssues.addAll(controllerValidationIssues);
+            return configSchema;
         } finally {
             source.close();
         }
@@ -199,7 +226,15 @@ public class ConfigMain {
         try (InputStream inputStream = pathInputStreamFactory.create(args[1])) {
             try (OutputStream fileOutputStream = pathOutputStreamFactory.create(args[2])) {
                 try {
-                    SchemaSaver.saveConfigSchema(transformTemplateToSchema(inputStream), fileOutputStream);
+                    ConfigSchema configSchema = transformTemplateToSchema(inputStream);
+                    if (!configSchema.isValid()) {
+                        System.out.println("There are validation errors with the template, still outputting YAML but it will need to be edited.");
+                        for (String s : configSchema.getValidationIssues()) {
+                            System.out.println(s);
+                        }
+                        System.out.println();
+                    }
+                    SchemaSaver.saveConfigSchema(configSchema, fileOutputStream);
                 } catch (JAXBException e) {
                     System.out.println("Error reading template. (" + e + ")");
                     System.out.println();
