@@ -153,11 +153,6 @@ public class ConfigMainTest {
         transformRoundTrip("Working_with_Logs");
     }
 
-    @Test
-    public void testTransformRoundInvokeHttpSsl() throws JAXBException, IOException, SchemaLoaderException {
-        transformRoundTrip("InvokeHttp_MiNiFi_Template_Test_SSL");
-    }
-
     private void transformRoundTrip(String name) throws JAXBException, IOException, SchemaLoaderException {
         Map<String, Object> templateMap = ConfigMain.transformTemplateToSchema(getClass().getClassLoader().getResourceAsStream(name + ".xml")).toMap();
         Map<String, Object> yamlMap = SchemaLoader.loadYamlAsMap(getClass().getClassLoader().getResourceAsStream(name + ".yml"));
