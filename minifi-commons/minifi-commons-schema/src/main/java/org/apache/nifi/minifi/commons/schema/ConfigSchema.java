@@ -57,17 +57,13 @@ public class ConfigSchema extends BaseSchema {
 
     private ProvenanceRepositorySchema provenanceRepositorySchema;
 
-    public ConfigSchema(TemplateDTO templateDTO, Map<String, String> securityPropertiesMap) {
+    public ConfigSchema(TemplateDTO templateDTO) {
         flowControllerProperties = new FlowControllerSchema(templateDTO);
         coreProperties = new CorePropertiesSchema();
         flowfileRepositoryProperties = new FlowFileRepositorySchema();
         contentRepositoryProperties = new ContentRepositorySchema();
         componentStatusRepositoryProperties = new ComponentStatusRepositorySchema();
-        if (securityPropertiesMap == null || securityPropertiesMap.isEmpty()) {
-            securityProperties = new SecurityPropertiesSchema();
-        } else {
-            securityProperties = new SecurityPropertiesSchema(securityPropertiesMap);
-        }
+        securityProperties = new SecurityPropertiesSchema();
 
         FlowSnippetDTO templateDTOSnippet = templateDTO.getSnippet();
 
