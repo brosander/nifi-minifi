@@ -243,6 +243,7 @@ Remote Processing Groups:
     max concurrent tasks: 1
     use compression: false
 Provenance Reporting:
+  enabled: false
   comment:
   scheduling strategy:
   scheduling period:
