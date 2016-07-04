@@ -115,6 +115,7 @@ run() {
 
 
    "${JAVA}" -cp "${CLASSPATH}" -Xms12m -Xmx24m org.apache.nifi.minifi.toolkit.configuration.ConfigMain $@
+   return $?
 }
 
 
