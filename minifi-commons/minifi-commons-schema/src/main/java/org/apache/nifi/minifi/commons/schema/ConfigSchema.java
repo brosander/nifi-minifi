@@ -22,8 +22,11 @@ import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.COMPONENT_STATUS_REPO_KEY;
@@ -42,6 +45,9 @@ import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.SE
  *
  */
 public class ConfigSchema extends BaseSchema {
+    public static final String FOUND_THE_FOLLOWING_DUPLICATE_PROCESSOR_NAMES = "Found the following duplicate processor names: ";
+    public static final String FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_NAMES = "Found the following duplicate connection names: ";
+    public static final String FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_PROCESSING_GROUP_NAMES = "Found the following duplicate remote processing group names: ";
     public static String TOP_LEVEL_NAME = "top level";
 
     private FlowControllerSchema flowControllerProperties;
@@ -87,8 +93,11 @@ public class ConfigSchema extends BaseSchema {
 
         addIssuesIfNotNull(flowControllerProperties);
         addIssuesIfNotNull(securityProperties);
+        checkForDuplicateNames(FOUND_THE_FOLLOWING_DUPLICATE_PROCESSOR_NAMES, processors.stream().map(ProcessorSchema::getName).collect(Collectors.toList()));
         this.processors.forEach(this::addIssuesIfNotNull);
+        checkForDuplicateNames(FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_NAMES, connections.stream().map(ConnectionSchema::getName).collect(Collectors.toList()));
         this.connections.forEach(this::addIssuesIfNotNull);
+        checkForDuplicateNames(FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_PROCESSING_GROUP_NAMES, remoteProcessingGroups.stream().map(RemoteProcessingGroupSchema::getName).collect(Collectors.toList()));
         this.remoteProcessingGroups.forEach(this::addIssuesIfNotNull);
     }
 
@@ -129,20 +138,44 @@ public class ConfigSchema extends BaseSchema {
         addIssuesIfNotNull(provenanceRepositorySchema);
 
         if (processors != null) {
+            checkForDuplicateNames(FOUND_THE_FOLLOWING_DUPLICATE_PROCESSOR_NAMES, processors.stream().map(ProcessorSchema::getName).collect(Collectors.toList()));
             for (ProcessorSchema processorSchema : processors) {
                 addIssuesIfNotNull(processorSchema);
             }
         }
 
         if (connections != null) {
+            checkForDuplicateNames(FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_NAMES, connections.stream().map(ConnectionSchema::getName).collect(Collectors.toList()));
             for (ConnectionSchema connectionSchema : connections) {
                 addIssuesIfNotNull(connectionSchema);
             }
         }
 
         if (remoteProcessingGroups != null) {
+            checkForDuplicateNames(FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_PROCESSING_GROUP_NAMES, remoteProcessingGroups.stream().map(RemoteProcessingGroupSchema::getName).collect(Collectors.toList()));
             for (RemoteProcessingGroupSchema remoteProcessingGroupSchema : remoteProcessingGroups) {
                 addIssuesIfNotNull(remoteProcessingGroupSchema);
+            }
+        }
+    }
+
+    private void checkForDuplicateNames(String errorMessagePrefix, List<String> names) {
+        if (processors != null) {
+            Set<String> seenNames = new HashSet<>();
+            Set<String> duplicateNames = new TreeSet<>();
+            for (String name : names) {
+                if (!seenNames.add(name)) {
+                    duplicateNames.add(name);
+                }
+            }
+            if (duplicateNames.size() > 0) {
+                StringBuilder errorMessage = new StringBuilder(errorMessagePrefix);
+                for (String duplicateName : duplicateNames) {
+                    errorMessage.append(duplicateName);
+                    errorMessage.append(", ");
+                }
+                errorMessage.setLength(errorMessage.length() - 2);
+                validationIssues.add(errorMessage.toString());
             }
         }
     }
