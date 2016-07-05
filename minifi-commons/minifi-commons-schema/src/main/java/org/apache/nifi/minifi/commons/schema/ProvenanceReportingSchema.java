@@ -20,8 +20,6 @@ package org.apache.nifi.minifi.commons.schema;
 import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
 import org.apache.nifi.scheduling.SchedulingStrategy;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.COMMENT_KEY;
@@ -39,14 +37,12 @@ public class ProvenanceReportingSchema extends BaseSchema {
     public static final String PORT_NAME_KEY = "port name";
     public static final String ORIGINATING_URL_KEY = "originating url";
     public static final String BATCH_SIZE_KEY = "batch size";
-    public static final String ENABLED_KEY = "enabled";
 
     public static final String DEFAULT_ORGINATING_URL = "http://${hostname(true)}:8080/nifi";
     public static final String DEFAULT_TIMEOUT = "30 secs";
     public static final int DEFAULT_BATCH_SIZE = 1000;
     public static final boolean DEFAULT_USE_COMPRESSION = true;
 
-    private boolean enabled = true;
     private String schedulingStrategy;
     private String schedulingPeriod;
     private String destinationUrl;
@@ -57,10 +53,6 @@ public class ProvenanceReportingSchema extends BaseSchema {
     private Boolean useCompression = DEFAULT_USE_COMPRESSION;
     private String timeout = DEFAULT_TIMEOUT;
     private Number batchSize = DEFAULT_BATCH_SIZE;
-
-    public ProvenanceReportingSchema() {
-        enabled = false;
-    }
 
     public ProvenanceReportingSchema(Map map) {
         schedulingStrategy = getRequiredKeyAsType(map, SCHEDULING_STRATEGY_KEY, String.class, PROVENANCE_REPORTING_KEY);
@@ -81,13 +73,11 @@ public class ProvenanceReportingSchema extends BaseSchema {
         useCompression = getOptionalKeyAsType(map, USE_COMPRESSION_KEY, Boolean.class, PROVENANCE_REPORTING_KEY, DEFAULT_USE_COMPRESSION);
         timeout = getOptionalKeyAsType(map, TIMEOUT_KEY, String.class, PROVENANCE_REPORTING_KEY, DEFAULT_TIMEOUT);
         batchSize = getOptionalKeyAsType(map, BATCH_SIZE_KEY, Number.class, PROVENANCE_REPORTING_KEY, DEFAULT_BATCH_SIZE);
-        enabled = getOptionalKeyAsType(map, ENABLED_KEY, Boolean.class, PROVENANCE_REPORTING_KEY, true);
     }
 
     @Override
     public Map<String, Object> toMap() {
         Map<String, Object> result = mapSupplier.get();
-        result.put(ENABLED_KEY, enabled);
         result.put(COMMENT_KEY, comment);
         result.put(SCHEDULING_STRATEGY_KEY, schedulingStrategy);
         result.put(SCHEDULING_PERIOD_KEY, schedulingPeriod);
@@ -134,17 +124,5 @@ public class ProvenanceReportingSchema extends BaseSchema {
 
     public Number getBatchSize() {
         return batchSize;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    @Override
-    public List<String> getValidationIssues() {
-        if (!enabled) {
-            return Collections.emptyList();
-        }
-        return super.getValidationIssues();
     }
 }

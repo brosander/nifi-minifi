@@ -90,7 +90,7 @@ public class ConfigSchema extends BaseSchema {
                 .sorted(Comparator.comparing(RemoteProcessingGroupSchema::getName))
                 .collect(Collectors.toList());
 
-        provenanceReportingProperties = new ProvenanceReportingSchema();
+        provenanceReportingProperties = null;
         provenanceRepositorySchema = new ProvenanceRepositorySchema();
 
         addIssuesIfNotNull(flowControllerProperties);

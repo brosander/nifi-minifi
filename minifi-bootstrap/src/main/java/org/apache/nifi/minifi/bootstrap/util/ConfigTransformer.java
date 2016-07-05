@@ -288,7 +288,7 @@ public final class ConfigTransformer {
             }
 
             ProvenanceReportingSchema provenanceProperties = configSchema.getProvenanceReportingProperties();
-            if (provenanceProperties != null && provenanceProperties.isEnabled()) {
+            if (provenanceProperties != null) {
                 final Element reportingTasksNode = doc.createElement("reportingTasks");
                 rootNode.appendChild(reportingTasksNode);
                 addProvenanceReportingTask(reportingTasksNode, configSchema);
