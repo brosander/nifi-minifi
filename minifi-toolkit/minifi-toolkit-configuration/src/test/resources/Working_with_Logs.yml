@@ -242,14 +242,3 @@ Remote Processing Groups:
     comment: ''
     max concurrent tasks: 1
     use compression: false
-Provenance Reporting:
-  enabled: false
-  comment:
-  scheduling strategy:
-  scheduling period:
-  destination url:
-  port name:
-  originating url: http://${hostname(true)}:8080/nifi
-  use compression: true
-  timeout: 30 secs
-  batch size: 1000
