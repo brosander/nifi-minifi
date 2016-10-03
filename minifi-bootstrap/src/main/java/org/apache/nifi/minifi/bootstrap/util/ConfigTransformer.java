@@ -27,6 +27,7 @@ import org.apache.nifi.minifi.commons.schema.ContentRepositorySchema;
 import org.apache.nifi.minifi.commons.schema.CorePropertiesSchema;
 import org.apache.nifi.minifi.commons.schema.FlowControllerSchema;
 import org.apache.nifi.minifi.commons.schema.FlowFileRepositorySchema;
+import org.apache.nifi.minifi.commons.schema.FunnelSchema;
 import org.apache.nifi.minifi.commons.schema.ProcessorSchema;
 import org.apache.nifi.minifi.commons.schema.ProvenanceReportingSchema;
 import org.apache.nifi.minifi.commons.schema.ProvenanceRepositorySchema;
@@ -357,6 +358,13 @@ public final class ConfigTransformer {
                 }
             }
 
+            List<FunnelSchema> funnels = configSchema.getFunnels();
+            if (funnels != null) {
+                for (FunnelSchema funnelSchema : funnels) {
+                    addFunnel(element, funnelSchema);
+                }
+            }
+
             List<ConnectionSchema> connections = configSchema.getConnections();
             if (connections != null) {
                 for (ConnectionSchema connectionConfig : connections) {
@@ -410,6 +418,16 @@ public final class ConfigTransformer {
         } catch (Exception e) {
             throw new ConfigurationChangeException("Failed to parse the config YAML while trying to add a Processor", e);
         }
+    }
+
+    protected static void addFunnel(final Element parentElement, FunnelSchema funnelSchema) {
+        Document document = parentElement.getOwnerDocument();
+        Element element = document.createElement("funnel");
+        parentElement.appendChild(element);
+
+        addTextElement(element, "id", funnelSchema.getId());
+
+        addPosition(element);
     }
 
     protected static void addProvenanceReportingTask(final Element element, ConfigSchema configSchema) throws ConfigurationChangeException {
@@ -528,7 +546,11 @@ public final class ConfigTransformer {
 
             addTextElement(element, "sourceId", connectionProperties.getSourceId());
             addTextElement(element, "sourceGroupId", "Root-Group");
-            addTextElement(element, "sourceType", "PROCESSOR");
+            if (connectionProperties.isSourceFunnel()) {
+                addTextElement(element, "sourceType", "FUNNEL");
+            } else {
+                addTextElement(element, "sourceType", "PROCESSOR");
+            }
 
             final String connectionDestinationId = connectionProperties.getDestinationId();
             addTextElement(element, "destinationId", connectionDestinationId);
@@ -538,10 +560,18 @@ public final class ConfigTransformer {
                 addTextElement(element, "destinationType", "REMOTE_INPUT_PORT");
             } else {
                 addTextElement(element, "destinationGroupId", "Root-Group");
-                addTextElement(element, "destinationType", "PROCESSOR");
+                if (connectionProperties.isDestinationFunnel()) {
+                    addTextElement(element, "destinationType", "FUNNEL");
+                } else {
+                    addTextElement(element, "destinationType", "PROCESSOR");
+                }
             }
 
-            for (String relationshipName : connectionProperties.getSourceRelationshipNames()) {
+            List<String> sourceRelationshipNames = connectionProperties.getSourceRelationshipNames();
+            if (sourceRelationshipNames.isEmpty()) {
+                element.appendChild(doc.createElement("relationship"));
+            }
+            for (String relationshipName : sourceRelationshipNames) {
                 addTextElement(element, "relationship", relationshipName);
             }
 

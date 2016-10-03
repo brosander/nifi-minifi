@@ -19,6 +19,7 @@ package org.apache.nifi.minifi.toolkit.configuration.dto;
 
 import org.apache.nifi.minifi.commons.schema.ConfigSchema;
 import org.apache.nifi.minifi.commons.schema.ConnectionSchema;
+import org.apache.nifi.minifi.commons.schema.FunnelSchema;
 import org.apache.nifi.minifi.commons.schema.ProcessorSchema;
 import org.apache.nifi.minifi.commons.schema.RemoteProcessingGroupSchema;
 import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
@@ -36,17 +37,20 @@ public class ConfigSchemaFunction implements Function<TemplateDTO, ConfigSchema>
     private final FlowControllerSchemaFunction flowControllerSchemaFunction;
     private final ProcessorSchemaFunction processorSchemaFunction;
     private final ConnectionSchemaFunction connectionSchemaFunction;
+    private final FunnelSchemaFunction funnelSchemaFunction;
     private final RemoteProcessingGroupSchemaFunction remoteProcessingGroupSchemaFunction;
 
     public ConfigSchemaFunction() {
-        this(new FlowControllerSchemaFunction(), new ProcessorSchemaFunction(), new ConnectionSchemaFunction(), new RemoteProcessingGroupSchemaFunction(new RemoteInputPortSchemaFunction()));
+        this(new FlowControllerSchemaFunction(), new ProcessorSchemaFunction(), new ConnectionSchemaFunction(), new FunnelSchemaFunction(),
+                new RemoteProcessingGroupSchemaFunction(new RemoteInputPortSchemaFunction()));
     }
 
-    public ConfigSchemaFunction(FlowControllerSchemaFunction flowControllerSchemaFunction, ProcessorSchemaFunction processorSchemaFunction,
-                                ConnectionSchemaFunction connectionSchemaFunction, RemoteProcessingGroupSchemaFunction remoteProcessingGroupSchemaFunction) {
+    public ConfigSchemaFunction(FlowControllerSchemaFunction flowControllerSchemaFunction, ProcessorSchemaFunction processorSchemaFunction, ConnectionSchemaFunction connectionSchemaFunction,
+                                FunnelSchemaFunction funnelSchemaFunction, RemoteProcessingGroupSchemaFunction remoteProcessingGroupSchemaFunction) {
         this.flowControllerSchemaFunction = flowControllerSchemaFunction;
         this.processorSchemaFunction = processorSchemaFunction;
         this.connectionSchemaFunction = connectionSchemaFunction;
+        this.funnelSchemaFunction = funnelSchemaFunction;
         this.remoteProcessingGroupSchemaFunction = remoteProcessingGroupSchemaFunction;
     }
 
@@ -68,6 +72,12 @@ public class ConfigSchemaFunction implements Function<TemplateDTO, ConfigSchema>
                 .map(connectionSchemaFunction)
                 .sorted(Comparator.comparing(ConnectionSchema::getName))
                 .map(ConnectionSchema::toMap)
+                .collect(Collectors.toList()));
+
+        map.put(CommonPropertyKeys.FUNNELS_KEY, BaseSchema.nullToEmpty(snippet.getFunnels()).stream()
+                .map(funnelSchemaFunction)
+                .sorted(Comparator.comparing(FunnelSchema::getId))
+                .map(FunnelSchema::toMap)
                 .collect(Collectors.toList()));
 
         map.put(CommonPropertyKeys.REMOTE_PROCESSING_GROUPS_KEY, BaseSchema.nullToEmpty(snippet.getRemoteProcessGroups()).stream()

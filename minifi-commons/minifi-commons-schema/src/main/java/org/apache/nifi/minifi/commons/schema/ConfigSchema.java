@@ -22,6 +22,8 @@ import org.apache.nifi.minifi.commons.schema.common.ConvertableSchema;
 import org.apache.nifi.minifi.commons.schema.common.WritableSchema;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +37,7 @@ import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.CO
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.CORE_PROPS_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.FLOWFILE_REPO_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.FLOW_CONTROLLER_PROPS_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.FUNNELS_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.PROCESSORS_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.PROVENANCE_REPORTING_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.PROVENANCE_REPO_KEY;
@@ -47,6 +50,7 @@ import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.SE
 public class ConfigSchema extends BaseSchema implements WritableSchema, ConvertableSchema<ConfigSchema> {
     public static final String FOUND_THE_FOLLOWING_DUPLICATE_PROCESSOR_IDS = "Found the following duplicate processor ids: ";
     public static final String FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_IDS = "Found the following duplicate connection ids: ";
+    public static final String FOUND_THE_FOLLOWING_DUPLICATE_FUNNEL_IDS = "Found the following duplicate funnel ids: ";
     public static final String FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_PROCESSING_GROUP_NAMES = "Found the following duplicate remote processing group names: ";
     public static final String FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_INPUT_PORT_IDS = "Found the following duplicate remote input port ids: ";
     public static final String FOUND_THE_FOLLOWING_DUPLICATE_IDS = "Found the following ids that occur both in Processors and Remote Input Ports: ";
@@ -65,6 +69,7 @@ public class ConfigSchema extends BaseSchema implements WritableSchema, Converta
     private ProvenanceReportingSchema provenanceReportingProperties;
 
     private ProvenanceRepositorySchema provenanceRepositorySchema;
+    private List<FunnelSchema> funnels;
 
     public ConfigSchema(Map map) {
         this(map, Collections.emptyList());
@@ -83,6 +88,8 @@ public class ConfigSchema extends BaseSchema implements WritableSchema, Converta
 
         processors = convertListToType(getOptionalKeyAsType(map, PROCESSORS_KEY, List.class, TOP_LEVEL_NAME, new ArrayList<>()), "processor", ProcessorSchema.class, PROCESSORS_KEY);
 
+        funnels = convertListToType(getOptionalKeyAsType(map, FUNNELS_KEY, List.class, TOP_LEVEL_NAME, new ArrayList<>()), "funnel", FunnelSchema.class, FUNNELS_KEY);
+
         remoteProcessingGroups = convertListToType(getOptionalKeyAsType(map, REMOTE_PROCESSING_GROUPS_KEY, List.class, TOP_LEVEL_NAME, new ArrayList<>()), "remote processing group",
                 RemoteProcessingGroupSchema.class, REMOTE_PROCESSING_GROUPS_KEY);
 
@@ -90,6 +97,19 @@ public class ConfigSchema extends BaseSchema implements WritableSchema, Converta
                 "connection", ConnectionSchema.class, CONNECTIONS_KEY);
 
         provenanceReportingProperties = getMapAsType(map, PROVENANCE_REPORTING_KEY, ProvenanceReportingSchema.class, TOP_LEVEL_NAME, false, false);
+
+        Set<String> funnelIds = new HashSet<>();
+        List<String> funnelIdList = funnels.stream().map(FunnelSchema::getId).collect(Collectors.toList());
+        funnelIds.addAll(funnelIdList);
+
+        for (ConnectionSchema connectionSchema : connections) {
+            if (funnelIds.contains(connectionSchema.getSourceId())) {
+                connectionSchema.setSourceFunnel(true);
+            }
+            if (funnelIds.contains(connectionSchema.getDestinationId())) {
+                connectionSchema.setDestinationFunnel(true);
+            }
+        }
 
         addIssuesIfNotNull(flowControllerProperties);
         addIssuesIfNotNull(coreProperties);
@@ -100,6 +120,7 @@ public class ConfigSchema extends BaseSchema implements WritableSchema, Converta
         addIssuesIfNotNull(provenanceReportingProperties);
         addIssuesIfNotNull(provenanceRepositorySchema);
         addIssuesIfNotNull(processors);
+        addIssuesIfNotNull(funnels);
         addIssuesIfNotNull(connections);
         addIssuesIfNotNull(remoteProcessingGroups);
 
@@ -108,6 +129,7 @@ public class ConfigSchema extends BaseSchema implements WritableSchema, Converta
         processorIds.addAll(processorIdList);
 
         checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_PROCESSOR_IDS, processorIdList);
+        checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_FUNNEL_IDS, funnelIdList);
         checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_IDS, connections.stream().map(ConnectionSchema::getId).collect(Collectors.toList()));
         checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_PROCESSING_GROUP_NAMES,
                 remoteProcessingGroups.stream().map(RemoteProcessingGroupSchema::getName).collect(Collectors.toList()));
@@ -118,11 +140,15 @@ public class ConfigSchema extends BaseSchema implements WritableSchema, Converta
         checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_INPUT_PORT_IDS, remoteInputPortIdList);
         remoteInputPortIds.addAll(remoteInputPortIdList);
 
-        Set<String> duplicateIds = new HashSet<>(processorIds);
-        duplicateIds.retainAll(remoteInputPortIds);
+        Set<String> duplicateIds = findOverlap(processorIds, remoteInputPortIds, funnelIds);
         if (duplicateIds.size() > 0) {
             addValidationIssue(FOUND_THE_FOLLOWING_DUPLICATE_IDS + duplicateIds.stream().sorted().collect(Collectors.joining(", ")));
         }
+    }
+
+    protected static Set<String> findOverlap(Collection<String>... collections) {
+        Set<String> seen = new HashSet<>();
+        return Arrays.stream(collections).flatMap(c -> c.stream()).sequential().filter(s -> !seen.add(s)).collect(Collectors.toSet());
     }
 
     public Map<String, Object> toMap() {
@@ -136,6 +162,7 @@ public class ConfigSchema extends BaseSchema implements WritableSchema, Converta
         putIfNotNull(result, COMPONENT_STATUS_REPO_KEY, componentStatusRepositoryProperties);
         putIfNotNull(result, SECURITY_PROPS_KEY, securityProperties);
         putListIfNotNull(result, PROCESSORS_KEY, processors);
+        putListIfNotNull(result, FUNNELS_KEY, funnels);
         putListIfNotNull(result, CONNECTIONS_KEY, connections);
         putListIfNotNull(result, REMOTE_PROCESSING_GROUPS_KEY, remoteProcessingGroups);
         putIfNotNull(result, PROVENANCE_REPORTING_KEY, provenanceReportingProperties);
@@ -164,6 +191,10 @@ public class ConfigSchema extends BaseSchema implements WritableSchema, Converta
 
     public List<ProcessorSchema> getProcessors() {
         return processors;
+    }
+
+    public List<FunnelSchema> getFunnels() {
+        return funnels;
     }
 
     public List<ConnectionSchema> getConnections() {

@@ -187,6 +187,7 @@ Processors:
     Compression Level:
     Mode: decompress
     Update Filename:
+Funnels: []
 Connections:
 - name: Compressed?/gzip/Uncompress GZIP
   id: 5de215d5-9f7e-414b-98aa-2edaa0514d99

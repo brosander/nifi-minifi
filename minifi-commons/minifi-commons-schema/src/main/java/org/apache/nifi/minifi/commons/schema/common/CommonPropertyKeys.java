@@ -28,6 +28,7 @@ public class CommonPropertyKeys {
     public static final String SENSITIVE_PROPS_KEY = "Sensitive Props";
     public static final String PROCESSORS_KEY = "Processors";
     public static final String CONNECTIONS_KEY = "Connections";
+    public static final String FUNNELS_KEY = "Funnels";
     public static final String PROVENANCE_REPORTING_KEY = "Provenance Reporting";
     public static final String REMOTE_PROCESSING_GROUPS_KEY = "Remote Processing Groups";
     public static final String INPUT_PORTS_KEY = "Input Ports";

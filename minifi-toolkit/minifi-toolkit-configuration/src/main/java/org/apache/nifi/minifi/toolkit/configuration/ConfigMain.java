@@ -176,7 +176,12 @@ public class ConfigMain {
                     StringBuilder name = new StringBuilder();
                     ConnectableDTO connectionSource = connection.getSource();
                     if (connectionSource != null) {
-                        name.append(connectionSource.getName());
+                        String connectionSourceName = connectionSource.getName();
+                        if (StringUtil.isNullOrEmpty(connectionSourceName)) {
+                            name.append(connectionSource.getId());
+                        } else {
+                            name.append(connectionSourceName);
+                        }
                     }
                     name.append("/");
                     if (connection.getSelectedRelationships() != null && connection.getSelectedRelationships().size() > 0) {
@@ -185,7 +190,12 @@ public class ConfigMain {
                     name.append("/");
                     ConnectableDTO connectionDestination = connection.getDestination();
                     if (connectionDestination != null) {
-                        name.append(connectionDestination.getName());
+                        String connectionDestinationName = connectionDestination.getName();
+                        if (StringUtil.isNullOrEmpty(connectionDestinationName)) {
+                            name.append(connectionDestination.getId());
+                        } else {
+                            name.append(connectionDestinationName);
+                        }
                     }
                     connection.setName(name.toString());
                 }
@@ -207,10 +217,6 @@ public class ConfigMain {
 
             if (templateDTO.getSnippet().getInputPorts().size() != 0){
                 throw new SchemaLoaderException("Input Ports are not currently supported in MiNiFi. Please remove any from the template and try again.");
-            }
-
-            if (templateDTO.getSnippet().getFunnels().size() != 0){
-                throw new SchemaLoaderException("Funnels are not currently supported in MiNiFi. Please remove any from the template and try again.");
             }
 
             enrichTemplateDTO(templateDTO);

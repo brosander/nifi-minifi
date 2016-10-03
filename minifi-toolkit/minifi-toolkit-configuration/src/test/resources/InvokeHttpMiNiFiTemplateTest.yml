@@ -166,6 +166,7 @@ Processors:
   Properties:
     Delete Attributes Expression:
     q: nifi
+Funnels: []
 Connections:
 - name: Route On Status Code/200/LogAttribute
   id: 3039718a-bb40-4811-9b74-ecbe926daae8

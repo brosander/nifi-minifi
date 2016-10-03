@@ -48,15 +48,14 @@ public class ConnectionSchema extends BaseSchemaWithIdAndName {
     private String maxWorkQueueDataSize = DEFAULT_MAX_QUEUE_DATA_SIZE;
     private String flowfileExpiration = DEFAULT_FLOWFILE_EXPIRATION;
     private String queuePrioritizerClass;
+    private boolean sourceFunnel = false;
+    private boolean destinationFunnel = false;
 
     public ConnectionSchema(Map map) {
         super(map, CONNECTIONS_KEY);
 
         sourceId = getOptionalKeyAsType(map, SOURCE_ID_KEY, String.class, CONNECTIONS_KEY, "");
         sourceRelationshipNames = getOptionalKeyAsType(map, SOURCE_RELATIONSHIP_NAMES_KEY, List.class, CONNECTIONS_KEY, new ArrayList<>());
-        if (sourceRelationshipNames.isEmpty()) {
-            addValidationIssue("Expected at least one value in " + SOURCE_RELATIONSHIP_NAMES_KEY + " for " + CONNECTIONS_KEY + " " + getName());
-        }
         destinationId = getOptionalKeyAsType(map, DESTINATION_ID_KEY, String.class, CONNECTIONS_KEY, "");
 
         maxWorkQueueSize = getOptionalKeyAsType(map, MAX_WORK_QUEUE_SIZE_KEY, Number.class, CONNECTIONS_KEY, DEFAULT_MAX_WORK_QUEUE_SIZE);
@@ -115,9 +114,28 @@ public class ConnectionSchema extends BaseSchemaWithIdAndName {
         return queuePrioritizerClass;
     }
 
+    public void setSourceFunnel(boolean sourceFunnel) {
+        this.sourceFunnel = sourceFunnel;
+    }
+
+    public boolean isSourceFunnel() {
+        return sourceFunnel;
+    }
+
+    public boolean isDestinationFunnel() {
+        return destinationFunnel;
+    }
+
+    public void setDestinationFunnel(boolean destinationFunnel) {
+        this.destinationFunnel = destinationFunnel;
+    }
+
     @Override
     public List<String> getValidationIssues() {
         List<String> validationIssues = super.getValidationIssues();
+        if (sourceRelationshipNames.isEmpty() && !sourceFunnel) {
+            validationIssues.add(getIssueText(SOURCE_RELATIONSHIP_NAMES_KEY, CONNECTIONS_KEY, "expected at least one relationship to be specified unless source is funnel"));
+        }
         if (StringUtil.isNullOrEmpty(getSourceId())) {
             validationIssues.add(getIssueText(SOURCE_ID_KEY, CONNECTIONS_KEY, IT_WAS_NOT_FOUND_AND_IT_IS_REQUIRED));
         }

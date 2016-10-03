@@ -17,37 +17,22 @@
  *
  */
 
-package org.apache.nifi.minifi.commons.schema.common;
+package org.apache.nifi.minifi.toolkit.configuration.dto;
 
+import org.apache.nifi.minifi.commons.schema.FunnelSchema;
+import org.apache.nifi.web.api.dto.FunnelDTO;
+
+import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
-import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.NAME_KEY;
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.ID_KEY;
 
-public abstract class BaseSchemaWithIdAndName extends BaseSchemaWithId {
-    private String name;
-
-    public BaseSchemaWithIdAndName(Map map, String wrapperName) {
-        super(map, wrapperName);
-        name = getName(map, wrapperName);
-    }
-
-    protected String getName(Map map, String wrapperName) {
-        return getOptionalKeyAsType(map, NAME_KEY, String.class, wrapperName, "");
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    protected void setName(String name) {
-        this.name = name;
-    }
-
+public class FunnelSchemaFunction implements Function<FunnelDTO, FunnelSchema> {
     @Override
-    public Map<String, Object> toMap() {
-        Map<String, Object> map = mapSupplier.get();
-        map.put(NAME_KEY, name);
-        map.putAll(super.toMap());
-        return map;
+    public FunnelSchema apply(FunnelDTO funnelDTO) {
+        Map<String, Object> map = new HashMap<>();
+        map.put(ID_KEY, funnelDTO.getId());
+        return new FunnelSchema(map);
     }
 }

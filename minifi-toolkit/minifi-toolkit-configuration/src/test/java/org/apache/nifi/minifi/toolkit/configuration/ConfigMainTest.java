@@ -180,6 +180,11 @@ public class ConfigMainTest {
     }
 
     @Test
+    public void testTransformRoundTripStressTestFrameworkFunnel() throws IOException, JAXBException, SchemaLoaderException {
+        transformRoundTrip("StressTestFrameworkFunnel");
+    }
+
+    @Test
     public void testTransformRoundTripMultipleRelationships() throws IOException, JAXBException, SchemaLoaderException {
         transformRoundTrip("MultipleRelationships");
     }
@@ -199,8 +204,8 @@ public class ConfigMainTest {
         ConfigMain.transformTemplateToSchema(getClass().getClassLoader().getResourceAsStream("TemplateWithInputPort.xml")).toMap();
     }
 
-    @Test(expected = SchemaLoaderException.class)
-    public void testFailToTransformFunnel() throws IOException, JAXBException, SchemaLoaderException {
+    @Test
+    public void testDontFailToTransformFunnel() throws IOException, JAXBException, SchemaLoaderException {
         ConfigMain.transformTemplateToSchema(getClass().getClassLoader().getResourceAsStream("TemplateWithFunnel.xml")).toMap();
     }
 

@@ -148,6 +148,7 @@ Processors:
   - success
   Properties:
     Delete Attributes Expression:
+Funnels: []
 Connections:
 - name: ExtractText/matched/ReplaceText2
   id: 56ef3e2e-ee35-4598-9fbe-ae86050960b0
