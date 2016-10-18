@@ -19,6 +19,6 @@
 
 package org.apache.nifi.minifi.commons.schema.common;
 
-public interface ConvertibleSchema<T> extends YamlSchema {
+public interface ConvertableSchema<T> extends Schema {
     T convert();
 }

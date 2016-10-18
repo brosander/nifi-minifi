@@ -21,7 +21,8 @@ package org.apache.nifi.minifi.commons.schema.v1;
 
 import org.apache.nifi.minifi.commons.schema.ConnectionSchema;
 import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
-import org.apache.nifi.minifi.commons.schema.common.ConvertibleSchema;
+import org.apache.nifi.minifi.commons.schema.common.ConvertableSchema;
+import org.apache.nifi.minifi.commons.schema.common.StringUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,7 +40,7 @@ import static org.apache.nifi.minifi.commons.schema.ConnectionSchema.SOURCE_RELA
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.CONNECTIONS_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.NAME_KEY;
 
-public class ConnectionSchemaV1 extends BaseSchema implements ConvertibleSchema<ConnectionSchema> {
+public class ConnectionSchemaV1 extends BaseSchema implements ConvertableSchema<ConnectionSchema> {
     public static final String SOURCE_RELATIONSHIP_NAME_KEY = "source relationship name";
     public static final String DESTINATION_NAME_KEY = "destination name";
     public static final String SOURCE_NAME_KEY = "source name";
@@ -72,7 +73,11 @@ public class ConnectionSchemaV1 extends BaseSchema implements ConvertibleSchema<
     public ConnectionSchema convert() {
         Map<String, Object> map = new HashMap<>();
         map.put(NAME_KEY, name);
-        map.put(SOURCE_RELATIONSHIP_NAMES_KEY, new ArrayList<>(Arrays.asList(sourceRelationshipName)));
+        if (StringUtil.isNullOrEmpty(sourceRelationshipName)) {
+            map.put(SOURCE_RELATIONSHIP_NAMES_KEY, new ArrayList<>());
+        } else {
+            map.put(SOURCE_RELATIONSHIP_NAMES_KEY, new ArrayList<>(Arrays.asList(sourceRelationshipName)));
+        }
         map.put(MAX_WORK_QUEUE_SIZE_KEY, maxWorkQueueSize);
         map.put(MAX_WORK_QUEUE_DATA_SIZE_KEY, maxWorkQueueDataSize);
         map.put(FLOWFILE_EXPIRATION__KEY, flowfileExpiration);
@@ -90,25 +95,5 @@ public class ConnectionSchemaV1 extends BaseSchema implements ConvertibleSchema<
 
     public String getName() {
         return name;
-    }
-
-    public String getSourceRelationshipName() {
-        return sourceRelationshipName;
-    }
-
-    public Number getMaxWorkQueueSize() {
-        return maxWorkQueueSize;
-    }
-
-    public String getMaxWorkQueueDataSize() {
-        return maxWorkQueueDataSize;
-    }
-
-    public String getFlowfileExpiration() {
-        return flowfileExpiration;
-    }
-
-    public String getQueuePrioritizerClass() {
-        return queuePrioritizerClass;
     }
 }

@@ -18,17 +18,15 @@
 package org.apache.nifi.minifi.commons.schema;
 
 import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
-import org.apache.nifi.minifi.commons.schema.common.ConvertibleSchema;
-import org.apache.nifi.minifi.commons.schema.common.StringUtil;
+import org.apache.nifi.minifi.commons.schema.common.ConvertableSchema;
 import org.apache.nifi.minifi.commons.schema.common.WritableSchema;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.COMPONENT_STATUS_REPO_KEY;
@@ -46,7 +44,7 @@ import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.SE
 /**
  *
  */
-public class ConfigSchema extends BaseSchema implements WritableSchema, ConvertibleSchema<ConfigSchema> {
+public class ConfigSchema extends BaseSchema implements WritableSchema, ConvertableSchema<ConfigSchema> {
     public static final String FOUND_THE_FOLLOWING_DUPLICATE_PROCESSOR_IDS = "Found the following duplicate processor ids: ";
     public static final String FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_IDS = "Found the following duplicate connection ids: ";
     public static final String FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_PROCESSING_GROUP_NAMES = "Found the following duplicate remote processing group names: ";
@@ -83,12 +81,13 @@ public class ConfigSchema extends BaseSchema implements WritableSchema, Converti
         componentStatusRepositoryProperties = getMapAsType(map, COMPONENT_STATUS_REPO_KEY, ComponentStatusRepositorySchema.class, TOP_LEVEL_NAME, false);
         securityProperties = getMapAsType(map, SECURITY_PROPS_KEY, SecurityPropertiesSchema.class, TOP_LEVEL_NAME, false);
 
-        processors = getProcessorSchemas(getOptionalKeyAsType(map, PROCESSORS_KEY, List.class, TOP_LEVEL_NAME, null));
+        processors = convertListToType(getOptionalKeyAsType(map, PROCESSORS_KEY, List.class, TOP_LEVEL_NAME, new ArrayList<>()), "processor", ProcessorSchema.class, PROCESSORS_KEY);
 
-        remoteProcessingGroups = convertListToType(getOptionalKeyAsType(map, REMOTE_PROCESSING_GROUPS_KEY, List.class, TOP_LEVEL_NAME, null), "remote processing group",
+        remoteProcessingGroups = convertListToType(getOptionalKeyAsType(map, REMOTE_PROCESSING_GROUPS_KEY, List.class, TOP_LEVEL_NAME, new ArrayList<>()), "remote processing group",
                 RemoteProcessingGroupSchema.class, REMOTE_PROCESSING_GROUPS_KEY);
 
-        connections = getConnectionSchemas(getOptionalKeyAsType(map, CONNECTIONS_KEY, List.class, TOP_LEVEL_NAME, null));
+        connections = convertListToType(getOptionalKeyAsType(map, CONNECTIONS_KEY, List.class, TOP_LEVEL_NAME, new ArrayList<>()),
+                "connection", ConnectionSchema.class, CONNECTIONS_KEY);
 
         provenanceReportingProperties = getMapAsType(map, PROVENANCE_REPORTING_KEY, ProvenanceReportingSchema.class, TOP_LEVEL_NAME, false, false);
 
@@ -100,40 +99,24 @@ public class ConfigSchema extends BaseSchema implements WritableSchema, Converti
         addIssuesIfNotNull(securityProperties);
         addIssuesIfNotNull(provenanceReportingProperties);
         addIssuesIfNotNull(provenanceRepositorySchema);
+        addIssuesIfNotNull(processors);
+        addIssuesIfNotNull(connections);
+        addIssuesIfNotNull(remoteProcessingGroups);
 
         Set<String> processorIds = new HashSet<>();
-        if (processors != null) {
-            List<String> processorIdList = processors.stream().map(ProcessorSchema::getId).collect(Collectors.toList());
-            checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_PROCESSOR_IDS, processorIdList);
-            for (ProcessorSchema processorSchema : processors) {
-                addIssuesIfNotNull(processorSchema);
-            }
-            processorIds.addAll(processorIdList);
-        }
+        List<String> processorIdList = processors.stream().map(ProcessorSchema::getId).collect(Collectors.toList());
+        processorIds.addAll(processorIdList);
 
-        if (connections != null) {
-            List<String> idList = connections.stream().map(ConnectionSchema::getId).filter(s -> !StringUtil.isNullOrEmpty(s)).collect(Collectors.toList());
-            checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_IDS, idList);
-            for (ConnectionSchema connectionSchema : connections) {
-                addIssuesIfNotNull(connectionSchema);
-            }
-        }
+        checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_PROCESSOR_IDS, processorIdList);
+        checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_IDS, connections.stream().map(ConnectionSchema::getId).collect(Collectors.toList()));
+        checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_PROCESSING_GROUP_NAMES,
+                remoteProcessingGroups.stream().map(RemoteProcessingGroupSchema::getName).collect(Collectors.toList()));
 
         Set<String> remoteInputPortIds = new HashSet<>();
-        if (remoteProcessingGroups != null) {
-            checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_PROCESSING_GROUP_NAMES,
-                    remoteProcessingGroups.stream().map(RemoteProcessingGroupSchema::getName).collect(Collectors.toList()));
-            for (RemoteProcessingGroupSchema remoteProcessingGroupSchema : remoteProcessingGroups) {
-                addIssuesIfNotNull(remoteProcessingGroupSchema);
-            }
-            List<RemoteProcessingGroupSchema> remoteProcessingGroups = getRemoteProcessingGroups();
-            if (remoteProcessingGroups != null) {
-                List<String> remoteInputPortIdList = remoteProcessingGroups.stream().filter(r -> r.getInputPorts() != null)
-                        .flatMap(r -> r.getInputPorts().stream()).map(RemoteInputPortSchema::getId).collect(Collectors.toList());
-                checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_INPUT_PORT_IDS, remoteInputPortIdList);
-                remoteInputPortIds.addAll(remoteInputPortIdList);
-            }
-        }
+        List<String> remoteInputPortIdList = remoteProcessingGroups.stream().filter(r -> r.getInputPorts() != null)
+                .flatMap(r -> r.getInputPorts().stream()).map(RemoteInputPortSchema::getId).collect(Collectors.toList());
+        checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_INPUT_PORT_IDS, remoteInputPortIdList);
+        remoteInputPortIds.addAll(remoteInputPortIdList);
 
         Set<String> duplicateIds = new HashSet<>(processorIds);
         duplicateIds.retainAll(remoteInputPortIds);
@@ -142,60 +125,10 @@ public class ConfigSchema extends BaseSchema implements WritableSchema, Converti
         }
     }
 
-    protected List<ProcessorSchema> getProcessorSchemas(List<Map> processorMaps) {
-        if (processorMaps == null) {
-            return null;
-        }
-        List<ProcessorSchema> processors = convertListToType(processorMaps, "processor", ProcessorSchema.class, PROCESSORS_KEY);
-
-        Map<String, Integer> idMap = processors.stream().map(ProcessorSchema::getId).filter(
-                s -> !StringUtil.isNullOrEmpty(s)).collect(Collectors.toMap(Function.identity(), s -> 2, Integer::compareTo));
-
-        // Set unset ids
-        processors.stream().filter(connection -> StringUtil.isNullOrEmpty(connection.getId())).forEachOrdered(processor -> processor.setId(getUniqueId(idMap, processor.getName())));
-
-        return processors;
-    }
-
-    protected List<ConnectionSchema> getConnectionSchemas(List<Map> connectionMaps) {
-        if (connectionMaps == null) {
-            return null;
-        }
-        List<ConnectionSchema> connections = convertListToType(connectionMaps, "connection", ConnectionSchema.class, CONNECTIONS_KEY);
-        Map<String, Integer> idMap = connections.stream().map(ConnectionSchema::getId).filter(
-                s -> !StringUtil.isNullOrEmpty(s)).collect(Collectors.toMap(Function.identity(), s -> 2, Integer::compareTo));
-
-        Map<String, String> processorNameToIdMap = new HashMap<>();
-
-        // We can't look up id by name for names that appear more than once
-        Set<String> duplicateProcessorNames = new HashSet<>();
-
-        List<ProcessorSchema> processors = getProcessors();
-        if (processors != null) {
-            processors.stream().forEachOrdered(p -> processorNameToIdMap.put(p.getName(), p.getId()));
-
-            Set<String> processorNames = new HashSet<>();
-            processors.stream().map(ProcessorSchema::getName).forEachOrdered(n -> {
-                if (!processorNames.add(n)) {
-                    duplicateProcessorNames.add(n);
-                }
-            });
-        }
-
-        Set<String> remoteInputPortIds = new HashSet<>();
-        List<RemoteProcessingGroupSchema> remoteProcessingGroups = getRemoteProcessingGroups();
-        if (remoteProcessingGroups != null) {
-            remoteInputPortIds.addAll(remoteProcessingGroups.stream().filter(r -> r.getInputPorts() != null)
-                    .flatMap(r -> r.getInputPorts().stream()).map(RemoteInputPortSchema::getId).collect(Collectors.toSet()));
-        }
-
-        return connections;
-    }
-
     public Map<String, Object> toMap() {
         Map<String, Object> result = mapSupplier.get();
         result.put(VERSION, getVersion());
-        result.put(FLOW_CONTROLLER_PROPS_KEY, flowControllerProperties.toMap());
+        putIfNotNull(result, FLOW_CONTROLLER_PROPS_KEY, flowControllerProperties);
         putIfNotNull(result, CORE_PROPS_KEY, coreProperties);
         putIfNotNull(result, FLOWFILE_REPO_KEY, flowfileRepositoryProperties);
         putIfNotNull(result, CONTENT_REPO_KEY, contentRepositoryProperties);

@@ -19,8 +19,12 @@
 
 package org.apache.nifi.minifi.commons.schema.common;
 
-import java.util.Map;
+import java.util.List;
 
-public interface WritableSchema extends Schema {
-    Map<String, Object> toMap();
+public interface Schema {
+    List<String> getValidationIssues();
+
+    void addValidationIssue(String issue);
+
+    boolean isValid();
 }
