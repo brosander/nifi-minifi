@@ -99,10 +99,9 @@ public class ConnectionSchemaV1Test {
     @Test
     public void testSourceRelationShipName() {
         ConnectionSchemaV1 schema = createSchema(0);
-        assertEquals(testSourceRelationship, schema.getSourceRelationshipName());
         List<String> sourceRelationshipNames = schema.convert().getSourceRelationshipNames();
         assertEquals(1, sourceRelationshipNames.size());
-        assertEquals(schema.getSourceRelationshipName(), sourceRelationshipNames.get(0));
+        assertEquals(testSourceRelationship, sourceRelationshipNames.get(0));
     }
 
     @Test
@@ -110,88 +109,68 @@ public class ConnectionSchemaV1Test {
         Map<String, Object> map = createMap();
         map.remove(ConnectionSchemaV1.SOURCE_RELATIONSHIP_NAME_KEY);
         ConnectionSchemaV1 schema = createSchema(map, 1);
-        assertNull(schema.getSourceRelationshipName());
         List<String> sourceRelationshipNames = schema.convert().getSourceRelationshipNames();
-        assertEquals(1, sourceRelationshipNames.size());
-        assertEquals(schema.getSourceRelationshipName(), sourceRelationshipNames.get(0));
+        assertEquals(0, sourceRelationshipNames.size());
     }
 
     @Test
     public void testDestinationName() {
-        ConnectionSchemaV1 schema = createSchema(0);
-        assertEquals(testDestinationName, schema.getDestinationName());
+        assertEquals(testDestinationName, createSchema(0).getDestinationName());
     }
 
     @Test
     public void testNoDestinationName() {
         Map<String, Object> map = createMap();
         map.remove(ConnectionSchemaV1.DESTINATION_NAME_KEY);
-        ConnectionSchemaV1 schema = createSchema(map, 1);
-        assertNull(schema.getDestinationName());
+        assertNull(createSchema(map, 1).getDestinationName());
     }
 
     @Test
     public void testMaxWorkQueueSize() {
-        ConnectionSchemaV1 schema = createSchema(0);
-        assertEquals(testMaxWorkQueueSize, schema.getMaxWorkQueueSize());
-        assertEquals(schema.getMaxWorkQueueSize(), schema.convert().getMaxWorkQueueSize());
+        assertEquals(testMaxWorkQueueSize, createSchema(0).convert().getMaxWorkQueueSize());
     }
 
     @Test
     public void testNoMaxWorkQueueSize() {
         Map<String, Object> map = createMap();
         map.remove(ConnectionSchema.MAX_WORK_QUEUE_SIZE_KEY);
-        ConnectionSchemaV1 schema = createSchema(map, 0);
-        assertEquals(ConnectionSchema.DEFAULT_MAX_WORK_QUEUE_SIZE, schema.getMaxWorkQueueSize());
-        assertEquals(schema.getMaxWorkQueueSize(), schema.convert().getMaxWorkQueueSize());
+        assertEquals(ConnectionSchema.DEFAULT_MAX_WORK_QUEUE_SIZE, createSchema(map, 0).convert().getMaxWorkQueueSize());
     }
 
     @Test
     public void testMaxWorkQueueDataSize() {
-        ConnectionSchemaV1 schema = createSchema(0);
-        assertEquals(testMaxWorkQueueDataSize, schema.getMaxWorkQueueDataSize());
-        assertEquals(schema.getMaxWorkQueueDataSize(), schema.convert().getMaxWorkQueueDataSize());
+        assertEquals(testMaxWorkQueueDataSize, createSchema(0).convert().getMaxWorkQueueDataSize());
     }
 
     @Test
     public void testNoMaxWorkQueueDataSize() {
         Map<String, Object> map = createMap();
         map.remove(ConnectionSchema.MAX_WORK_QUEUE_DATA_SIZE_KEY);
-        ConnectionSchemaV1 schema = createSchema(map, 0);
-        assertEquals(ConnectionSchema.DEFAULT_MAX_QUEUE_DATA_SIZE, schema.getMaxWorkQueueDataSize());
-        assertEquals(schema.getMaxWorkQueueDataSize(), schema.convert().getMaxWorkQueueDataSize());
+        assertEquals(ConnectionSchema.DEFAULT_MAX_QUEUE_DATA_SIZE, createSchema(map, 0).convert().getMaxWorkQueueDataSize());
     }
 
     @Test
     public void testFlowFileExpiration() {
-        ConnectionSchemaV1 schema = createSchema(0);
-        assertEquals(testFlowfileExpiration, schema.getFlowfileExpiration());
-        assertEquals(schema.getFlowfileExpiration(), schema.convert().getFlowfileExpiration());
+        assertEquals(testFlowfileExpiration, createSchema(0).convert().getFlowfileExpiration());
     }
 
     @Test
     public void testNoFlowFileExpiration() {
         Map<String, Object> map = createMap();
         map.remove(ConnectionSchema.FLOWFILE_EXPIRATION__KEY);
-        ConnectionSchemaV1 schema = createSchema(map, 0);
-        assertEquals(ConnectionSchema.DEFAULT_FLOWFILE_EXPIRATION, schema.getFlowfileExpiration());
-        assertEquals(schema.getFlowfileExpiration(), schema.convert().getFlowfileExpiration());
+        assertEquals(ConnectionSchema.DEFAULT_FLOWFILE_EXPIRATION, createSchema(map, 0).convert().getFlowfileExpiration());
     }
 
     @Test
     public void testQueuePrioritizer() {
-        ConnectionSchemaV1 schema = createSchema(0);
-        assertEquals(testQueuePrioritizerClass, schema.getQueuePrioritizerClass());
-        assertEquals(schema.getQueuePrioritizerClass(), schema.convert().getQueuePrioritizerClass());
+        assertEquals(testQueuePrioritizerClass, createSchema(0).convert().getQueuePrioritizerClass());
     }
 
     @Test
     public void testNoQueuePrioritizer() {
         Map<String, Object> map = createMap();
         map.remove(ConnectionSchema.QUEUE_PRIORITIZER_CLASS_KEY);
-        ConnectionSchemaV1 schema = createSchema(map, 0);
-        assertEquals("", schema.getQueuePrioritizerClass());
-        assertEquals(schema.getQueuePrioritizerClass(), schema.convert().getQueuePrioritizerClass());
+        assertEquals("", createSchema(map, 0).convert().getQueuePrioritizerClass());
     }
 
     @Test
@@ -209,16 +188,5 @@ public class ConnectionSchemaV1Test {
         assertEquals("test_2_2", connections.get(2).getId());
         assertEquals("test_3", connections.get(3).getId());
         assertEquals("test_2_3", connections.get(4).getId());
-    }
-
-    @Test
-    public void testGetUniqueIdConflicts() {
-        Map<String, Integer> ids = new HashMap<>();
-        assertEquals("test_id", ConfigSchema.getUniqueId(ids, "test/id"));
-        assertEquals("test_id_2", ConfigSchema.getUniqueId(ids, "test$id"));
-        assertEquals("test_id_3", ConfigSchema.getUniqueId(ids, "test$id"));
-        assertEquals("test_id_4", ConfigSchema.getUniqueId(ids, "test$id"));
-        assertEquals("test_id_5", ConfigSchema.getUniqueId(ids, "test$id"));
-        assertEquals("test_id_2_2", ConfigSchema.getUniqueId(ids, "test_id_2"));
     }
 }

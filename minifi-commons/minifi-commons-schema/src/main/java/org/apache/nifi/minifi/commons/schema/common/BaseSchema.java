@@ -29,12 +29,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public abstract class BaseSchema implements YamlSchema {
+public abstract class BaseSchema implements Schema {
     public static final String IT_WAS_NOT_FOUND_AND_IT_IS_REQUIRED = "it was not found and it is required";
     public static final String EMPTY_NAME = "empty_name";
 
@@ -53,6 +52,7 @@ public abstract class BaseSchema implements YamlSchema {
     /******* Validation Issue helper methods *******/
     private Collection<String> validationIssues = new HashSet<>();
 
+    @Override
     public boolean isValid() {
         return getValidationIssues().isEmpty();
     }
@@ -60,33 +60,6 @@ public abstract class BaseSchema implements YamlSchema {
     @Override
     public List<String> getValidationIssues() {
         return validationIssues.stream().sorted().collect(Collectors.toList());
-    }
-
-    public String getValidationIssuesAsString() {
-        StringBuilder stringBuilder = new StringBuilder();
-        boolean first = true;
-        for (String validationIssue : getValidationIssues()) {
-            if (!first) {
-                stringBuilder.append(", ");
-            }
-            stringBuilder.append("[");
-            stringBuilder.append(validationIssue);
-            stringBuilder.append("]");
-            first = false;
-        }
-        return stringBuilder.toString();
-    }
-
-    public <T> T getAndValidateNotNull(Supplier<T> supplier, String keyName, String wrapperName) {
-        return getAndValidate(supplier, t -> t != null, keyName, wrapperName, IT_WAS_NOT_FOUND_AND_IT_IS_REQUIRED);
-    }
-
-    public <T> T getAndValidate(Supplier<T> supplier, Predicate<T> predicate, String keyName, String wrapperName, String reason) {
-        T result = supplier.get();
-        if (!predicate.test(result)) {
-            addValidationIssue(keyName, wrapperName, reason);
-        }
-        return result;
     }
 
     public void addValidationIssue(String issue) {
@@ -233,13 +206,7 @@ public abstract class BaseSchema implements YamlSchema {
                 }
             }
             if (duplicates.size() > 0) {
-                StringBuilder errorMessage = new StringBuilder(errorMessagePrefix);
-                for (String duplicateName : duplicates) {
-                    errorMessage.append(duplicateName);
-                    errorMessage.append(", ");
-                }
-                errorMessage.setLength(errorMessage.length() - 2);
-                duplicateMessageConsumer.accept(errorMessage.toString());
+                duplicateMessageConsumer.accept(errorMessagePrefix + duplicates.stream().collect(Collectors.joining(", ")));
             }
         }
     }

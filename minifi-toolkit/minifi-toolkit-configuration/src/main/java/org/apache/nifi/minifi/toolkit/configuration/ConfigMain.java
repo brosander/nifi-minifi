@@ -18,6 +18,7 @@
 package org.apache.nifi.minifi.toolkit.configuration;
 
 import org.apache.nifi.minifi.commons.schema.ConfigSchema;
+import org.apache.nifi.minifi.commons.schema.common.ConvertableSchema;
 import org.apache.nifi.minifi.commons.schema.common.StringUtil;
 import org.apache.nifi.minifi.commons.schema.serialization.SchemaLoader;
 import org.apache.nifi.minifi.commons.schema.serialization.SchemaSaver;
@@ -96,7 +97,7 @@ public class ConfigMain {
         }
         try (InputStream inputStream = pathInputStreamFactory.create(args[1])) {
             try {
-                ConfigSchema configSchema = SchemaLoader.loadConfigSchemaFromYaml(inputStream);
+                ConvertableSchema<ConfigSchema> configSchema = SchemaLoader.loadConvertableSchemaFromYaml(inputStream);
                 if (!configSchema.isValid()) {
                     configSchema.getValidationIssues().forEach(s -> System.out.println(s));
                     System.out.println();

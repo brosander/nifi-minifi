@@ -19,10 +19,22 @@
 
 package org.apache.nifi.minifi.commons.schema.common;
 
-import java.util.List;
+import org.junit.Test;
 
-public interface YamlSchema {
-    List<String> getValidationIssues();
+import java.util.HashMap;
+import java.util.Map;
 
-    void addValidationIssue(String issue);
+import static org.junit.Assert.assertEquals;
+
+public class BaseSchemaTest {
+    @Test
+    public void testGetUniqueIdConflicts() {
+        Map<String, Integer> ids = new HashMap<>();
+        assertEquals("test_id", BaseSchema.getUniqueId(ids, "test/id"));
+        assertEquals("test_id_2", BaseSchema.getUniqueId(ids, "test$id"));
+        assertEquals("test_id_3", BaseSchema.getUniqueId(ids, "test$id"));
+        assertEquals("test_id_4", BaseSchema.getUniqueId(ids, "test$id"));
+        assertEquals("test_id_5", BaseSchema.getUniqueId(ids, "test$id"));
+        assertEquals("test_id_2_2", BaseSchema.getUniqueId(ids, "test_id_2"));
+    }
 }

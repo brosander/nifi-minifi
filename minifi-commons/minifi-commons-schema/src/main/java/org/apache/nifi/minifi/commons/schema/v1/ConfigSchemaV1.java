@@ -33,7 +33,7 @@ import org.apache.nifi.minifi.commons.schema.RemoteInputPortSchema;
 import org.apache.nifi.minifi.commons.schema.RemoteProcessingGroupSchema;
 import org.apache.nifi.minifi.commons.schema.SecurityPropertiesSchema;
 import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
-import org.apache.nifi.minifi.commons.schema.common.ConvertibleSchema;
+import org.apache.nifi.minifi.commons.schema.common.ConvertableSchema;
 import org.apache.nifi.minifi.commons.schema.common.StringUtil;
 
 import java.util.ArrayList;
@@ -44,6 +44,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.apache.nifi.minifi.commons.schema.ConfigSchema.TOP_LEVEL_NAME;
+import static org.apache.nifi.minifi.commons.schema.ConfigSchema.VERSION;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.COMPONENT_STATUS_REPO_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.CONNECTIONS_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.CONTENT_REPO_KEY;
@@ -56,15 +58,13 @@ import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.PR
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.REMOTE_PROCESSING_GROUPS_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.SECURITY_PROPS_KEY;
 
-public class ConfigSchemaV1 extends BaseSchema implements ConvertibleSchema<ConfigSchema> {
+public class ConfigSchemaV1 extends BaseSchema implements ConvertableSchema<ConfigSchema> {
     public static final String FOUND_THE_FOLLOWING_DUPLICATE_PROCESSOR_NAMES = "Found the following duplicate processor names: ";
     public static final String FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_NAMES = "Found the following duplicate connection names: ";
     public static final String FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_PROCESSING_GROUP_NAMES = "Found the following duplicate remote processing group names: ";
     public static final String CANNOT_LOOK_UP_PROCESSOR_ID_FROM_PROCESSOR_NAME_DUE_TO_DUPLICATE_PROCESSOR_NAMES = "Cannot look up Processor id from Processor name due to duplicate Processor names: ";
     public static final int CONFIG_VERSION = 1;
     public static final String CONNECTIONS_REFER_TO_PROCESSOR_NAMES_THAT_DONT_EXIST = "Connection(s) refer to Processor names that don't exist: ";
-    public static final String VERSION = "MiNiFi Config Version";
-    public static String TOP_LEVEL_NAME = "top level";
     private FlowControllerSchema flowControllerProperties;
     private CorePropertiesSchema coreProperties;
     private FlowFileRepositorySchema flowfileRepositoryProperties;
@@ -205,7 +205,7 @@ public class ConfigSchemaV1 extends BaseSchema implements ConvertibleSchema<Conf
 
     @Override
     public ConfigSchema convert() {
-        Map<String, Object> map = mapSupplier.get();
+        Map<String, Object> map = new HashMap<>();
         map.put(VERSION, getVersion());
         putIfNotNull(map, FLOW_CONTROLLER_PROPS_KEY, flowControllerProperties);
         putIfNotNull(map, CORE_PROPS_KEY, coreProperties);

@@ -21,7 +21,7 @@ package org.apache.nifi.minifi.commons.schema.v1;
 
 import org.apache.nifi.minifi.commons.schema.ProcessorSchema;
 import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
-import org.apache.nifi.minifi.commons.schema.common.ConvertibleSchema;
+import org.apache.nifi.minifi.commons.schema.common.ConvertableSchema;
 
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +47,7 @@ import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.SC
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.SCHEDULING_STRATEGY_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.YIELD_PERIOD_KEY;
 
-public class ProcessorSchemaV1 extends BaseSchema implements ConvertibleSchema<ProcessorSchema> {
+public class ProcessorSchemaV1 extends BaseSchema implements ConvertableSchema<ProcessorSchema> {
     private String name;
     private String processorClass;
     private String schedulingStrategy;
