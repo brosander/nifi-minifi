@@ -17,30 +17,36 @@
 
 package org.apache.nifi.minifi.commons.schema;
 
-import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
 import org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys;
 import org.apache.nifi.minifi.commons.schema.exception.SchemaLoaderException;
 import org.apache.nifi.minifi.commons.schema.serialization.SchemaLoader;
-import org.apache.nifi.minifi.commons.schema.v1.ConfigSchemaV1;
-import org.apache.nifi.minifi.commons.schema.v1.ConnectionSchemaV1;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
 public class ConfigSchemaTest {
     @Test
-    public void testGetUniqueIdEmptySet() {
-        String testId = "testId";
-        assertEquals(testId + "___", ConfigSchema.getUniqueId(new HashMap<>(), testId + "/ $"));
+    public void testValid() throws IOException, SchemaLoaderException {
+        Map<String, Object> yamlAsMap = SchemaLoader.loadYamlAsMap(ConfigSchemaTest.class.getClassLoader().getResourceAsStream("config-minimal-v2.yml"));
+        ConfigSchema configSchema = new ConfigSchema(yamlAsMap);
+        List<String> validationIssues = configSchema.getValidationIssues();
+        assertEquals(0, validationIssues.size());
+    }
+    @Test
+    public void testValidationIssuesFromOlder() throws IOException, SchemaLoaderException {
+        Map<String, Object> yamlAsMap = SchemaLoader.loadYamlAsMap(ConfigSchemaTest.class.getClassLoader().getResourceAsStream("config-minimal.yml"));
+        ConfigSchema configSchema = new ConfigSchema(yamlAsMap);
+        List<String> validationIssues = configSchema.getValidationIssues();
+        assertNotEquals(0, validationIssues.size());
     }
 
     @Test
@@ -77,27 +83,6 @@ public class ConfigSchemaTest {
     public void testRemoteProcessingGroupDuplicateValidationPositiveCase() {
         ConfigSchema configSchema = new ConfigSchema(Collections.singletonMap(CommonPropertyKeys.REMOTE_PROCESSING_GROUPS_KEY, getListWithNames("testName1", "testName1")));
         assertMessageDoesExist(configSchema, ConfigSchema.FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_PROCESSING_GROUP_NAMES);
-    }
-
-    @Test
-    public void testInvalidSourceAndDestinationNames() throws IOException, SchemaLoaderException {
-        Map<String, Object> yamlAsMap = SchemaLoader.loadYamlAsMap(ConfigSchemaTest.class.getClassLoader().getResourceAsStream("config-minimal.yml"));
-        List<Map<String, Object>> connections = (List<Map<String, Object>>) yamlAsMap.get(CommonPropertyKeys.CONNECTIONS_KEY);
-        assertEquals(1, connections.size());
-
-        String fakeSource = "fakeSource";
-        String fakeDestination = "fakeDestination";
-
-        Map<String, Object> connection = connections.get(0);
-        connection.put(ConnectionSchemaV1.SOURCE_NAME_KEY, fakeSource);
-        connection.put(ConnectionSchemaV1.DESTINATION_NAME_KEY, fakeDestination);
-
-        ConfigSchema configSchema = new ConfigSchemaV1(yamlAsMap).convert();
-        List<String> validationIssues = configSchema.getValidationIssues();
-        assertEquals(3, validationIssues.size());
-        assertEquals(BaseSchema.getIssueText(ConnectionSchema.DESTINATION_ID_KEY, CommonPropertyKeys.CONNECTIONS_KEY, BaseSchema.IT_WAS_NOT_FOUND_AND_IT_IS_REQUIRED), validationIssues.get(0));
-        assertEquals(BaseSchema.getIssueText(ConnectionSchema.SOURCE_ID_KEY, CommonPropertyKeys.CONNECTIONS_KEY, BaseSchema.IT_WAS_NOT_FOUND_AND_IT_IS_REQUIRED), validationIssues.get(1));
-        assertEquals(ConfigSchemaV1.CONNECTIONS_REFER_TO_PROCESSOR_NAMES_THAT_DONT_EXIST + fakeDestination + ", " + fakeSource, validationIssues.get(2));
     }
 
     public static List<Map<String, Object>> getListWithNames(String... names) {

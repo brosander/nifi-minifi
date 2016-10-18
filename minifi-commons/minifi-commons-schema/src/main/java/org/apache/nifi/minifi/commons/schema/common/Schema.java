@@ -22,9 +22,24 @@ package org.apache.nifi.minifi.commons.schema.common;
 import java.util.List;
 
 public interface Schema {
+    /**
+     * Returns known problems with the given schema
+     *
+     * @return known problems with the given schema
+     */
     List<String> getValidationIssues();
 
+    /**
+     * Adds a validation issue
+     *
+     * @param issue the issue to add
+     */
     void addValidationIssue(String issue);
 
+    /**
+     * Returns a boolean indicating whether the schema is valid
+     *
+     * @return a boolean indicating whether the schema is valid
+     */
     boolean isValid();
 }

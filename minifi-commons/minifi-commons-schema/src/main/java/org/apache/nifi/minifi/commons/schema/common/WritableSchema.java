@@ -21,6 +21,14 @@ package org.apache.nifi.minifi.commons.schema.common;
 
 import java.util.Map;
 
+/**
+ * Schema that can be serialized to a Map
+ */
 public interface WritableSchema extends Schema {
+    /**
+     * Serialize the schema to a Map
+     *
+     * @return the output map
+     */
     Map<String, Object> toMap();
 }

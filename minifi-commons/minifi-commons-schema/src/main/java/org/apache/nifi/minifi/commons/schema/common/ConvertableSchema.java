@@ -19,6 +19,15 @@
 
 package org.apache.nifi.minifi.commons.schema.common;
 
-public interface ConvertableSchema<T> extends Schema {
+/**
+ * Schema that can be converted to another.  Typically used to upconvert older versions to newer.
+ * @param <T> the type it can be converted to
+ */
+public interface ConvertableSchema<T extends Schema> extends Schema {
+    /**
+     * Converts this instance to the destination type.
+     *
+     * @return the converted instance
+     */
     T convert();
 }

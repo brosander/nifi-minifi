@@ -128,7 +128,7 @@ public class ConfigSchemaV1 extends BaseSchema implements ConvertableSchema<Conf
         return processorSchemas;
     }
 
-    protected List<ConnectionSchema> getConnectionSchemas(List<ProcessorSchema> processors) {
+    protected List<ConnectionSchema> getConnectionSchemas(List<ProcessorSchema> processors, List<String> validationIssues) {
         Map<String, Integer> idMap = new HashMap<>();
 
         Map<String, String> processorNameToIdMap = new HashMap<>();
@@ -194,11 +194,11 @@ public class ConfigSchemaV1 extends BaseSchema implements ConvertableSchema<Conf
         }
 
         if (problematicDuplicateNames.size() > 0) {
-            addValidationIssue(CANNOT_LOOK_UP_PROCESSOR_ID_FROM_PROCESSOR_NAME_DUE_TO_DUPLICATE_PROCESSOR_NAMES
+            validationIssues.add(CANNOT_LOOK_UP_PROCESSOR_ID_FROM_PROCESSOR_NAME_DUE_TO_DUPLICATE_PROCESSOR_NAMES
                     + problematicDuplicateNames.stream().collect(Collectors.joining(", ")));
         }
         if (missingProcessorNames.size() > 0) {
-            addValidationIssue(CONNECTIONS_REFER_TO_PROCESSOR_NAMES_THAT_DONT_EXIST + missingProcessorNames.stream().sorted().collect(Collectors.joining(", ")));
+            validationIssues.add(CONNECTIONS_REFER_TO_PROCESSOR_NAMES_THAT_DONT_EXIST + missingProcessorNames.stream().sorted().collect(Collectors.joining(", ")));
         }
         return connectionSchemas;
     }
@@ -216,10 +216,35 @@ public class ConfigSchemaV1 extends BaseSchema implements ConvertableSchema<Conf
         putIfNotNull(map, SECURITY_PROPS_KEY, securityProperties);
         List<ProcessorSchema> processorSchemas = getProcessorSchemas();
         putListIfNotNull(map, PROCESSORS_KEY, processorSchemas);
-        putListIfNotNull(map, CONNECTIONS_KEY, getConnectionSchemas(processorSchemas));
+        List<String> validationIssues = getValidationIssues();
+        putListIfNotNull(map, CONNECTIONS_KEY, getConnectionSchemas(processorSchemas, validationIssues));
         putListIfNotNull(map, REMOTE_PROCESSING_GROUPS_KEY, remoteProcessingGroups);
         putIfNotNull(map, PROVENANCE_REPORTING_KEY, provenanceReportingProperties);
-        return new ConfigSchema(map, getValidationIssues());
+        return new ConfigSchema(map, validationIssues);
+    }
+
+    /**
+     * Will replace all characters not in [A-Za-z0-9_] with _
+     * <p>
+     * This has potential for collisions so it will also append numbers as necessary to prevent that
+     *
+     * @param ids  id map of already incremented numbers
+     * @param name the name
+     * @return a unique filesystem-friendly id
+     */
+    public static String getUniqueId(Map<String, Integer> ids, String name) {
+        String baseId = StringUtil.isNullOrEmpty(name) ? EMPTY_NAME : ID_REPLACE_PATTERN.matcher(name).replaceAll("_");
+        String id = baseId;
+        Integer idNum = ids.get(baseId);
+        while (ids.containsKey(id)) {
+            id = baseId + "_" + idNum++;
+        }
+        // Using != on a string comparison here is intentional.  The two will be reference equal iff the body of the while loop was never executed.
+        if (id != baseId) {
+            ids.put(baseId, idNum);
+        }
+        ids.put(id, 2);
+        return id;
     }
 
     public int getVersion() {

@@ -210,28 +210,4 @@ public abstract class BaseSchema implements Schema {
             }
         }
     }
-
-    /**
-     * Will replace all characters not in [A-Za-z0-9_] with _
-     * <p>
-     * This has potential for collisions so it will also append numbers as necessary to prevent that
-     *
-     * @param ids  id map of already incremented numbers
-     * @param name the name
-     * @return a unique filesystem-friendly id
-     */
-    public static String getUniqueId(Map<String, Integer> ids, String name) {
-        String baseId = StringUtil.isNullOrEmpty(name) ? EMPTY_NAME : ID_REPLACE_PATTERN.matcher(name).replaceAll("_");
-        String id = baseId;
-        Integer idNum = ids.get(baseId);
-        while (ids.containsKey(id)) {
-            id = baseId + "_" + idNum++;
-        }
-        // Using != on a string comparison here is intentional.  The two will be reference equal iff the body of the while loop was never executed.
-        if (id != baseId) {
-            ids.put(baseId, idNum);
-        }
-        ids.put(id, 2);
-        return id;
-    }
 }
