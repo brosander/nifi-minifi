@@ -54,37 +54,37 @@ public class ConfigSchemaTest {
     @Test
     public void testProcessorDuplicateValidationNegativeCase() {
         ConfigSchema configSchema = new ConfigSchema(Collections.singletonMap(CommonPropertyKeys.PROCESSORS_KEY, getListWithKeyValues(ID_KEY, "testId1", "testId2")));
-        assertMessageDoesNotExist(configSchema, ConfigSchema.FOUND_THE_FOLLOWING_DUPLICATE_PROCESSOR_IDS);
+        assertMessageDoesNotExist(configSchema, ProcessGroupSchema.FOUND_THE_FOLLOWING_DUPLICATE_PROCESSOR_IDS);
     }
 
     @Test
     public void testProcessorDuplicateValidationPositiveCase() {
         ConfigSchema configSchema = new ConfigSchema(Collections.singletonMap(CommonPropertyKeys.PROCESSORS_KEY, getListWithKeyValues(ID_KEY, "testId1", "testId1")));
-        assertMessageDoesExist(configSchema, ConfigSchema.FOUND_THE_FOLLOWING_DUPLICATE_PROCESSOR_IDS);
+        assertMessageDoesExist(configSchema, ProcessGroupSchema.FOUND_THE_FOLLOWING_DUPLICATE_PROCESSOR_IDS);
     }
 
     @Test
     public void testConnectionDuplicateValidationNegativeCase() {
         ConfigSchema configSchema = new ConfigSchema(Collections.singletonMap(CommonPropertyKeys.CONNECTIONS_KEY, getListWithKeyValues(ID_KEY, "testId1", "testId2")));
-        assertMessageDoesNotExist(configSchema, ConfigSchema.FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_IDS);
+        assertMessageDoesNotExist(configSchema, ProcessGroupSchema.FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_IDS);
     }
 
     @Test
     public void testConnectionDuplicateValidationPositiveCase() {
         ConfigSchema configSchema = new ConfigSchema(Collections.singletonMap(CommonPropertyKeys.CONNECTIONS_KEY, getListWithKeyValues(ID_KEY, "testId1", "testId1")));
-        assertMessageDoesExist(configSchema, ConfigSchema.FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_IDS);
+        assertMessageDoesExist(configSchema, ProcessGroupSchema.FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_IDS);
     }
 
     @Test
     public void testRemoteProcessingGroupDuplicateValidationNegativeCase() {
         ConfigSchema configSchema = new ConfigSchema(Collections.singletonMap(CommonPropertyKeys.REMOTE_PROCESSING_GROUPS_KEY, getListWithNames("testName1", "testName2")));
-        assertMessageDoesNotExist(configSchema, ConfigSchema.FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_PROCESSING_GROUP_NAMES);
+        assertMessageDoesNotExist(configSchema, ProcessGroupSchema.FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_PROCESSING_GROUP_NAMES);
     }
 
     @Test
     public void testRemoteProcessingGroupDuplicateValidationPositiveCase() {
         ConfigSchema configSchema = new ConfigSchema(Collections.singletonMap(CommonPropertyKeys.REMOTE_PROCESSING_GROUPS_KEY, getListWithNames("testName1", "testName1")));
-        assertMessageDoesExist(configSchema, ConfigSchema.FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_PROCESSING_GROUP_NAMES);
+        assertMessageDoesExist(configSchema, ProcessGroupSchema.FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_PROCESSING_GROUP_NAMES);
     }
 
     @Test

@@ -20,6 +20,7 @@ package org.apache.nifi.minifi.bootstrap.util;
 import org.apache.nifi.minifi.bootstrap.configuration.ConfigurationChangeException;
 import org.apache.nifi.minifi.commons.schema.ConfigSchema;
 import org.apache.nifi.minifi.commons.schema.ConnectionSchema;
+import org.apache.nifi.minifi.commons.schema.ProcessGroupSchema;
 import org.apache.nifi.prioritizer.FirstInFirstOutPrioritizer;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +52,7 @@ public class ConfigTransformerTest {
 
     @Test
     public void testNullQueuePrioritizerNotWritten() throws ConfigurationChangeException, XPathExpressionException {
-        ConfigTransformer.addConnection(config, new ConnectionSchema(Collections.emptyMap()), new ConfigSchema(Collections.emptyMap()));
+        ConfigTransformer.addConnection(config, new ConnectionSchema(Collections.emptyMap()), new ParentGroupIdResolver(new ProcessGroupSchema(Collections.emptyMap(), ConfigSchema.TOP_LEVEL_NAME)));
         XPath xpath = xPathFactory.newXPath();
         String expression = "connection/queuePrioritizerClass";
         assertNull(xpath.evaluate(expression, config, XPathConstants.NODE));
@@ -62,7 +63,7 @@ public class ConfigTransformerTest {
         Map<String, Object> map = new HashMap<>();
         map.put(ConnectionSchema.QUEUE_PRIORITIZER_CLASS_KEY, "");
 
-        ConfigTransformer.addConnection(config, new ConnectionSchema(map), new ConfigSchema(Collections.emptyMap()));
+        ConfigTransformer.addConnection(config, new ConnectionSchema(map), new ParentGroupIdResolver(new ProcessGroupSchema(Collections.emptyMap(), ConfigSchema.TOP_LEVEL_NAME)));
         XPath xpath = xPathFactory.newXPath();
         String expression = "connection/queuePrioritizerClass";
         assertNull(xpath.evaluate(expression, config, XPathConstants.NODE));
@@ -73,7 +74,7 @@ public class ConfigTransformerTest {
         Map<String, Object> map = new HashMap<>();
         map.put(ConnectionSchema.QUEUE_PRIORITIZER_CLASS_KEY, FirstInFirstOutPrioritizer.class.getCanonicalName());
 
-        ConfigTransformer.addConnection(config, new ConnectionSchema(map), new ConfigSchema(Collections.emptyMap()));
+        ConfigTransformer.addConnection(config, new ConnectionSchema(map), new ParentGroupIdResolver(new ProcessGroupSchema(Collections.emptyMap(), ConfigSchema.TOP_LEVEL_NAME)));
         XPath xpath = xPathFactory.newXPath();
         String expression = "connection/queuePrioritizerClass/text()";
         assertEquals(FirstInFirstOutPrioritizer.class.getCanonicalName(), xpath.evaluate(expression, config, XPathConstants.STRING));

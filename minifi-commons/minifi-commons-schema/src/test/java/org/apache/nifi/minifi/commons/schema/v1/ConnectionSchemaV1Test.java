@@ -21,6 +21,7 @@ package org.apache.nifi.minifi.commons.schema.v1;
 
 import org.apache.nifi.minifi.commons.schema.ConfigSchema;
 import org.apache.nifi.minifi.commons.schema.ConnectionSchema;
+import org.apache.nifi.minifi.commons.schema.ProcessGroupSchema;
 import org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys;
 import org.junit.Before;
 import org.junit.Test;
@@ -178,8 +179,8 @@ public class ConnectionSchemaV1Test {
         List<Map<String, Object>> listWithKeyValues = getListWithKeyValues(CommonPropertyKeys.NAME_KEY, "test", "test", "test_2", "test", "test_2");
 
         ConfigSchema configSchema = new ConfigSchemaV1(Collections.singletonMap(CommonPropertyKeys.CONNECTIONS_KEY, listWithKeyValues)).convert();
-        assertMessageDoesNotExist(configSchema, ConfigSchema.FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_IDS);
-        List<ConnectionSchema> connections = configSchema.getConnections();
+        assertMessageDoesNotExist(configSchema, ProcessGroupSchema.FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_IDS);
+        List<ConnectionSchema> connections = configSchema.getProcessGroupSchema().getConnections();
         assertEquals(5, connections.size());
 
         // Generated unique ids

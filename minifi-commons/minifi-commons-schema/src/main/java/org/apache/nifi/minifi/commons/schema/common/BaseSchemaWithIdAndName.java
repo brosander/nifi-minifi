@@ -60,7 +60,7 @@ public abstract class BaseSchemaWithIdAndName extends BaseSchema implements Writ
         return name;
     }
 
-    protected void setName(String name) {
+    public void setName(String name) {
         this.name = name;
     }
 

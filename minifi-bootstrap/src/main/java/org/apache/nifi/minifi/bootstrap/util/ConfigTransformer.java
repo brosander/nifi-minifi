@@ -27,11 +27,15 @@ import org.apache.nifi.minifi.commons.schema.ContentRepositorySchema;
 import org.apache.nifi.minifi.commons.schema.CorePropertiesSchema;
 import org.apache.nifi.minifi.commons.schema.FlowControllerSchema;
 import org.apache.nifi.minifi.commons.schema.FlowFileRepositorySchema;
+import org.apache.nifi.minifi.commons.schema.PortSchema;
+import org.apache.nifi.minifi.commons.schema.ProcessGroupSchema;
 import org.apache.nifi.minifi.commons.schema.ProcessorSchema;
 import org.apache.nifi.minifi.commons.schema.ProvenanceReportingSchema;
 import org.apache.nifi.minifi.commons.schema.ProvenanceRepositorySchema;
 import org.apache.nifi.minifi.commons.schema.RemoteInputPortSchema;
 import org.apache.nifi.minifi.commons.schema.RemoteProcessingGroupSchema;
+import org.apache.nifi.minifi.commons.schema.common.ConvertableSchema;
+import org.apache.nifi.minifi.commons.schema.common.Schema;
 import org.apache.nifi.minifi.commons.schema.common.StringUtil;
 import org.apache.nifi.minifi.commons.schema.serialization.SchemaLoader;
 import org.apache.nifi.minifi.commons.schema.SecurityPropertiesSchema;
@@ -88,11 +92,8 @@ public final class ConfigTransformer {
     }
 
     public static void transformConfigFile(InputStream sourceStream, String destPath) throws Exception {
-        ConfigSchema configSchema = SchemaLoader.loadConfigSchemaFromYaml(sourceStream);
-        if (!configSchema.isValid()) {
-            throw new InvalidConfigurationException("Failed to transform config file due to:["
-                    + configSchema.getValidationIssues().stream().sorted().collect(Collectors.joining("], [")) + "]");
-        }
+        ConvertableSchema<ConfigSchema> convertableSchema = throwIfInvalid(SchemaLoader.loadConvertableSchemaFromYaml(sourceStream));
+        ConfigSchema configSchema = throwIfInvalid(convertableSchema.convert());
 
         // Create nifi.properties and flow.xml.gz in memory
         ByteArrayOutputStream nifiPropertiesOutputStream = new ByteArrayOutputStream();
@@ -104,6 +105,14 @@ public final class ConfigTransformer {
         writeNiFiPropertiesFile(nifiPropertiesOutputStream, destPath);
 
         writeFlowXmlFile(flowXml, destPath);
+    }
+
+    private static <T extends Schema> T throwIfInvalid(T schema) throws InvalidConfigurationException {
+        if (!schema.isValid()) {
+            throw new InvalidConfigurationException("Failed to transform config file due to:["
+                    + schema.getValidationIssues().stream().sorted().collect(Collectors.joining("], [")) + "]");
+        }
+        return schema;
     }
 
     protected static void writeNiFiPropertiesFile(ByteArrayOutputStream nifiPropertiesOutputStream, String destPath) throws IOException {
@@ -280,7 +289,18 @@ public final class ConfigTransformer {
             CorePropertiesSchema coreProperties = configSchema.getCoreProperties();
             addTextElement(rootNode, "maxTimerDrivenThreadCount", String.valueOf(coreProperties.getMaxConcurrentThreads()));
             addTextElement(rootNode, "maxEventDrivenThreadCount", String.valueOf(coreProperties.getMaxConcurrentThreads()));
-            addProcessGroup(rootNode, configSchema, "rootGroup");
+
+            FlowControllerSchema flowControllerProperties = configSchema.getFlowControllerProperties();
+
+            final Element element = doc.createElement("rootGroup");
+            rootNode.appendChild(element);
+
+            ProcessGroupSchema processGroupSchema = configSchema.getProcessGroupSchema();
+            processGroupSchema.setId("Root-Group");
+            processGroupSchema.setName(flowControllerProperties.getName());
+            processGroupSchema.setComment(flowControllerProperties.getComment());
+
+            addProcessGroup(doc, element, processGroupSchema, new ParentGroupIdResolver(processGroupSchema));
 
             SecurityPropertiesSchema securityProperties = configSchema.getSecurityProperties();
             if (securityProperties.useSSL()) {
@@ -331,43 +351,57 @@ public final class ConfigTransformer {
         }
     }
 
-    protected static void addProcessGroup(final Element parentElement, ConfigSchema configSchema, final String elementName) throws ConfigurationChangeException {
+    protected static void addProcessGroup(Document doc, Element element, ProcessGroupSchema processGroupSchema, ParentGroupIdResolver parentGroupIdResolver) throws ConfigurationChangeException {
         try {
-            FlowControllerSchema flowControllerProperties = configSchema.getFlowControllerProperties();
-
-            final Document doc = parentElement.getOwnerDocument();
-            final Element element = doc.createElement(elementName);
-            parentElement.appendChild(element);
-            addTextElement(element, "id", "Root-Group");
-            addTextElement(element, "name", flowControllerProperties.getName());
+            String processGroupId = processGroupSchema.getId();
+            addTextElement(element, "id", processGroupId);
+            addTextElement(element, "name", processGroupSchema.getName());
             addPosition(element);
-            addTextElement(element, "comment", flowControllerProperties.getComment());
+            addTextElement(element, "comment", processGroupSchema.getComment());
 
-            List<ProcessorSchema> processors = configSchema.getProcessors();
-            if (processors != null) {
-                for (ProcessorSchema processorConfig : processors) {
-                    addProcessor(element, processorConfig);
-                }
+            for (ProcessorSchema processorConfig : processGroupSchema.getProcessors()) {
+                addProcessor(element, processorConfig);
             }
 
-            List<RemoteProcessingGroupSchema> remoteProcessingGroups = configSchema.getRemoteProcessingGroups();
-            if (remoteProcessingGroups != null) {
-                for (RemoteProcessingGroupSchema remoteProcessingGroupSchema : remoteProcessingGroups) {
-                    addRemoteProcessGroup(element, remoteProcessingGroupSchema);
-                }
+            for (RemoteProcessingGroupSchema remoteProcessingGroupSchema : processGroupSchema.getRemoteProcessingGroups()) {
+                addRemoteProcessGroup(element, processGroupId, remoteProcessingGroupSchema);
             }
 
-            List<ConnectionSchema> connections = configSchema.getConnections();
-            if (connections != null) {
-                for (ConnectionSchema connectionConfig : connections) {
-                    addConnection(element, connectionConfig, configSchema);
-                }
+            for (PortSchema portSchema : processGroupSchema.getInputPortSchemas()) {
+                addPort(doc, element, processGroupId, portSchema, "inputPort", "INPUT_PORT");
+            }
+
+            for (PortSchema portSchema : processGroupSchema.getOutputPortSchemas()) {
+                addPort(doc, element, processGroupId, portSchema, "outputPort", "OUTPUT_PORT");
+            }
+
+            for (ProcessGroupSchema child : processGroupSchema.getProcessGroupSchemas()) {
+                Element processGroups = doc.createElement("processGroup");
+                element.appendChild(processGroups);
+                addProcessGroup(doc, processGroups, child, parentGroupIdResolver);
+            }
+
+            for (ConnectionSchema connectionConfig : processGroupSchema.getConnections()) {
+                addConnection(element, connectionConfig, parentGroupIdResolver);
             }
         } catch (ConfigurationChangeException e) {
             throw e;
         } catch (Exception e) {
             throw new ConfigurationChangeException("Failed to parse the config YAML while trying to creating the root Process Group", e);
         }
+    }
+
+    protected static void addPort(Document doc, Element parentElement, String parentGroupId, PortSchema portSchema, String tag, String type) {
+        Element element = doc.createElement(tag);
+        parentElement.appendChild(element);
+
+        addTextElement(element, "id", portSchema.getId());
+        addTextElement(element, "name", portSchema.getName());
+
+        addPosition(element);
+        addTextElement(element, "comments", null);
+
+        addTextElement(element, "scheduledState", "RUNNING");
     }
 
     protected static void addProcessor(final Element parentElement, ProcessorSchema processorConfig) throws ConfigurationChangeException {
@@ -467,12 +501,13 @@ public final class ConfigTransformer {
         parentElement.appendChild(element);
     }
 
-    protected static void addRemoteProcessGroup(final Element parentElement, RemoteProcessingGroupSchema remoteProcessingGroupProperties) throws ConfigurationChangeException {
+    protected static void addRemoteProcessGroup(final Element parentElement, String parentGroupId, RemoteProcessingGroupSchema remoteProcessingGroupProperties) throws ConfigurationChangeException {
         try {
             final Document doc = parentElement.getOwnerDocument();
             final Element element = doc.createElement("remoteProcessGroup");
             parentElement.appendChild(element);
             addTextElement(element, "id", remoteProcessingGroupProperties.getName());
+            addTextElement(element, "parentGroupId", parentGroupId);
             addTextElement(element, "name", remoteProcessingGroupProperties.getName());
             addPosition(element);
             addTextElement(element, "comment", remoteProcessingGroupProperties.getComment());
@@ -511,7 +546,7 @@ public final class ConfigTransformer {
         }
     }
 
-    protected static void addConnection(final Element parentElement, ConnectionSchema connectionProperties, ConfigSchema configSchema) throws ConfigurationChangeException {
+    protected static void addConnection(final Element parentElement, ConnectionSchema connectionProperties, ParentGroupIdResolver parentGroupIdResolver) throws ConfigurationChangeException {
         try {
             final Document doc = parentElement.getOwnerDocument();
             final Element element = doc.createElement("connection");
@@ -526,23 +561,16 @@ public final class ConfigTransformer {
             addTextElement(element, "labelIndex", "1");
             addTextElement(element, "zIndex", "0");
 
-            addTextElement(element, "sourceId", connectionProperties.getSourceId());
-            addTextElement(element, "sourceGroupId", "Root-Group");
-            addTextElement(element, "sourceType", "PROCESSOR");
+            addConnectionSourceOrDestination(element, "source", connectionProperties.getSourceId(), parentGroupIdResolver);
+            addConnectionSourceOrDestination(element, "destination", connectionProperties.getDestinationId(), parentGroupIdResolver);
 
-            final String connectionDestinationId = connectionProperties.getDestinationId();
-            addTextElement(element, "destinationId", connectionDestinationId);
-            final Optional<String> parentGroup = findInputPortParentGroup(connectionDestinationId, configSchema);
-            if (parentGroup.isPresent()) {
-                addTextElement(element, "destinationGroupId", parentGroup.get());
-                addTextElement(element, "destinationType", "REMOTE_INPUT_PORT");
+            List<String> sourceRelationshipNames = connectionProperties.getSourceRelationshipNames();
+            if (sourceRelationshipNames.isEmpty()) {
+                addTextElement(element, "relationship", null);
             } else {
-                addTextElement(element, "destinationGroupId", "Root-Group");
-                addTextElement(element, "destinationType", "PROCESSOR");
-            }
-
-            for (String relationshipName : connectionProperties.getSourceRelationshipNames()) {
-                addTextElement(element, "relationship", relationshipName);
+                for (String relationshipName : sourceRelationshipNames) {
+                    addTextElement(element, "relationship", relationshipName);
+                }
             }
 
             addTextElement(element, "maxWorkQueueSize", String.valueOf(connectionProperties.getMaxWorkQueueSize()));
@@ -557,9 +585,41 @@ public final class ConfigTransformer {
         }
     }
 
+    protected static void addConnectionSourceOrDestination(Element element, String sourceOrDestination, String id, ParentGroupIdResolver parentGroupIdResolver) {
+        String idTag = sourceOrDestination + "Id";
+        String groupIdTag = sourceOrDestination + "GroupId";
+        String typeTag = sourceOrDestination + "Type";
+
+        String parentId = parentGroupIdResolver.getRemoteInputPortParentId(id);
+        String type;
+
+        if (parentId != null) {
+            type = "REMOTE_INPUT_PORT";
+        } else {
+            parentId = parentGroupIdResolver.getInputPortParentId(id);
+            if (parentId != null) {
+                type = "INPUT_PORT";
+            } else {
+                parentId = parentGroupIdResolver.getOutputPortParentId(id);
+                if (parentId != null) {
+                    type = "OUTPUT_PORT";
+                } else {
+                    parentId = parentGroupIdResolver.getProcessorParentId(id);
+                    type = "PROCESSOR";
+                }
+            }
+        }
+
+        addTextElement(element, idTag, id);
+        if (parentId != null) {
+            addTextElement(element, groupIdTag, parentId);
+        }
+        addTextElement(element, typeTag, type);
+    }
+
     // Locate the associated parent group for a given input port by its id
-    protected static Optional<String> findInputPortParentGroup(String inputPortId, ConfigSchema configSchema) {
-        final List<RemoteProcessingGroupSchema> remoteProcessingGroups = configSchema.getRemoteProcessingGroups();
+    protected static Optional<String> findInputPortParentGroup(String inputPortId, ProcessGroupSchema processGroupSchema) {
+        final List<RemoteProcessingGroupSchema> remoteProcessingGroups = processGroupSchema.getRemoteProcessingGroups();
         if (remoteProcessingGroups != null) {
             for (final RemoteProcessingGroupSchema remoteProcessingGroupSchema : remoteProcessingGroups) {
                 final List<RemoteInputPortSchema> remoteInputPorts = remoteProcessingGroupSchema.getInputPorts();
@@ -583,9 +643,7 @@ public final class ConfigTransformer {
     }
 
     protected static void addTextElementIfNotNullOrEmpty(final Element element, final String name, final String value) {
-        if (!StringUtil.isNullOrEmpty(value)) {
-            addTextElement(element, name, value);
-        }
+        StringUtil.doIfNotNullOrEmpty(value, s -> addTextElement(element, name, value));
     }
 
     protected static void addTextElement(final Element element, final String name, final String value) {
