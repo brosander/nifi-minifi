@@ -28,7 +28,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.CONNECTIONS_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.ID_KEY;
@@ -39,14 +38,6 @@ import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.PR
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.REMOTE_PROCESSING_GROUPS_KEY;
 
 public class ProcessGroupSchema extends BaseSchemaWithIdAndName implements WritableSchema, ConvertableSchema<ProcessGroupSchema> {
-    public static final String FOUND_THE_FOLLOWING_DUPLICATE_PROCESSOR_IDS = "Found the following duplicate processor ids: ";
-    public static final String FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_IDS = "Found the following duplicate connection ids: ";
-    public static final String FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_PROCESSING_GROUP_NAMES = "Found the following duplicate remote processing group names: ";
-    public static final String FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_INPUT_PORT_IDS = "Found the following duplicate remote input port ids: ";
-    public static final String FOUND_THE_FOLLOWING_DUPLICATE_IDS = "Found the following ids that occur both in Processors and Remote Input Ports: ";
-    public static final String CONNECTION_WITH_ID = "Connection with id ";
-    public static final String HAS_INVALID_SOURCE_ID = " has invalid source id ";
-    public static final String HAS_INVALID_DESTINATION_ID = " has invalid destination id ";
 
     public static final String PROCESS_GROUPS_KEY = "Process Groups";
     public static final String ID_DEFAULT = "Root-Group";
@@ -79,40 +70,6 @@ public class ProcessGroupSchema extends BaseSchemaWithIdAndName implements Writa
         addIssuesIfNotNull(remoteProcessingGroups);
         addIssuesIfNotNull(processGroupSchemas);
         addIssuesIfNotNull(connections);
-
-        Set<String> processorIds = new HashSet<>();
-        List<String> processorIdList = processors.stream().map(ProcessorSchema::getId).collect(Collectors.toList());
-        processorIds.addAll(processorIdList);
-
-        checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_PROCESSOR_IDS, processorIdList);
-        checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_IDS, connections.stream().map(ConnectionSchema::getId).collect(Collectors.toList()));
-        checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_PROCESSING_GROUP_NAMES,
-                remoteProcessingGroups.stream().map(RemoteProcessingGroupSchema::getName).collect(Collectors.toList()));
-
-        Set<String> remoteInputPortIds = new HashSet<>();
-        List<String> remoteInputPortIdList = remoteProcessingGroups.stream().filter(r -> r.getInputPorts() != null)
-                .flatMap(r -> r.getInputPorts().stream()).map(RemoteInputPortSchema::getId).collect(Collectors.toList());
-        checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_INPUT_PORT_IDS, remoteInputPortIdList);
-        remoteInputPortIds.addAll(remoteInputPortIdList);
-
-        Set<String> duplicateIds = new HashSet<>(processorIds);
-        duplicateIds.retainAll(remoteInputPortIds);
-        if (duplicateIds.size() > 0) {
-            addValidationIssue(FOUND_THE_FOLLOWING_DUPLICATE_IDS + duplicateIds.stream().sorted().collect(Collectors.joining(", ")));
-        }
-
-        Set<String> connectableIds = new HashSet<>(processorIds);
-        connectableIds.addAll(remoteInputPortIds);
-        connections.forEach(c -> {
-            String destinationId = c.getDestinationId();
-            if (!StringUtil.isNullOrEmpty(destinationId) && !connectableIds.contains(destinationId)) {
-                addValidationIssue(CONNECTION_WITH_ID + c.getId() + HAS_INVALID_DESTINATION_ID + destinationId);
-            }
-            String sourceId = c.getSourceId();
-            if (!StringUtil.isNullOrEmpty(sourceId) && !connectableIds.contains(sourceId)) {
-                addValidationIssue(CONNECTION_WITH_ID + c.getId() + HAS_INVALID_SOURCE_ID + sourceId);
-            }
-        });
     }
 
     public Map<String, Object> toMap() {
@@ -130,8 +87,6 @@ public class ProcessGroupSchema extends BaseSchemaWithIdAndName implements Writa
         putListIfNotNull(result, REMOTE_PROCESSING_GROUPS_KEY, remoteProcessingGroups);
         return result;
     }
-
-
 
     public List<ProcessorSchema> getProcessors() {
         return processors;

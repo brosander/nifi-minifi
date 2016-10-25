@@ -180,7 +180,7 @@ parses and upconverts to the current version without issue.
 
 1. Use ids instead of names for processors, connections.
 2. Allow multiple source relationships for connections.
-
+3. Support process groups, input ports, output ports
 
 ## Flow Controller
 
