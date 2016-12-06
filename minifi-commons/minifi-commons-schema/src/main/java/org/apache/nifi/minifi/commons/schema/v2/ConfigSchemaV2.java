@@ -1,27 +1,44 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *  * Licensed to the Apache Software Foundation (ASF) under one or more
+ *  * contributor license agreements.  See the NOTICE file distributed with
+ *  * this work for additional information regarding copyright ownership.
+ *  * The ASF licenses this file to You under the Apache License, Version 2.0
+ *  * (the "License"); you may not use this file except in compliance with
+ *  * the License.  You may obtain a copy of the License at
+ *  *
+ *  *     http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 
-package org.apache.nifi.minifi.commons.schema;
+package org.apache.nifi.minifi.commons.schema.v2;
 
+import org.apache.nifi.minifi.commons.schema.ComponentStatusRepositorySchema;
+import org.apache.nifi.minifi.commons.schema.ConfigSchema;
+import org.apache.nifi.minifi.commons.schema.ConnectionSchema;
+import org.apache.nifi.minifi.commons.schema.ContentRepositorySchema;
+import org.apache.nifi.minifi.commons.schema.CorePropertiesSchema;
+import org.apache.nifi.minifi.commons.schema.FlowControllerSchema;
+import org.apache.nifi.minifi.commons.schema.FlowFileRepositorySchema;
+import org.apache.nifi.minifi.commons.schema.FunnelSchema;
+import org.apache.nifi.minifi.commons.schema.PortSchema;
+import org.apache.nifi.minifi.commons.schema.ProcessGroupSchema;
+import org.apache.nifi.minifi.commons.schema.ProcessorSchema;
+import org.apache.nifi.minifi.commons.schema.ProvenanceReportingSchema;
+import org.apache.nifi.minifi.commons.schema.ProvenanceRepositorySchema;
+import org.apache.nifi.minifi.commons.schema.RemoteInputPortSchema;
+import org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema;
+import org.apache.nifi.minifi.commons.schema.SecurityPropertiesSchema;
 import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
 import org.apache.nifi.minifi.commons.schema.common.CollectionOverlap;
 import org.apache.nifi.minifi.commons.schema.common.ConvertableSchema;
 import org.apache.nifi.minifi.commons.schema.common.StringUtil;
-import org.apache.nifi.minifi.commons.schema.common.WritableSchema;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,8 +56,8 @@ import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.PR
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.PROVENANCE_REPO_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.SECURITY_PROPS_KEY;
 
-public class ConfigSchema extends BaseSchema implements WritableSchema, ConvertableSchema<ConfigSchema> {
-    public static final int CONFIG_VERSION = 3;
+public class ConfigSchemaV2 extends BaseSchema implements ConvertableSchema<ConfigSchema> {
+    public static final int CONFIG_VERSION = 2;
     public static final String VERSION = "MiNiFi Config Version";
     public static final String FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_INPUT_PORT_IDS = "Found the following duplicate remote input port ids: ";
     public static final String FOUND_THE_FOLLOWING_DUPLICATE_INPUT_PORT_IDS = "Found the following duplicate input port ids: ";
@@ -65,11 +82,11 @@ public class ConfigSchema extends BaseSchema implements WritableSchema, Converta
 
     private ProvenanceRepositorySchema provenanceRepositorySchema;
 
-    public ConfigSchema(Map map) {
+    public ConfigSchemaV2(Map map) {
         this(map, Collections.emptyList());
     }
 
-    public ConfigSchema(Map map, List<String> validationIssues) {
+    public ConfigSchemaV2(Map map, List<String> validationIssues) {
         validationIssues.stream().forEach(this::addValidationIssue);
         flowControllerProperties = getMapAsType(map, FLOW_CONTROLLER_PROPS_KEY, FlowControllerSchema.class, TOP_LEVEL_NAME, true);
 
@@ -145,7 +162,13 @@ public class ConfigSchema extends BaseSchema implements WritableSchema, Converta
         processGroupSchema.getProcessGroupSchemas().forEach(p -> addProcessGroups(p, result));
     }
 
-    public Map<String, Object> toMap() {
+    @Override
+    public int getVersion() {
+        return CONFIG_VERSION;
+    }
+
+    @Override
+    public ConfigSchema convert() {
         Map<String, Object> result = mapSupplier.get();
         result.put(VERSION, getVersion());
         putIfNotNull(result, FLOW_CONTROLLER_PROPS_KEY, flowControllerProperties);
@@ -157,52 +180,6 @@ public class ConfigSchema extends BaseSchema implements WritableSchema, Converta
         putIfNotNull(result, SECURITY_PROPS_KEY, securityProperties);
         result.putAll(processGroupSchema.toMap());
         putIfNotNull(result, PROVENANCE_REPORTING_KEY, provenanceReportingProperties);
-        return result;
-    }
-
-    public FlowControllerSchema getFlowControllerProperties() {
-        return flowControllerProperties;
-    }
-
-    public CorePropertiesSchema getCoreProperties() {
-        return coreProperties;
-    }
-
-    public FlowFileRepositorySchema getFlowfileRepositoryProperties() {
-        return flowfileRepositoryProperties;
-    }
-
-    public ContentRepositorySchema getContentRepositoryProperties() {
-        return contentRepositoryProperties;
-    }
-
-    public SecurityPropertiesSchema getSecurityProperties() {
-        return securityProperties;
-    }
-
-    public ProcessGroupSchema getProcessGroupSchema() {
-        return processGroupSchema;
-    }
-
-    public ProvenanceReportingSchema getProvenanceReportingProperties() {
-        return provenanceReportingProperties;
-    }
-
-    public ComponentStatusRepositorySchema getComponentStatusRepositoryProperties() {
-        return componentStatusRepositoryProperties;
-    }
-
-    public ProvenanceRepositorySchema getProvenanceRepositorySchema() {
-        return provenanceRepositorySchema;
-    }
-
-    @Override
-    public int getVersion() {
-        return CONFIG_VERSION;
-    }
-
-    @Override
-    public ConfigSchema convert() {
-        return this;
+        return new ConfigSchema(result, getValidationIssues());
     }
 }

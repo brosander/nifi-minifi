@@ -72,7 +72,7 @@ public class SchemaLoaderTest {
             SchemaLoader.loadConfigSchemaFromYaml(yamlAsMap);
             fail();
         } catch (SchemaLoaderException e) {
-            assertEquals("YAML configuration version 9999999 not supported.  Supported versions: 1, 2", e.getMessage());
+            assertEquals("YAML configuration version 9999999 not supported.  Supported versions: 1, 2, 3", e.getMessage());
         }
     }
 

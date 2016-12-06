@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-MiNiFi Config Version: 3
+MiNiFi Config Version: 2
 Flow Controller:
   name: ProcessGroupsAndRemoteProcessGroups
   comment: ''
@@ -245,10 +245,6 @@ Process Groups:
     timeout: 30 sec
     yield period: 10 sec
     transport protocol: HTTP
-    proxy host: ''
-    proxy port: ''
-    proxy user: ''
-    proxy password: ''
     Input Ports:
     - id: 21a2fb5e-0158-1000-3b5e-5a7d3aaee01b
       name: input
