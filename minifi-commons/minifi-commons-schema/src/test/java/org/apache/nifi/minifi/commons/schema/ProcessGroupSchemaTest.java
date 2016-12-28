@@ -39,14 +39,14 @@ public class ProcessGroupSchemaTest {
     public void testInputPortsRootGroup() {
         Map<String, Object> map = new HashMap<>();
         map.put(CommonPropertyKeys.INPUT_PORTS_KEY, Arrays.asList(createPortSchema("testId", "testName", ConfigSchema.TOP_LEVEL_NAME).toMap()));
-        validateIssuesNumMatches(1, new ProcessGroupSchema(map, ConfigSchema.TOP_LEVEL_NAME));
+        validateIssuesNumMatches(0, new ProcessGroupSchema(map, ConfigSchema.TOP_LEVEL_NAME));
     }
 
     @Test
     public void testOutputPortsRootGroup() {
         Map<String, Object> map = new HashMap<>();
         map.put(CommonPropertyKeys.OUTPUT_PORTS_KEY, Arrays.asList(createPortSchema("testId", "testName", ConfigSchema.TOP_LEVEL_NAME).toMap()));
-        validateIssuesNumMatches(1, new ProcessGroupSchema(map, ConfigSchema.TOP_LEVEL_NAME));
+        validateIssuesNumMatches(0, new ProcessGroupSchema(map, ConfigSchema.TOP_LEVEL_NAME));
     }
 
     private PortSchema createPortSchema(String id, String name, String wrapperName) {

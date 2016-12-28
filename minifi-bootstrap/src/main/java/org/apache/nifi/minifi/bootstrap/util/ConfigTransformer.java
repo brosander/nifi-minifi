@@ -38,6 +38,7 @@ import org.apache.nifi.minifi.commons.schema.ProvenanceReportingSchema;
 import org.apache.nifi.minifi.commons.schema.ProvenanceRepositorySchema;
 import org.apache.nifi.minifi.commons.schema.RemoteInputPortSchema;
 import org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema;
+import org.apache.nifi.minifi.commons.schema.RootGroupPortSchema;
 import org.apache.nifi.minifi.commons.schema.common.ConvertableSchema;
 import org.apache.nifi.minifi.commons.schema.common.Schema;
 import org.apache.nifi.minifi.commons.schema.common.StringUtil;
@@ -446,6 +447,17 @@ public final class ConfigTransformer {
         addTextElement(element, "comments", null);
 
         addTextElement(element, "scheduledState", "RUNNING");
+
+        if (portSchema instanceof RootGroupPortSchema) {
+            RootGroupPortSchema rootGroupPortSchema = (RootGroupPortSchema) portSchema;
+            addTextElement(element, "maxConcurrentTasks", String.valueOf(rootGroupPortSchema.getMaxConcurrentTasks()));
+            for (final String user : rootGroupPortSchema.getUserAccessControl()) {
+                addTextElement(element, "userAccessControl", user);
+            }
+            for (final String group : rootGroupPortSchema.getGroupAccessControl()) {
+                addTextElement(element, "groupAccessControl", group);
+            }
+        }
     }
 
     protected static void addProcessor(final Element parentElement, ProcessorSchema processorConfig) throws ConfigurationChangeException {

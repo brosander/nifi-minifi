@@ -21,13 +21,13 @@ import org.apache.nifi.minifi.commons.schema.common.BaseSchemaWithIdAndName;
 
 import java.util.Map;
 
+import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.DEFAULT_MAX_CONCURRENT_TASKS;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.COMMENT_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.MAX_CONCURRENT_TASKS_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.USE_COMPRESSION_KEY;
 
 public class RemoteInputPortSchema extends BaseSchemaWithIdAndName {
     public static final String DEFAULT_COMMENT = "";
-    public static final int DEFAULT_MAX_CONCURRENT_TASKS = 1;
     public static final boolean DEFAULT_USE_COMPRESSION = true;
 
     private String comment = DEFAULT_COMMENT;
