@@ -1,0 +1,67 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+    defaultConfig {
+        applicationId "com.example.myfirstapp"
+        minSdkVersion 15
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    // Provide special handling that allow us to make use of libs from javax.*
+    dexOptions {
+        preDexLibraries = false
+        additionalParameters=['--core-library']
+    }
+
+    // Defeat duplicated files that cause APK to fail build
+    packagingOptions {
+        pickFirst('**/org/apache/nifi/remote/cluster/ClusterNodeInformation*')
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/ASL2.0'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        // Attempts to use nifi-site-to-site-client natively and recover libs not in Android
+        // CUTR SNAPSHOTs
+        url "https://github.com/CUTR-at-USF/cutr-mvn-repo/raw/master/snapshots"
+    }
+    maven {
+        // CUTR Releases
+        url "https://github.com/CUTR-at-USF/cutr-mvn-repo/raw/master/releases"
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:25.1.0'
+    compile 'org.apache.nifi:nifi-site-to-site-client:0.8.0-SNAPSHOT'
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.22'
+
+    // Attempts to use nifi-site-to-site-client natively and recover libs not in Android
+    compile 'javax.xml.bind:jaxb-api:2.2.12'
+    compile 'it.tidalwave.thesefoolishthings:it-tidalwave-android-awt:1.0.10'
+
+    testCompile 'junit:junit:4.12'
+}
