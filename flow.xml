@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flowController>
+  <maxTimerDrivenThreadCount>1</maxTimerDrivenThreadCount>
+  <maxEventDrivenThreadCount>1</maxEventDrivenThreadCount>
+  <rootGroup>
+    <id>Root-Group</id>
+    <name>InvokeHttpMiNiFiTemplateTest2</name>
+    <position x="0" y="0"/>
+    <comment/>
+    <processor>
+      <id>0a73c5e4-7216-4cdf-9008-ace353478d55</id>
+      <name>LogAttribute</name>
+      <position x="0" y="0"/>
+      <styles/>
+      <comment/>
+      <class>org.apache.nifi.processors.standard.LogAttribute</class>
+      <maxConcurrentTasks>1</maxConcurrentTasks>
+      <schedulingPeriod>0 sec</schedulingPeriod>
+      <penalizationPeriod>30 sec</penalizationPeriod>
+      <yieldPeriod>1 sec</yieldPeriod>
+      <bulletinLevel>WARN</bulletinLevel>
+      <lossTolerant>false</lossTolerant>
+      <scheduledState>RUNNING</scheduledState>
+      <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+      <runDurationNanos>0</runDurationNanos>
+      <property>
+        <name>Attributes to Ignore</name>
+      </property>
+      <property>
+        <name>Attributes to Log</name>
+      </property>
+      <property>
+        <name>Log Level</name>
+        <value>info</value>
+      </property>
+      <property>
+        <name>Log Payload</name>
+        <value>false</value>
+      </property>
+      <property>
+        <name>Log prefix</name>
+      </property>
+      <autoTerminatedRelationship>success</autoTerminatedRelationship>
+    </processor>
+    <processor>
+      <id>0bda7282-7a4f-4d39-83e5-ea86aa63f1dc</id>
+      <name>LogAttribute2</name>
+      <position x="0" y="0"/>
+      <styles/>
+      <comment/>
+      <class>org.apache.nifi.processors.standard.LogAttribute</class>
+      <maxConcurrentTasks>1</maxConcurrentTasks>
+      <schedulingPeriod>0 sec</schedulingPeriod>
+      <penalizationPeriod>30 sec</penalizationPeriod>
+      <yieldPeriod>1 sec</yieldPeriod>
+      <bulletinLevel>WARN</bulletinLevel>
+      <lossTolerant>false</lossTolerant>
+      <scheduledState>RUNNING</scheduledState>
+      <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+      <runDurationNanos>0</runDurationNanos>
+      <property>
+        <name>Attributes to Ignore</name>
+      </property>
+      <property>
+        <name>Attributes to Log</name>
+      </property>
+      <property>
+        <name>Log Level</name>
+        <value>info</value>
+      </property>
+      <property>
+        <name>Log Payload</name>
+        <value>false</value>
+      </property>
+      <property>
+        <name>Log prefix</name>
+      </property>
+      <autoTerminatedRelationship>success</autoTerminatedRelationship>
+    </processor>
+    <processor>
+      <id>dcff217a-a25c-424f-b9f1-d82c55bfa61b</id>
+      <name>Route On Status Code</name>
+      <position x="0" y="0"/>
+      <styles/>
+      <comment/>
+      <class>org.apache.nifi.processors.standard.RouteOnAttribute</class>
+      <maxConcurrentTasks>1</maxConcurrentTasks>
+      <schedulingPeriod>0 sec</schedulingPeriod>
+      <penalizationPeriod>30 sec</penalizationPeriod>
+      <yieldPeriod>1 sec</yieldPeriod>
+      <bulletinLevel>WARN</bulletinLevel>
+      <lossTolerant>false</lossTolerant>
+      <scheduledState>RUNNING</scheduledState>
+      <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+      <runDurationNanos>0</runDurationNanos>
+      <property>
+        <name>200</name>
+        <value>${invokehttp.status.code:equals(200)}</value>
+      </property>
+      <property>
+        <name>Routing Strategy</name>
+        <value>Route to Property name</value>
+      </property>
+    </processor>
+    <processor>
+      <id>66649998-3b08-4b41-9f07-a51d999743f6</id>
+      <name>Search Google</name>
+      <position x="0" y="0"/>
+      <styles/>
+      <comment/>
+      <class>org.apache.nifi.processors.standard.InvokeHTTP</class>
+      <maxConcurrentTasks>1</maxConcurrentTasks>
+      <schedulingPeriod>0 sec</schedulingPeriod>
+      <penalizationPeriod>30 sec</penalizationPeriod>
+      <yieldPeriod>1 sec</yieldPeriod>
+      <bulletinLevel>WARN</bulletinLevel>
+      <lossTolerant>false</lossTolerant>
+      <scheduledState>RUNNING</scheduledState>
+      <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+      <runDurationNanos>0</runDurationNanos>
+      <property>
+        <name>Add Response Headers to Request</name>
+        <value>false</value>
+      </property>
+      <property>
+        <name>Always Output Response</name>
+        <value>false</value>
+      </property>
+      <property>
+        <name>Attributes to Send</name>
+      </property>
+      <property>
+        <name>Basic Authentication Password</name>
+      </property>
+      <property>
+        <name>Basic Authentication Username</name>
+      </property>
+      <property>
+        <name>Connection Timeout</name>
+        <value>5 secs</value>
+      </property>
+      <property>
+        <name>Content-Type</name>
+        <value>${mime.type}</value>
+      </property>
+      <property>
+        <name>Digest Authentication</name>
+        <value>false</value>
+      </property>
+      <property>
+        <name>Follow Redirects</name>
+        <value>True</value>
+      </property>
+      <property>
+        <name>HTTP Method</name>
+        <value>GET</value>
+      </property>
+      <property>
+        <name>Include Date Header</name>
+        <value>True</value>
+      </property>
+      <property>
+        <name>Max Length To Put In Attribute</name>
+        <value>256</value>
+      </property>
+      <property>
+        <name>Penalize on "No Retry"</name>
+        <value>false</value>
+      </property>
+      <property>
+        <name>Proxy Host</name>
+      </property>
+      <property>
+        <name>Proxy Port</name>
+      </property>
+      <property>
+        <name>Put Response Body In Attribute</name>
+      </property>
+      <property>
+        <name>Read Timeout</name>
+        <value>15 secs</value>
+      </property>
+      <property>
+        <name>Remote URL</name>
+        <value>http://www.google.com/search?q=${q}&amp;rct=j</value>
+      </property>
+      <property>
+        <name>SSL Context Service</name>
+      </property>
+      <property>
+        <name>Trusted Hostname</name>
+      </property>
+      <property>
+        <name>Use Chunked Encoding</name>
+        <value>false</value>
+      </property>
+      <property>
+        <name>invokehttp-proxy-password</name>
+      </property>
+      <property>
+        <name>invokehttp-proxy-user</name>
+      </property>
+      <property>
+        <name>send-message-body</name>
+        <value>true</value>
+      </property>
+    </processor>
+    <processor>
+      <id>fcb378d7-6438-41d3-8485-7da85e870ca4</id>
+      <name>Source</name>
+      <position x="0" y="0"/>
+      <styles/>
+      <comment/>
+      <class>org.apache.nifi.processors.standard.GenerateFlowFile</class>
+      <maxConcurrentTasks>1</maxConcurrentTasks>
+      <schedulingPeriod>30 sec</schedulingPeriod>
+      <penalizationPeriod>30 sec</penalizationPeriod>
+      <yieldPeriod>1 sec</yieldPeriod>
+      <bulletinLevel>WARN</bulletinLevel>
+      <lossTolerant>false</lossTolerant>
+      <scheduledState>RUNNING</scheduledState>
+      <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+      <runDurationNanos>0</runDurationNanos>
+      <property>
+        <name>Batch Size</name>
+        <value>1</value>
+      </property>
+      <property>
+        <name>Data Format</name>
+        <value>Binary</value>
+      </property>
+      <property>
+        <name>File Size</name>
+        <value>10 b</value>
+      </property>
+      <property>
+        <name>Unique FlowFiles</name>
+        <value>false</value>
+      </property>
+    </processor>
+    <processor>
+      <id>6638cd15-0aaf-4bba-a18a-722cf85038b6</id>
+      <name>q=nifi</name>
+      <position x="0" y="0"/>
+      <styles/>
+      <comment/>
+      <class>org.apache.nifi.processors.attributes.UpdateAttribute</class>
+      <maxConcurrentTasks>1</maxConcurrentTasks>
+      <schedulingPeriod>0 sec</schedulingPeriod>
+      <penalizationPeriod>30 sec</penalizationPeriod>
+      <yieldPeriod>1 sec</yieldPeriod>
+      <bulletinLevel>WARN</bulletinLevel>
+      <lossTolerant>false</lossTolerant>
+      <scheduledState>RUNNING</scheduledState>
+      <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+      <runDurationNanos>0</runDurationNanos>
+      <property>
+        <name>Delete Attributes Expression</name>
+      </property>
+      <property>
+        <name>q</name>
+        <value>nifi</value>
+      </property>
+    </processor>
+    <remoteProcessGroup>
+      <id>5b0a5c18-a02e-4a85-8080-0187ee679763</id>
+      <name/>
+      <position x="0" y="0"/>
+      <comment/>
+      <url>http://nifi:8080/nifi</url>
+      <timeout>30 sec</timeout>
+      <yieldPeriod>10 sec</yieldPeriod>
+      <transmitting>true</transmitting>
+      <transportProtocol>HTTP</transportProtocol>
+      <inputPort>
+        <id>b01b8ac3-0158-1000-8464-c30da51f9121</id>
+        <name>response</name>
+        <position x="0" y="0"/>
+        <comments/>
+        <scheduledState>RUNNING</scheduledState>
+        <maxConcurrentTasks>1</maxConcurrentTasks>
+        <useCompression>false</useCompression>
+      </inputPort>
+    </remoteProcessGroup>
+    <connection>
+      <id>3039718a-bb40-4811-9b74-ecbe926daae8</id>
+      <name>Route On Status Code/200/LogAttribute</name>
+      <bendPoints/>
+      <labelIndex>1</labelIndex>
+      <zIndex>0</zIndex>
+      <sourceId>dcff217a-a25c-424f-b9f1-d82c55bfa61b</sourceId>
+      <sourceGroupId>Root-Group</sourceGroupId>
+      <sourceType>PROCESSOR</sourceType>
+      <destinationId>0a73c5e4-7216-4cdf-9008-ace353478d55</destinationId>
+      <destinationGroupId>Root-Group</destinationGroupId>
+      <destinationType>PROCESSOR</destinationType>
+      <relationship>200</relationship>
+      <maxWorkQueueSize>0</maxWorkQueueSize>
+      <maxWorkQueueDataSize>0 MB</maxWorkQueueDataSize>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <queuePrioritizerClass>org.apache.nifi.prioritizer.FirstInFirstOutPrioritizer</queuePrioritizerClass>
+    </connection>
+    <connection>
+      <id>4a7bdaf1-eba0-4317-92f2-93cef6240c28</id>
+      <name>Route On Status Code/200/b01b8ac3-0158-1000-8464-c30da51f9121</name>
+      <bendPoints/>
+      <labelIndex>1</labelIndex>
+      <zIndex>0</zIndex>
+      <sourceId>dcff217a-a25c-424f-b9f1-d82c55bfa61b</sourceId>
+      <sourceGroupId>Root-Group</sourceGroupId>
+      <sourceType>PROCESSOR</sourceType>
+      <destinationId>b01b8ac3-0158-1000-8464-c30da51f9121</destinationId>
+      <destinationGroupId>5b0a5c18-a02e-4a85-8080-0187ee679763</destinationGroupId>
+      <destinationType>REMOTE_INPUT_PORT</destinationType>
+      <relationship>200</relationship>
+      <maxWorkQueueSize>10000</maxWorkQueueSize>
+      <maxWorkQueueDataSize>1 GB</maxWorkQueueDataSize>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <queuePrioritizerClass>org.apache.nifi.prioritizer.FirstInFirstOutPrioritizer</queuePrioritizerClass>
+    </connection>
+    <connection>
+      <id>9f948a25-afb4-4598-9a01-cfb7e3aa5920</id>
+      <name>Route On Status Code/unmatched/LogAttribute2</name>
+      <bendPoints/>
+      <labelIndex>1</labelIndex>
+      <zIndex>0</zIndex>
+      <sourceId>dcff217a-a25c-424f-b9f1-d82c55bfa61b</sourceId>
+      <sourceGroupId>Root-Group</sourceGroupId>
+      <sourceType>PROCESSOR</sourceType>
+      <destinationId>0bda7282-7a4f-4d39-83e5-ea86aa63f1dc</destinationId>
+      <destinationGroupId>Root-Group</destinationGroupId>
+      <destinationType>PROCESSOR</destinationType>
+      <relationship>unmatched</relationship>
+      <maxWorkQueueSize>10000</maxWorkQueueSize>
+      <maxWorkQueueDataSize>1 GB</maxWorkQueueDataSize>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <queuePrioritizerClass>org.apache.nifi.prioritizer.FirstInFirstOutPrioritizer</queuePrioritizerClass>
+    </connection>
+    <connection>
+      <id>7299c143-46f6-4a94-aa24-ec47db16f73e</id>
+      <name>Route On Status Code/unmatched/b01b8ac3-0158-1000-8464-c30da51f9121</name>
+      <bendPoints/>
+      <labelIndex>1</labelIndex>
+      <zIndex>0</zIndex>
+      <sourceId>dcff217a-a25c-424f-b9f1-d82c55bfa61b</sourceId>
+      <sourceGroupId>Root-Group</sourceGroupId>
+      <sourceType>PROCESSOR</sourceType>
+      <destinationId>b01b8ac3-0158-1000-8464-c30da51f9121</destinationId>
+      <destinationGroupId>5b0a5c18-a02e-4a85-8080-0187ee679763</destinationGroupId>
+      <destinationType>REMOTE_INPUT_PORT</destinationType>
+      <relationship>unmatched</relationship>
+      <maxWorkQueueSize>10000</maxWorkQueueSize>
+      <maxWorkQueueDataSize>1 GB</maxWorkQueueDataSize>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <queuePrioritizerClass>org.apache.nifi.prioritizer.FirstInFirstOutPrioritizer</queuePrioritizerClass>
+    </connection>
+    <connection>
+      <id>451b153a-8a4e-4bed-99ab-5159e499bcf1</id>
+      <name>Search Google/Failure/Route On Status Code</name>
+      <bendPoints/>
+      <labelIndex>1</labelIndex>
+      <zIndex>0</zIndex>
+      <sourceId>66649998-3b08-4b41-9f07-a51d999743f6</sourceId>
+      <sourceGroupId>Root-Group</sourceGroupId>
+      <sourceType>PROCESSOR</sourceType>
+      <destinationId>dcff217a-a25c-424f-b9f1-d82c55bfa61b</destinationId>
+      <destinationGroupId>Root-Group</destinationGroupId>
+      <destinationType>PROCESSOR</destinationType>
+      <relationship>Failure</relationship>
+      <maxWorkQueueSize>10000</maxWorkQueueSize>
+      <maxWorkQueueDataSize>1 GB</maxWorkQueueDataSize>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <queuePrioritizerClass>org.apache.nifi.prioritizer.FirstInFirstOutPrioritizer</queuePrioritizerClass>
+    </connection>
+    <connection>
+      <id>ddbc1711-8cda-4418-b6ee-895763ef1a97</id>
+      <name>Search Google/No Retry/Route On Status Code</name>
+      <bendPoints/>
+      <labelIndex>1</labelIndex>
+      <zIndex>0</zIndex>
+      <sourceId>66649998-3b08-4b41-9f07-a51d999743f6</sourceId>
+      <sourceGroupId>Root-Group</sourceGroupId>
+      <sourceType>PROCESSOR</sourceType>
+      <destinationId>dcff217a-a25c-424f-b9f1-d82c55bfa61b</destinationId>
+      <destinationGroupId>Root-Group</destinationGroupId>
+      <destinationType>PROCESSOR</destinationType>
+      <relationship>No Retry</relationship>
+      <maxWorkQueueSize>10000</maxWorkQueueSize>
+      <maxWorkQueueDataSize>1 GB</maxWorkQueueDataSize>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <queuePrioritizerClass>org.apache.nifi.prioritizer.FirstInFirstOutPrioritizer</queuePrioritizerClass>
+    </connection>
+    <connection>
+      <id>b97044aa-3401-49df-86ab-bc440cd8f6c8</id>
+      <name>Search Google/Original/Route On Status Code</name>
+      <bendPoints/>
+      <labelIndex>1</labelIndex>
+      <zIndex>0</zIndex>
+      <sourceId>66649998-3b08-4b41-9f07-a51d999743f6</sourceId>
+      <sourceGroupId>Root-Group</sourceGroupId>
+      <sourceType>PROCESSOR</sourceType>
+      <destinationId>dcff217a-a25c-424f-b9f1-d82c55bfa61b</destinationId>
+      <destinationGroupId>Root-Group</destinationGroupId>
+      <destinationType>PROCESSOR</destinationType>
+      <relationship>Original</relationship>
+      <maxWorkQueueSize>10000</maxWorkQueueSize>
+      <maxWorkQueueDataSize>1 GB</maxWorkQueueDataSize>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <queuePrioritizerClass>org.apache.nifi.prioritizer.FirstInFirstOutPrioritizer</queuePrioritizerClass>
+    </connection>
+    <connection>
+      <id>c6a06d31-51fb-488f-bcde-495102f8c93f</id>
+      <name>Search Google/Response/Route On Status Code</name>
+      <bendPoints/>
+      <labelIndex>1</labelIndex>
+      <zIndex>0</zIndex>
+      <sourceId>66649998-3b08-4b41-9f07-a51d999743f6</sourceId>
+      <sourceGroupId>Root-Group</sourceGroupId>
+      <sourceType>PROCESSOR</sourceType>
+      <destinationId>dcff217a-a25c-424f-b9f1-d82c55bfa61b</destinationId>
+      <destinationGroupId>Root-Group</destinationGroupId>
+      <destinationType>PROCESSOR</destinationType>
+      <relationship>Response</relationship>
+      <maxWorkQueueSize>10000</maxWorkQueueSize>
+      <maxWorkQueueDataSize>1 GB</maxWorkQueueDataSize>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <queuePrioritizerClass>org.apache.nifi.prioritizer.FirstInFirstOutPrioritizer</queuePrioritizerClass>
+    </connection>
+    <connection>
+      <id>3172a4b6-c35b-4d2f-a7c1-68eb16cc1b37</id>
+      <name>Search Google/Retry/Route On Status Code</name>
+      <bendPoints/>
+      <labelIndex>1</labelIndex>
+      <zIndex>0</zIndex>
+      <sourceId>66649998-3b08-4b41-9f07-a51d999743f6</sourceId>
+      <sourceGroupId>Root-Group</sourceGroupId>
+      <sourceType>PROCESSOR</sourceType>
+      <destinationId>dcff217a-a25c-424f-b9f1-d82c55bfa61b</destinationId>
+      <destinationGroupId>Root-Group</destinationGroupId>
+      <destinationType>PROCESSOR</destinationType>
+      <relationship>Retry</relationship>
+      <maxWorkQueueSize>10000</maxWorkQueueSize>
+      <maxWorkQueueDataSize>1 GB</maxWorkQueueDataSize>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <queuePrioritizerClass>org.apache.nifi.prioritizer.FirstInFirstOutPrioritizer</queuePrioritizerClass>
+    </connection>
+    <connection>
+      <id>2ef71cd8-eb24-4653-8526-34ab84e79328</id>
+      <name>Source/success/q=nifi</name>
+      <bendPoints/>
+      <labelIndex>1</labelIndex>
+      <zIndex>0</zIndex>
+      <sourceId>fcb378d7-6438-41d3-8485-7da85e870ca4</sourceId>
+      <sourceGroupId>Root-Group</sourceGroupId>
+      <sourceType>PROCESSOR</sourceType>
+      <destinationId>6638cd15-0aaf-4bba-a18a-722cf85038b6</destinationId>
+      <destinationGroupId>Root-Group</destinationGroupId>
+      <destinationType>PROCESSOR</destinationType>
+      <relationship>success</relationship>
+      <maxWorkQueueSize>0</maxWorkQueueSize>
+      <maxWorkQueueDataSize>0 MB</maxWorkQueueDataSize>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <queuePrioritizerClass>org.apache.nifi.prioritizer.FirstInFirstOutPrioritizer</queuePrioritizerClass>
+    </connection>
+    <connection>
+      <id>ee5ee5bf-a552-43cf-9514-c14d40350bff</id>
+      <name>q=nifi/success/Search Google</name>
+      <bendPoints/>
+      <labelIndex>1</labelIndex>
+      <zIndex>0</zIndex>
+      <sourceId>6638cd15-0aaf-4bba-a18a-722cf85038b6</sourceId>
+      <sourceGroupId>Root-Group</sourceGroupId>
+      <sourceType>PROCESSOR</sourceType>
+      <destinationId>66649998-3b08-4b41-9f07-a51d999743f6</destinationId>
+      <destinationGroupId>Root-Group</destinationGroupId>
+      <destinationType>PROCESSOR</destinationType>
+      <relationship>success</relationship>
+      <maxWorkQueueSize>0</maxWorkQueueSize>
+      <maxWorkQueueDataSize>0 MB</maxWorkQueueDataSize>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <queuePrioritizerClass>org.apache.nifi.prioritizer.FirstInFirstOutPrioritizer</queuePrioritizerClass>
+    </connection>
+  </rootGroup>
+</flowController>

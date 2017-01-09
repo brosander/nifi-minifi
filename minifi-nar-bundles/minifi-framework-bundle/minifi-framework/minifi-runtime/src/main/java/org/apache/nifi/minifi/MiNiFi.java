@@ -131,6 +131,7 @@ public class MiNiFi {
         if (shutdown) {
             logger.info("MiNiFi has been shutdown via MiNiFi Bootstrap. Will not start Controller");
         } else {
+            minifiServer.setReloadRunnable(() -> shutdownHook(true));
             minifiServer.start();
 
             if (bootstrapListener != null) {

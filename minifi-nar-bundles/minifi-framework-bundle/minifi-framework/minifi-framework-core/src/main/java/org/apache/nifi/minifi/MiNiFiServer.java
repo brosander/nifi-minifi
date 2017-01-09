@@ -26,22 +26,50 @@ import org.apache.nifi.authorization.AuthorizerInitializationContext;
 import org.apache.nifi.authorization.exception.AuthorizationAccessException;
 import org.apache.nifi.authorization.exception.AuthorizerCreationException;
 import org.apache.nifi.authorization.exception.AuthorizerDestructionException;
+import org.apache.nifi.connectable.ConnectableType;
+import org.apache.nifi.connectable.Connection;
 import org.apache.nifi.controller.FlowController;
 import org.apache.nifi.controller.StandardFlowService;
 import org.apache.nifi.controller.repository.FlowFileEventRepository;
 import org.apache.nifi.controller.repository.RingBufferEventRepository;
 import org.apache.nifi.encrypt.StringEncryptor;
 import org.apache.nifi.events.VolatileBulletinRepository;
+import org.apache.nifi.framework.security.util.SslContextFactory;
+import org.apache.nifi.groups.ProcessGroup;
+import org.apache.nifi.groups.RemoteProcessGroup;
+import org.apache.nifi.groups.RemoteProcessGroupPortDescriptor;
 import org.apache.nifi.minifi.commons.status.FlowStatusReport;
 import org.apache.nifi.minifi.status.StatusConfigReporter;
 import org.apache.nifi.minifi.status.StatusRequestException;
 import org.apache.nifi.registry.VariableRegistry;
+import org.apache.nifi.remote.RemoteDestination;
+import org.apache.nifi.remote.RemoteGroupPort;
+import org.apache.nifi.remote.StandardRemoteGroupPort;
+import org.apache.nifi.remote.StandardRemoteProcessGroupPortDescriptor;
+import org.apache.nifi.remote.client.SiteInfoProvider;
+import org.apache.nifi.remote.client.SiteToSiteClient;
+import org.apache.nifi.remote.client.SiteToSiteClientConfig;
+import org.apache.nifi.remote.client.socket.EndpointConnectionPool;
+import org.apache.nifi.remote.protocol.http.HttpProxy;
 import org.apache.nifi.reporting.BulletinRepository;
 import org.apache.nifi.services.FlowService;
 import org.apache.nifi.util.FileBasedVariableRegistry;
 import org.apache.nifi.util.NiFiProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLContext;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  */
@@ -51,6 +79,7 @@ public class MiNiFiServer {
     private final NiFiProperties props;
     private FlowService flowService;
     private FlowController flowController;
+    private Runnable reloadRunnable;
 
     /**
      *
@@ -58,6 +87,10 @@ public class MiNiFiServer {
      */
     public MiNiFiServer(final NiFiProperties props) {
         this.props = props;
+    }
+
+    public void setReloadRunnable(Runnable reloadRunnable) {
+        this.reloadRunnable = reloadRunnable;
     }
 
     public void start() {
@@ -101,6 +134,8 @@ public class MiNiFiServer {
                     variableRegistry
                     );
 
+
+
             flowService = StandardFlowService.createStandaloneInstance(
                     flowController,
                     props,
@@ -111,6 +146,65 @@ public class MiNiFiServer {
             // start and load the flow
             flowService.start();
             flowService.load(null);
+
+            if (Boolean.valueOf(props.getProperty("minifi.lookup.ports", Boolean.toString(false))) || true) {
+                AtomicBoolean changed = new AtomicBoolean(false);
+                Map<String, List<Connection>> destinationConnectables = getAllProcessGroups(flowController).stream()
+                        .flatMap(p -> p.getConnections().stream())
+                        .filter(c -> c.getDestination().getConnectableType() == ConnectableType.REMOTE_INPUT_PORT)
+                        .collect(Collectors.groupingBy(c -> c.getDestination().getIdentifier(), Collectors.toList()));
+                SSLContext sslContext = SslContextFactory.createSslContext(props);
+
+                for (ProcessGroup processGroup : getAllProcessGroups(flowController)) {
+                    for (RemoteProcessGroup remoteProcessGroup : processGroup.getRemoteProcessGroups()) {
+                        SiteInfoProvider siteInfoProvider = new SiteInfoProvider();
+                        siteInfoProvider.setClusterUrl(remoteProcessGroup.getTargetUri());
+                        siteInfoProvider.setProxy(new HttpProxy(remoteProcessGroup.getProxyHost(), remoteProcessGroup.getProxyPort(), remoteProcessGroup.getProxyUser(), remoteProcessGroup.getProxyPassword()));
+                        siteInfoProvider.setConnectTimeoutMillis(10000);
+                        siteInfoProvider.setReadTimeoutMillis(10000);
+                        siteInfoProvider.setSslContext(sslContext);
+
+                        Map<String, String> updatedRemoteGroupPorts = new HashMap<>();
+                        for (RemoteGroupPort remoteGroupPort : remoteProcessGroup.getInputPorts()) {
+                            String inputPortIdentifier = siteInfoProvider.getInputPortIdentifier(remoteGroupPort.getName());
+                            if (!remoteGroupPort.getIdentifier().equals(inputPortIdentifier)) {
+                                updatedRemoteGroupPorts.put(remoteGroupPort.getIdentifier(), inputPortIdentifier);
+                            }
+                        }
+                        inputPorts.removeAll(updatedRemoteGroupPorts.keySet());
+
+                        Set<RemoteProcessGroupPortDescriptor> remoteProcessGroupPortDescriptors = new HashSet<>(inputPorts.stream()
+                                .map(i -> getStandardRemoteProcessGroupPortDescriptor(remoteProcessGroup, i, i.getIdentifier())).collect(Collectors.toList()));
+
+                        remoteProcessGroupPortDescriptors.addAll(updatedRemoteGroupPorts.entrySet().stream()
+                                .map(e -> getStandardRemoteProcessGroupPortDescriptor(remoteProcessGroup, e.getKey(), e.getValue())).collect(Collectors.toList()));
+
+                        remoteProcessGroup.setInputPorts(remoteProcessGroupPortDescriptors);
+
+                        updatedRemoteGroupPorts.forEach((r, newId) -> {
+                            changed.set(true);
+                            ((StandardRemoteGroupPort) r).setTargetExists(false);
+                            List<Connection> connections = destinationConnectables.get(r.getIdentifier());
+                            if (connections != null) {
+                                connections.forEach(c -> {
+                                    RemoteGroupPort inputPort = remoteProcessGroup.getInputPort(newId);
+                                    c.setDestination(inputPort);
+                                    inputPort.addConnection(c);
+                                });
+                            }
+                        });
+                    }
+                }
+                if (changed.get()) {
+                    if (reloadRunnable == null) {
+
+                    }
+                    flowService.saveFlowChanges();
+                    reloadRunnable.run();
+                    return;
+                }
+            }
+
             flowController.onFlowInitialized(true);
             flowController.getGroup(flowController.getRootGroupId()).startProcessing();
 
@@ -124,6 +218,32 @@ public class MiNiFiServer {
             }
             startUpFailure(new Exception("Unable to load flow due to: " + e, e));
         }
+    }
+
+    protected StandardRemoteProcessGroupPortDescriptor getStandardRemoteProcessGroupPortDescriptor(RemoteProcessGroup remoteProcessGroup, RemoteGroupPort i, String newId) {
+        StandardRemoteProcessGroupPortDescriptor standardRemoteProcessGroupPortDescriptor = new StandardRemoteProcessGroupPortDescriptor();
+        standardRemoteProcessGroupPortDescriptor.setId(newId);
+        standardRemoteProcessGroupPortDescriptor.setGroupId(remoteProcessGroup.getIdentifier());
+        standardRemoteProcessGroupPortDescriptor.setName(i.getName());
+        standardRemoteProcessGroupPortDescriptor.setComments(i.getComments());
+        standardRemoteProcessGroupPortDescriptor.setConcurrentlySchedulableTaskCount(i.getMaxConcurrentTasks());
+        standardRemoteProcessGroupPortDescriptor.setTransmitting(i.isRunning());
+        standardRemoteProcessGroupPortDescriptor.setUseCompression(i.isUseCompression());
+        standardRemoteProcessGroupPortDescriptor.setExists(i.getTargetExists());
+        standardRemoteProcessGroupPortDescriptor.setTargetRunning(i.isTargetRunning());
+        standardRemoteProcessGroupPortDescriptor.setConnected(i.hasIncomingConnection());
+        return standardRemoteProcessGroupPortDescriptor;
+    }
+
+    private List<ProcessGroup> getAllProcessGroups(FlowController flowController) {
+        List<ProcessGroup> result = new ArrayList<>();
+        getAllProcessGroupsHelper(flowController.getGroup(flowController.getRootGroupId()), result);
+        return result;
+    }
+
+    private void getAllProcessGroupsHelper(ProcessGroup processGroup, List<ProcessGroup> output) {
+        output.add(processGroup);
+        processGroup.getProcessGroups().forEach(p -> getAllProcessGroupsHelper(p, output));
     }
 
     private void startUpFailure(Throwable t) {
