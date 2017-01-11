@@ -15,18 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.android.sitetosite;
+package org.apache.nifi.android.sitetosite.packet;
 
-import org.apache.nifi.remote.protocol.DataPacket;
+import java.io.IOException;
 
 /**
- * Fetches data packets to send via site-to-site
+ * Runtime exception for use in the getData() method.  When calling transaction.send() this should be caught and unwrapped.
  */
-public interface DataCollector {
-    /**
-     * Returns the data packets
-     *
-     * @return the data packets
-     */
-    Iterable<DataPacket> getDataPackets();
+public class DataPacketGetDataException extends RuntimeException {
+    public DataPacketGetDataException(IOException cause) {
+        super(cause);
+    }
+
+    @Override
+    public synchronized IOException getCause() {
+        return (IOException) super.getCause();
+    }
 }

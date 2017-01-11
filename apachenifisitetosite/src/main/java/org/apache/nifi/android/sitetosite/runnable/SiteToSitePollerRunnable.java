@@ -1,7 +1,25 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.nifi.android.sitetosite.runnable;
 
 import org.apache.nifi.android.sitetosite.DataCollector;
 import org.apache.nifi.android.sitetosite.PollingPolicy;
+import org.apache.nifi.android.sitetosite.packet.DataPacketGetDataException;
 import org.apache.nifi.remote.Transaction;
 import org.apache.nifi.remote.TransactionCompletion;
 import org.apache.nifi.remote.TransferDirection;
@@ -15,10 +33,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Created by bryan on 1/11/17.
+ * Runnable that will poll a DataCollector for DataPackets according to its PollingPolicy and send them to Apache NiFi via site-to-site
  */
-
-public class AndroidSiteToSiteRunnable implements Runnable {
+public class SiteToSitePollerRunnable implements Runnable {
     private final AtomicBoolean stopped = new AtomicBoolean(false);
     private final SiteToSiteClient siteToSiteClient;
     private final DataCollector dataCollector;
@@ -26,11 +43,18 @@ public class AndroidSiteToSiteRunnable implements Runnable {
     private final DelayProvider delayProvider;
     private final Logger logger;
 
-    public AndroidSiteToSiteRunnable(SiteToSiteClient siteToSiteClient, DataCollector dataCollector, PollingPolicy pollingPolicy) {
-        this(siteToSiteClient, dataCollector, pollingPolicy, new DelayProvider(), LoggerFactory.getLogger(AndroidSiteToSiteRunnable.class));
+    /**
+     * Creates the runnable
+     *
+     * @param siteToSiteClient the client to use to send the packets
+     * @param dataCollector    the collector that can retrieve packets
+     * @param pollingPolicy    the policy governing polling frequency and retries
+     */
+    public SiteToSitePollerRunnable(SiteToSiteClient siteToSiteClient, DataCollector dataCollector, PollingPolicy pollingPolicy) {
+        this(siteToSiteClient, dataCollector, pollingPolicy, new DelayProvider(), LoggerFactory.getLogger(SiteToSitePollerRunnable.class));
     }
 
-    protected AndroidSiteToSiteRunnable(SiteToSiteClient siteToSiteClient, DataCollector dataCollector, PollingPolicy pollingPolicy, DelayProvider delayProvider, Logger logger) {
+    protected SiteToSitePollerRunnable(SiteToSiteClient siteToSiteClient, DataCollector dataCollector, PollingPolicy pollingPolicy, DelayProvider delayProvider, Logger logger) {
         this.siteToSiteClient = siteToSiteClient;
         this.dataCollector = dataCollector;
         this.pollingPolicy = pollingPolicy;
@@ -38,10 +62,18 @@ public class AndroidSiteToSiteRunnable implements Runnable {
         this.logger = logger;
     }
 
+    /**
+     * Returns a boolean indicating whether the polling loop has been stopped
+     *
+     * @return a boolean indicating whether the polling loop has been stopped
+     */
     public boolean isStopped() {
         return stopped.get();
     }
 
+    /**
+     * Stops the polling loop after its current iteration
+     */
     public void stop() {
         stopped.set(true);
     }
@@ -55,10 +87,24 @@ public class AndroidSiteToSiteRunnable implements Runnable {
         long nextRun = pollingPolicy.getNextDesiredRuntime(null);
         while (!isStopped()) {
             try {
-                delayProvider.delay(Math.max(0L, nextRun - System.currentTimeMillis()));
+                delayProvider.delayUntil(nextRun);
             } catch (InterruptedException e) {
                 logger.error("Interrupted while waiting for next run.", e);
                 Thread.currentThread().interrupt();
+            }
+
+            if (packets == null) {
+                packets = dataCollector.getDataPackets();
+                if (!packets.iterator().hasNext()) {
+                    packets = null;
+                    Long nextDesiredRuntime = pollingPolicy.getNextDesiredRuntime(null);
+                    if (nextDesiredRuntime == null) {
+                        stop();
+                    } else {
+                        nextRun = nextDesiredRuntime;
+                    }
+                    continue;
+                }
             }
 
             Transaction transaction;
@@ -76,16 +122,16 @@ public class AndroidSiteToSiteRunnable implements Runnable {
                 continue;
             }
 
-            if (packets == null) {
-                packets = dataCollector.getDataPackets();
-            }
-
             TransactionCompletion transactionCompletion;
             try {
-                for (DataPacket packet : packets) {
-                    transaction.send(packet);
+                try {
+                    for (DataPacket packet : packets) {
+                        transaction.send(packet);
+                    }
+                    transaction.confirm();
+                } catch (DataPacketGetDataException e) {
+                    throw e.getCause();
                 }
-                transaction.confirm();
                 transactionCompletion = transaction.complete();
                 consecutiveSendFailures = 0;
                 packets = null;

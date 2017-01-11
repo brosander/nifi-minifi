@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.nifi.android.sitetosite.collectors;
 
 import org.apache.nifi.android.sitetosite.DataCollector;
@@ -5,23 +22,17 @@ import org.apache.nifi.android.sitetosite.collectors.filters.AndFileFilter;
 import org.apache.nifi.android.sitetosite.collectors.filters.DirectoryFileFilter;
 import org.apache.nifi.android.sitetosite.collectors.filters.LastModifiedFileFilter;
 import org.apache.nifi.android.sitetosite.collectors.filters.OrFileFilter;
-import org.apache.nifi.flowfile.attributes.CoreAttributes;
+import org.apache.nifi.android.sitetosite.packet.FileDataPacket;
 import org.apache.nifi.remote.protocol.DataPacket;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Created by bryan on 1/11/17.
+ * DataCollector that lists files in a directory according to a file filter and optionally modified time
  */
-
 public class ListFileCollector implements DataCollector {
     private final File baseDir;
     private final FileFilter fileFilter;
@@ -62,30 +73,7 @@ public class ListFileCollector implements DataCollector {
     private void listRecursive(File base, FileFilter fileFilter, List<DataPacket> output) {
         for (final File file : base.listFiles(fileFilter)) {
             if (file.isFile()) {
-                output.add(new DataPacket() {
-                    @Override
-                    public Map<String, String> getAttributes() {
-                        final Map<String, String> attributes = new HashMap<>();
-                        attributes.put(CoreAttributes.PATH.key(), file.getParentFile().getPath());
-                        attributes.put(CoreAttributes.ABSOLUTE_PATH.key(), file.getParentFile().getAbsolutePath());
-                        attributes.put(CoreAttributes.FILENAME.key(), file.getName());
-                        return attributes;
-                    }
-
-                    @Override
-                    public InputStream getData() {
-                        try {
-                            return new FileInputStream(file);
-                        } catch (FileNotFoundException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-
-                    @Override
-                    public long getSize() {
-                        return file.length();
-                    }
-                });
+                output.add(new FileDataPacket(file));
             } else if (file.isDirectory()) {
                 listRecursive(file, fileFilter, output);
             }

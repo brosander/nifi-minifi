@@ -15,18 +15,36 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.android.sitetosite;
+package org.apache.nifi.android.sitetosite.packet;
 
 import org.apache.nifi.remote.protocol.DataPacket;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.Map;
+
 /**
- * Fetches data packets to send via site-to-site
+ * Data packet with empty payload
  */
-public interface DataCollector {
-    /**
-     * Returns the data packets
-     *
-     * @return the data packets
-     */
-    Iterable<DataPacket> getDataPackets();
+public class EmptyDataPacket implements DataPacket {
+    private final Map<String, String> attributes;
+
+    public EmptyDataPacket(Map<String, String> attributes) {
+        this.attributes = attributes;
+    }
+
+    @Override
+    public Map<String, String> getAttributes() {
+        return attributes;
+    }
+
+    @Override
+    public InputStream getData() {
+        return new ByteArrayInputStream(new byte[0]);
+    }
+
+    @Override
+    public long getSize() {
+        return 0;
+    }
 }
