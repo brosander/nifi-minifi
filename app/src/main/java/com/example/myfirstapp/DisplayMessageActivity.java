@@ -7,10 +7,23 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.apache.nifi.android.sitetosite.AndroidSiteToSite;
+import org.apache.nifi.android.sitetosite.collectors.ListFileCollector;
+import org.apache.nifi.android.sitetosite.collectors.filters.RegexFileFilter;
+import org.apache.nifi.android.sitetosite.polling.StandardPollingPolicy;
 import org.apache.nifi.remote.Transaction;
 import org.apache.nifi.remote.TransferDirection;
 import org.apache.nifi.remote.client.SiteToSiteClient;
+import org.apache.nifi.remote.protocol.SiteToSiteTransportProtocol;
+import org.codehaus.jackson.map.ObjectMapper;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class DisplayMessageActivity extends AppCompatActivity {
@@ -26,6 +39,15 @@ public class DisplayMessageActivity extends AppCompatActivity {
         textView.setTextSize(40);
         textView.setText(message);
 
+        for (File file : getExternalMediaDirs()) {
+            try {
+                try(Writer outputStream = new FileWriter(new File(file, "testFile"));) {
+                    outputStream.write("hey nifi, I'm android");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
         AsyncTask asyncTask = new AsyncTask<String, Void, String>() {
             private Exception exception;
@@ -34,14 +56,11 @@ public class DisplayMessageActivity extends AppCompatActivity {
             protected String doInBackground(String... params) {
                 try {
                     SiteToSiteClient s2sClient = new SiteToSiteClient.Builder()
-                            .url("http://192.168.198.145:8080/nifi")
+                            .url("http://192.168.199.145:8080/nifi")
                             .portName("From Android")
+                            .transportProtocol(SiteToSiteTransportProtocol.HTTP)
                             .build();
-                    final Transaction transaction = s2sClient.createTransaction(TransferDirection.SEND);
-                    System.err.println("made a transaction whoo yeah");
-                    transaction.send("Hello from Android".getBytes(), new HashMap<String, String>());
-                    transaction.confirm();
-                    transaction.complete();
+                    new AndroidSiteToSite(s2sClient, new ListFileCollector(getExternalMediaDirs()[0], new RegexFileFilter(".*", false), 0L), new StandardPollingPolicy(1000)).start();
                 } catch (Throwable e) {
                     System.err.println("We done failed S2S-in'");
                     e.printStackTrace();
