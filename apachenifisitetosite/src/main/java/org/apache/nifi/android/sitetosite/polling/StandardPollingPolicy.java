@@ -39,7 +39,7 @@ public class StandardPollingPolicy implements PollingPolicy {
 
     @Override
     public Long getNextRetryTimeAfterFailedTransactionCreate(int consecutiveFailures) {
-        if (consecutiveFailures >= maxRetries) {
+        if (consecutiveFailures > maxRetries) {
             return null;
         }
         return System.currentTimeMillis() + delayInMillis;
@@ -47,7 +47,7 @@ public class StandardPollingPolicy implements PollingPolicy {
 
     @Override
     public Long getNextRetryTimeAfterFailedSend(int consecutiveFailures) {
-        if (consecutiveFailures >= maxRetries) {
+        if (consecutiveFailures > maxRetries) {
             return null;
         }
         return System.currentTimeMillis() + delayInMillis;

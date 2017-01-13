@@ -15,19 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.android.sitetosite.runnable;
+package org.apache.nifi.android.sitetosite.packet;
 
-/**
- * Responsible for delaying execution
- */
-public class DelayProvider {
-    /**
-     * Delays execution until the current time is equal to the parameter
-     *
-     * @param delayUntil the time at which the delay should terminate
-     * @throws InterruptedException if the thread is interruped while waiting
-     */
-    public void delayUntil(long delayUntil) throws InterruptedException {
-        Thread.sleep(Math.max(0L, delayUntil - System.currentTimeMillis()));
+import org.junit.Test;
+
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+
+public class DataPacketGetDataExceptionTest {
+    @Test
+    public void testGetCause() {
+        IOException cause = new IOException();
+        assertEquals(cause, new DataPacketGetDataException(cause).getCause());
     }
 }

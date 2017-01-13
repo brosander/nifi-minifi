@@ -15,20 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.android.sitetosite;
+package org.apache.nifi.android.sitetosite.runnable;
 
+import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
- */
-public class ExampleUnitTest {
+public class DelayProviderTest {
+    private DelayProvider delayProvider;
+
+    @Before
+    public void setup() {
+        delayProvider = new DelayProvider();
+    }
+
     @Test
-    public void addition_isCorrect() throws Exception {
-        assertEquals(4, 2 + 2);
+    public void testDelayProvider() throws InterruptedException {
+        long before = System.currentTimeMillis();
+        delayProvider.delayUntil(before + 15);
+        assertTrue(System.currentTimeMillis() >= before + 15);
     }
 }
