@@ -15,25 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.android.sitetosite.runnable;
+package org.apache.nifi.android.sitetosite.collectors;
 
-import org.junit.Before;
-import org.junit.Test;
+import android.os.Parcelable;
 
-import static org.junit.Assert.assertTrue;
+import org.apache.nifi.android.sitetosite.packet.ParcelableDataPacket;
 
-public class DelayProviderTest {
-    private DelayProvider delayProvider;
-
-    @Before
-    public void setup() {
-        delayProvider = new DelayProvider();
-    }
-
-    @Test
-    public void testDelayProvider() throws InterruptedException {
-        long before = System.currentTimeMillis();
-        delayProvider.delayUntil(before + 15);
-        assertTrue(System.currentTimeMillis() >= before + 15);
-    }
+/**
+ * Fetches data packets to send via site-to-site
+ */
+public interface DataCollector extends Parcelable {
+    /**
+     * Returns the data packets
+     *
+     * @return the data packets
+     */
+    Iterable<ParcelableDataPacket> getDataPackets();
 }

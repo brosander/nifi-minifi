@@ -17,9 +17,9 @@
 
 package org.apache.nifi.android.sitetosite.collectors;
 
-import org.apache.nifi.android.sitetosite.runnable.DelayProvider;
+import org.apache.nifi.android.sitetosite.collectors.filters.ParcelableFileFilter;
+import org.apache.nifi.android.sitetosite.packet.ParcelableDataPacket;
 import org.apache.nifi.flowfile.attributes.CoreAttributes;
-import org.apache.nifi.remote.protocol.DataPacket;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,7 +48,7 @@ public class ListFileCollectorTest {
     private File file;
 
     @Mock
-    private FileFilter fileFilter;
+    private ParcelableFileFilter fileFilter;
 
     private ListFileCollector listFileCollector;
 
@@ -66,8 +66,8 @@ public class ListFileCollectorTest {
         when(childFile.isFile()).thenReturn(true);
         when(childFile.getParentFile()).thenReturn(file);
 
-        Iterable<DataPacket> dataPackets = listFileCollector.getDataPackets();
-        Iterator<DataPacket> iterator = dataPackets.iterator();
+        Iterable<ParcelableDataPacket> dataPackets = listFileCollector.getDataPackets();
+        Iterator<ParcelableDataPacket> iterator = dataPackets.iterator();
         assertTrue(iterator.hasNext());
         assertEquals(childFileName, iterator.next().getAttributes().get(CoreAttributes.FILENAME.key()));
         assertFalse(iterator.hasNext());
@@ -91,8 +91,8 @@ public class ListFileCollectorTest {
         when(grandChildFile.isFile()).thenReturn(true);
         when(childDir.listFiles(fileFilter)).thenReturn(new File[]{grandChildFile});
 
-        Iterable<DataPacket> dataPackets = listFileCollector.getDataPackets();
-        Iterator<DataPacket> iterator = dataPackets.iterator();
+        Iterable<ParcelableDataPacket> dataPackets = listFileCollector.getDataPackets();
+        Iterator<ParcelableDataPacket> iterator = dataPackets.iterator();
         assertTrue(iterator.hasNext());
         assertEquals(childFileName, iterator.next().getAttributes().get(CoreAttributes.FILENAME.key()));
         assertTrue(iterator.hasNext());
@@ -133,10 +133,10 @@ public class ListFileCollectorTest {
             }
         });
         listFileCollector = new ListFileCollector(file, fileFilter, currentTimeMillis);
-        new DelayProvider().delayUntil(currentTimeMillis + 1);
+        Thread.sleep(1);
 
-        Iterable<DataPacket> dataPackets = listFileCollector.getDataPackets();
-        Iterator<DataPacket> iterator = dataPackets.iterator();
+        Iterable<ParcelableDataPacket> dataPackets = listFileCollector.getDataPackets();
+        Iterator<ParcelableDataPacket> iterator = dataPackets.iterator();
         assertTrue(iterator.hasNext());
         assertEquals(validName, iterator.next().getAttributes().get(CoreAttributes.FILENAME.key()));
         assertFalse(iterator.hasNext());

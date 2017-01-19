@@ -19,37 +19,20 @@ package org.apache.nifi.android.sitetosite.collectors.filters;
 
 import android.os.Parcel;
 
-import java.io.File;
-import java.io.FileFilter;
-
-/**
- * Filter that accepts all directories
- */
-public class DirectoryFileFilter implements ParcelableFileFilter {
-    public static final Creator<DirectoryFileFilter> CREATOR = new Creator<DirectoryFileFilter>() {
-        @Override
-        public DirectoryFileFilter createFromParcel(Parcel source) {
-            return new DirectoryFileFilter();
+public class ParcelableFileFilterUtil {
+    public static void writeToParcel(ParcelableFileFilter[] parcelableFileFilters, Parcel dest, int flags) {
+        dest.writeInt(parcelableFileFilters.length);
+        for (ParcelableFileFilter parcelableFileFilter : parcelableFileFilters) {
+            dest.writeParcelable(parcelableFileFilter, flags);
         }
-
-        @Override
-        public DirectoryFileFilter[] newArray(int size) {
-            return new DirectoryFileFilter[size];
-        }
-    };
-
-    @Override
-    public boolean accept(File pathname) {
-        return pathname.isDirectory();
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-
+    public static ParcelableFileFilter[] readFiltersFromParcel(Parcel source) {
+        int len = source.readInt();
+        ParcelableFileFilter[] parcelableFileFilters = new ParcelableFileFilter[len];
+        for (int i = 0; i < len; i++) {
+            parcelableFileFilters[i] = source.readParcelable(ParcelableFileFilterUtil.class.getClassLoader());
+        }
+        return parcelableFileFilters;
     }
 }

@@ -35,10 +35,10 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class OrFileFilterTest {
     @Mock
-    private FileFilter delegate1;
+    private ParcelableFileFilter delegate1;
 
     @Mock
-    private FileFilter delegate2;
+    private ParcelableFileFilter delegate2;
 
     @Mock
     private File file;

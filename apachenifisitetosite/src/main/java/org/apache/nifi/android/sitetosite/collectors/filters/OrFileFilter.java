@@ -17,16 +17,30 @@
 
 package org.apache.nifi.android.sitetosite.collectors.filters;
 
+import android.os.Parcel;
+
 import java.io.File;
 import java.io.FileFilter;
 
 /**
  * Filter that accepts a file iff at least one of its delegates do
  */
-public class OrFileFilter implements FileFilter {
-    private final FileFilter[] delegates;
+public class OrFileFilter implements ParcelableFileFilter {
+    private final ParcelableFileFilter[] delegates;
 
-    public OrFileFilter(FileFilter... delegates) {
+    public static final Creator<OrFileFilter> CREATOR = new Creator<OrFileFilter>() {
+        @Override
+        public OrFileFilter createFromParcel(Parcel source) {
+            return new OrFileFilter(ParcelableFileFilterUtil.readFiltersFromParcel(source));
+        }
+
+        @Override
+        public OrFileFilter[] newArray(int size) {
+            return new OrFileFilter[size];
+        }
+    };
+
+    public OrFileFilter(ParcelableFileFilter... delegates) {
         this.delegates = delegates;
     }
 
@@ -38,5 +52,15 @@ public class OrFileFilter implements FileFilter {
             }
         }
         return false;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        ParcelableFileFilterUtil.writeToParcel(delegates, dest, flags);
     }
 }

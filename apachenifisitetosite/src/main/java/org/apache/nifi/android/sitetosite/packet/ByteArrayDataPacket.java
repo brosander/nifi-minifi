@@ -19,53 +19,54 @@ package org.apache.nifi.android.sitetosite.packet;
 
 import android.os.Parcel;
 
-import org.apache.nifi.remote.protocol.DataPacket;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Data packet with empty payload
- */
-public class EmptyDataPacket implements ParcelableDataPacket {
+public class ByteArrayDataPacket implements ParcelableDataPacket {
     private final Map<String, String> attributes;
+    private final byte[] data;
 
-    public static final Creator<EmptyDataPacket> CREATOR = new Creator<EmptyDataPacket>() {
+    public ByteArrayDataPacket(Map<String, String> attributes, byte[] data) {
+        this.attributes = attributes;
+        this.data = data;
+    }
+
+    public static final Creator<ByteArrayDataPacket> CREATOR = new Creator<ByteArrayDataPacket>() {
         @Override
-        public EmptyDataPacket createFromParcel(Parcel in) {
+        public ByteArrayDataPacket createFromParcel(Parcel in) {
             Map<String, String> attributes = new HashMap<>();
             int numAttributes = in.readInt();
             for (int i = 0; i < numAttributes; i++) {
                 attributes.put(in.readString(), in.readString());
             }
-            return new EmptyDataPacket(attributes);
+            byte[] data = new byte[in.readInt()];
+            if (data.length > 0) {
+                in.readByteArray(data);
+            }
+            return new ByteArrayDataPacket(attributes, data);
         }
 
         @Override
-        public EmptyDataPacket[] newArray(int size) {
-            return new EmptyDataPacket[size];
+        public ByteArrayDataPacket[] newArray(int size) {
+            return new ByteArrayDataPacket[size];
         }
     };
 
-    public EmptyDataPacket(Map<String, String> attributes) {
-        this.attributes = attributes;
-    }
-
     @Override
     public Map<String, String> getAttributes() {
-        return attributes;
+        return null;
     }
 
     @Override
     public InputStream getData() {
-        return new ByteArrayInputStream(new byte[0]);
+        return new ByteArrayInputStream(data);
     }
 
     @Override
     public long getSize() {
-        return 0;
+        return data.length;
     }
 
     @Override
@@ -79,6 +80,10 @@ public class EmptyDataPacket implements ParcelableDataPacket {
         for (Map.Entry<String, String> entry : attributes.entrySet()) {
             dest.writeString(entry.getKey());
             dest.writeString(entry.getValue());
+        }
+        dest.writeInt(data.length);
+        if (data.length > 0) {
+            dest.writeByteArray(data);
         }
     }
 }

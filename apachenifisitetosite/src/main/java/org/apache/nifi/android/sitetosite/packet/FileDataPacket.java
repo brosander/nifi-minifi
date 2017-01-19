@@ -17,8 +17,9 @@
 
 package org.apache.nifi.android.sitetosite.packet;
 
+import android.os.Parcel;
+
 import org.apache.nifi.flowfile.attributes.CoreAttributes;
-import org.apache.nifi.remote.protocol.DataPacket;
 import org.apache.nifi.stream.io.LimitingInputStream;
 import org.apache.nifi.stream.io.MinimumLengthInputStream;
 
@@ -32,12 +33,24 @@ import java.util.Map;
 /**
  * Data packet for a file object
  */
-public class FileDataPacket implements DataPacket {
+public class FileDataPacket implements ParcelableDataPacket {
     private final File file;
 
     public FileDataPacket(File file) {
         this.file = file;
     }
+
+    public static final Creator<FileDataPacket> CREATOR = new Creator<FileDataPacket>() {
+        @Override
+        public FileDataPacket createFromParcel(Parcel in) {
+            return new FileDataPacket(new File(in.readString()));
+        }
+
+        @Override
+        public FileDataPacket[] newArray(int size) {
+            return new FileDataPacket[size];
+        }
+    };
 
     @Override
     public Map<String, String> getAttributes() {
@@ -61,5 +74,15 @@ public class FileDataPacket implements DataPacket {
     @Override
     public long getSize() {
         return file.length();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(file.getAbsolutePath());
     }
 }

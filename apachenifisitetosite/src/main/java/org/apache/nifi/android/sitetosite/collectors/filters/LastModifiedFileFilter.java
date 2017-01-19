@@ -17,15 +17,29 @@
 
 package org.apache.nifi.android.sitetosite.collectors.filters;
 
+import android.os.Parcel;
+
 import java.io.File;
 import java.io.FileFilter;
 
 /**
  * Filter that accepts files modified within the window
  */
-public class LastModifiedFileFilter implements FileFilter {
+public class LastModifiedFileFilter implements ParcelableFileFilter {
     private final long minLastModified;
     private final long maxLastModified;
+
+    public static final Creator<LastModifiedFileFilter> CREATOR = new Creator<LastModifiedFileFilter>() {
+        @Override
+        public LastModifiedFileFilter createFromParcel(Parcel source) {
+            return new LastModifiedFileFilter(source.readLong(), source.readLong());
+        }
+
+        @Override
+        public LastModifiedFileFilter[] newArray(int size) {
+            return new LastModifiedFileFilter[size];
+        }
+    };
 
     public LastModifiedFileFilter(long minLastModified, long maxLastModified) {
         this.minLastModified = minLastModified;
@@ -39,5 +53,16 @@ public class LastModifiedFileFilter implements FileFilter {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(minLastModified);
+        dest.writeLong(maxLastModified);
     }
 }

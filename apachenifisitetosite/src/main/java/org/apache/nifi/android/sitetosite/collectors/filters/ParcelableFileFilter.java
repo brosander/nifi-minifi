@@ -15,18 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.android.sitetosite;
+package org.apache.nifi.android.sitetosite.collectors.filters;
 
-import org.apache.nifi.remote.protocol.DataPacket;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-/**
- * Fetches data packets to send via site-to-site
- */
-public interface DataCollector {
-    /**
-     * Returns the data packets
-     *
-     * @return the data packets
-     */
-    Iterable<DataPacket> getDataPackets();
+import java.io.FileFilter;
+
+public interface ParcelableFileFilter extends Parcelable, FileFilter {
 }

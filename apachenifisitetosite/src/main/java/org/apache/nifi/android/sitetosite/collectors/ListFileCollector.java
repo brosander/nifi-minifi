@@ -17,13 +17,15 @@
 
 package org.apache.nifi.android.sitetosite.collectors;
 
-import org.apache.nifi.android.sitetosite.DataCollector;
+import android.os.Parcel;
+
 import org.apache.nifi.android.sitetosite.collectors.filters.AndFileFilter;
 import org.apache.nifi.android.sitetosite.collectors.filters.DirectoryFileFilter;
 import org.apache.nifi.android.sitetosite.collectors.filters.LastModifiedFileFilter;
 import org.apache.nifi.android.sitetosite.collectors.filters.OrFileFilter;
+import org.apache.nifi.android.sitetosite.collectors.filters.ParcelableFileFilter;
 import org.apache.nifi.android.sitetosite.packet.FileDataPacket;
-import org.apache.nifi.remote.protocol.DataPacket;
+import org.apache.nifi.android.sitetosite.packet.ParcelableDataPacket;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -35,32 +37,46 @@ import java.util.List;
  */
 public class ListFileCollector implements DataCollector {
     private final File baseDir;
-    private final FileFilter fileFilter;
+    private final ParcelableFileFilter fileFilter;
     private boolean filterModified;
     private long minModifiedTime;
 
-    public ListFileCollector(File baseDir, FileFilter fileFilter) {
-        this.baseDir = baseDir;
-        this.fileFilter = fileFilter;
-        this.filterModified = false;
-        this.minModifiedTime = 0L;
+    public static final Creator<ListFileCollector> CREATOR = new Creator<ListFileCollector>() {
+        @Override
+        public ListFileCollector createFromParcel(Parcel source) {
+            return new ListFileCollector(new File(source.readString()),
+                    source.<ParcelableFileFilter>readParcelable(ListFileCollector.class.getClassLoader()), Boolean.valueOf(source.readString()), source.readLong());
+        }
+
+        @Override
+        public ListFileCollector[] newArray(int size) {
+            return new ListFileCollector[size];
+        }
+    };
+
+    public ListFileCollector(File baseDir, ParcelableFileFilter fileFilter) {
+        this(baseDir, fileFilter, false, 0L);
     }
 
-    public ListFileCollector(File baseDir, FileFilter fileFilter, long minModifiedTime) {
+    public ListFileCollector(File baseDir, ParcelableFileFilter fileFilter, long minModifiedTime) {
+        this(baseDir, fileFilter, true, minModifiedTime);
+    }
+
+    protected ListFileCollector(File baseDir, ParcelableFileFilter fileFilter, boolean filterModified, long minModifiedTime) {
         this.baseDir = baseDir;
         this.fileFilter = fileFilter;
-        this.filterModified = true;
+        this.filterModified = filterModified;
         this.minModifiedTime = minModifiedTime;
     }
 
     @Override
-    public Iterable<DataPacket> getDataPackets() {
+    public Iterable<ParcelableDataPacket> getDataPackets() {
         long maxLastModified = System.currentTimeMillis() - 1;
-        List<DataPacket> dataPackets = new ArrayList<>();
+        List<ParcelableDataPacket> dataPackets = new ArrayList<>();
         FileFilter fileFilter;
         if (filterModified) {
             // Filter out any files not modified in window
-            FileFilter modifiedCompoundFilter = new OrFileFilter(new DirectoryFileFilter(), new LastModifiedFileFilter(minModifiedTime, maxLastModified));
+            ParcelableFileFilter modifiedCompoundFilter = new OrFileFilter(new DirectoryFileFilter(), new LastModifiedFileFilter(minModifiedTime, maxLastModified));
             fileFilter = new AndFileFilter(modifiedCompoundFilter, this.fileFilter);
         } else {
             fileFilter = this.fileFilter;
@@ -70,7 +86,7 @@ public class ListFileCollector implements DataCollector {
         return dataPackets;
     }
 
-    private void listRecursive(File base, FileFilter fileFilter, List<DataPacket> output) {
+    private void listRecursive(File base, FileFilter fileFilter, List<ParcelableDataPacket> output) {
         for (final File file : base.listFiles(fileFilter)) {
             if (file.isFile()) {
                 output.add(new FileDataPacket(file));
@@ -78,5 +94,18 @@ public class ListFileCollector implements DataCollector {
                 listRecursive(file, fileFilter, output);
             }
         }
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(baseDir.getAbsolutePath());
+        dest.writeParcelable(fileFilter, flags);
+        dest.writeString(Boolean.toString(filterModified));
+        dest.writeLong(minModifiedTime);
     }
 }

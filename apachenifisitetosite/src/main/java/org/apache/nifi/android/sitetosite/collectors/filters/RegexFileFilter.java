@@ -17,6 +17,8 @@
 
 package org.apache.nifi.android.sitetosite.collectors.filters;
 
+import android.os.Parcel;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.util.regex.Pattern;
@@ -24,9 +26,22 @@ import java.util.regex.Pattern;
 /**
  * File filter that only accepts files matching a regex
  */
-public class RegexFileFilter implements FileFilter {
+public class RegexFileFilter implements ParcelableFileFilter {
+    private final String regex;
     private final Pattern pattern;
     private final boolean matchAbsolutePath;
+
+    public static final Creator<RegexFileFilter> CREATOR = new Creator<RegexFileFilter>() {
+        @Override
+        public RegexFileFilter createFromParcel(Parcel source) {
+            return new RegexFileFilter(source.readString(), Boolean.valueOf(source.readString()));
+        }
+
+        @Override
+        public RegexFileFilter[] newArray(int size) {
+            return new RegexFileFilter[size];
+        }
+    };
 
     /**
      * Creates the RegexFileFilter
@@ -35,6 +50,7 @@ public class RegexFileFilter implements FileFilter {
      * @param matchAbsolutePath boolean indicating whether to match against absolute path or just file name
      */
     public RegexFileFilter(String regex, boolean matchAbsolutePath) {
+        this.regex = regex;
         this.pattern = Pattern.compile(regex);
         this.matchAbsolutePath = matchAbsolutePath;
     }
@@ -43,5 +59,16 @@ public class RegexFileFilter implements FileFilter {
     public boolean accept(File pathname) {
         String pathToMatch = matchAbsolutePath ? pathname.getAbsolutePath() : pathname.getName();
         return pattern.matcher(pathToMatch).matches();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(regex);
+        dest.writeString(Boolean.toString(matchAbsolutePath));
     }
 }
