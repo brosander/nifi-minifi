@@ -20,12 +20,12 @@ package org.apache.nifi.android.sitetosite.service;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Parcelable;
 import android.os.ResultReceiver;
 import android.support.v4.content.WakefulBroadcastReceiver;
 
+import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
 import org.apache.nifi.android.sitetosite.collectors.DataCollector;
-import org.apache.nifi.android.sitetosite.packet.ParcelableDataPacket;
+import org.apache.nifi.android.sitetosite.packet.DataPacket;
 import org.apache.nifi.android.sitetosite.util.IntentUtils;
 
 import java.util.Random;
@@ -38,23 +38,24 @@ public class SiteToSiteRepeating extends WakefulBroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         DataCollector dataCollector = IntentUtils.getParcelable(intent, DATA_COLLECTOR);
-        Iterable<ParcelableDataPacket> dataPackets = dataCollector.getDataPackets();
+        SiteToSiteClientConfig siteToSiteClientConfig = IntentUtils.getParcelable(intent, SiteToSiteService.SITE_TO_SITE_CONFIG);
+        Iterable<DataPacket> dataPackets = dataCollector.getDataPackets();
 
         // Update the pending intent with any state change in data collector
         int requestCode = getRequestCode(intent);
         ResultReceiver resultReceiver = IntentUtils.getParcelable(intent, SiteToSiteService.RESULT_RECEIVER);
-        PendingIntent.getBroadcast(context, requestCode, getIntent(context, dataCollector, requestCode, resultReceiver), PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent.getBroadcast(context, requestCode, getIntent(context, dataCollector, siteToSiteClientConfig, requestCode, resultReceiver), PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Intent packetIntent = SiteToSiteService.getIntent(context, dataPackets, resultReceiver, true);
+        Intent packetIntent = SiteToSiteService.getIntent(context, dataPackets, siteToSiteClientConfig, resultReceiver, true);
         startWakefulService(context, packetIntent);
     }
 
-    public synchronized static PendingIntent createPendingIntent(Context context, DataCollector dataCollector, ResultReceiver resultReceiver) {
-        Intent intent = getIntent(context, dataCollector, null, resultReceiver);
+    public synchronized static PendingIntent createPendingIntent(Context context, DataCollector dataCollector, SiteToSiteClientConfig siteToSiteClientConfig, ResultReceiver resultReceiver) {
+        Intent intent = getIntent(context, dataCollector, siteToSiteClientConfig, null, resultReceiver);
         return PendingIntent.getBroadcast(context, getRequestCode(intent), intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    private static Intent getIntent(Context context, DataCollector dataCollector, Integer requestCode, ResultReceiver resultReceiver) {
+    private static Intent getIntent(Context context, DataCollector dataCollector, SiteToSiteClientConfig siteToSiteClientConfig, Integer requestCode, ResultReceiver resultReceiver) {
         Intent intent = new Intent(context, SiteToSiteRepeating.class);
         intent.setExtrasClassLoader(dataCollector.getClass().getClassLoader());
 
@@ -70,6 +71,7 @@ public class SiteToSiteRepeating extends WakefulBroadcastReceiver {
         intent.putExtra(REQUEST_CODE, requestCode);
         IntentUtils.putParcelable(dataCollector, intent, DATA_COLLECTOR);
         IntentUtils.putParcelable(resultReceiver, intent, SiteToSiteService.RESULT_RECEIVER);
+        IntentUtils.putParcelable(siteToSiteClientConfig, intent, SiteToSiteService.SITE_TO_SITE_CONFIG);
         return intent;
     }
 

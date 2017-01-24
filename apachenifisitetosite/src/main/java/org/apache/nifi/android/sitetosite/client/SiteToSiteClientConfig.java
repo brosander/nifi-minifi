@@ -15,18 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.android.sitetosite.persist;
+package org.apache.nifi.android.sitetosite.client;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import org.apache.nifi.remote.client.KeystoreType;
-import org.apache.nifi.remote.client.SiteToSiteClientConfig;
-import org.apache.nifi.remote.protocol.SiteToSiteTransportProtocol;
-import org.apache.nifi.remote.protocol.http.HttpProxy;
-import org.apache.nifi.security.util.KeyStoreUtils;
-
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,15 +32,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
-public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig, Parcelable {
-    public static final Creator<ParcelableSiteToSiteClientConfig> CREATOR = new Creator<ParcelableSiteToSiteClientConfig>() {
+public class SiteToSiteClientConfig implements Parcelable {
+    public static final Creator<SiteToSiteClientConfig> CREATOR = new Creator<SiteToSiteClientConfig>() {
         @Override
-        public ParcelableSiteToSiteClientConfig createFromParcel(Parcel source) {
-            ParcelableSiteToSiteClientConfig result = new ParcelableSiteToSiteClientConfig();
+        public SiteToSiteClientConfig createFromParcel(Parcel source) {
+            SiteToSiteClientConfig result = new SiteToSiteClientConfig();
             List<String> urls = new ArrayList<>();
             source.readStringList(urls);
             result.urls = new HashSet<>(urls);
@@ -56,19 +51,18 @@ public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig,
             result.idleConnectionExpirationNanos = source.readLong();
             result.keystoreFilename = source.readString();
             result.keystorePassword = source.readString();
-            result.keystoreType = KeystoreType.valueOf(source.readString());
+            result.keystoreType = source.readString();
             result.truststoreFilename = source.readString();
             result.truststorePassword = source.readString();
-            result.truststoreType = KeystoreType.valueOf(source.readString());
-            result.peerPersistenceFile = new File(source.readString());
+            result.truststoreType = source.readString();
             result.useCompression = Boolean.valueOf(source.readString());
-            result.transportProtocol = SiteToSiteTransportProtocol.valueOf(source.readString());
+            result.transportProtocol = source.readString();
             result.portName = source.readString();
             result.portIdentifier = source.readString();
             result.preferredBatchDurationNanos = source.readLong();
             result.preferredBatchSize = source.readLong();
             result.preferredBatchCount = source.readInt();
-            result.eventReporter = source.readParcelable(ParcelableSiteToSiteClientConfig.class.getClassLoader());
+            result.eventReporter = source.readParcelable(SiteToSiteClientConfig.class.getClassLoader());
             result.proxyHost = source.readString();
             result.proxyPort = source.readInt();
             result.proxyUsername = source.readString();
@@ -77,10 +71,11 @@ public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig,
         }
 
         @Override
-        public ParcelableSiteToSiteClientConfig[] newArray(int size) {
-            return new ParcelableSiteToSiteClientConfig[size];
+        public SiteToSiteClientConfig[] newArray(int size) {
+            return new SiteToSiteClientConfig[size];
         }
     };
+    public static final String PROXY_AUTHORIZATION_HEADER = "Proxy-Authorization";
 
     private Set<String> urls;
     private long timeoutNanos = TimeUnit.SECONDS.toNanos(30);
@@ -88,13 +83,12 @@ public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig,
     private long idleConnectionExpirationNanos = TimeUnit.SECONDS.toNanos(30);
     private String keystoreFilename;
     private String keystorePassword;
-    private KeystoreType keystoreType;
+    private String keystoreType;
     private String truststoreFilename;
     private String truststorePassword;
-    private KeystoreType truststoreType;
-    private File peerPersistenceFile;
+    private String truststoreType;
     private boolean useCompression;
-    private SiteToSiteTransportProtocol transportProtocol;
+    private String transportProtocol;
     private String portName;
     private String portIdentifier;
     private long preferredBatchDurationNanos;
@@ -106,7 +100,7 @@ public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig,
     private String proxyUsername;
     private String proxyPassword;
 
-    public ParcelableSiteToSiteClientConfig() {
+    public SiteToSiteClientConfig() {
 
     }
 
@@ -123,13 +117,12 @@ public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig,
         dest.writeLong(idleConnectionExpirationNanos);
         dest.writeString(keystoreFilename);
         dest.writeString(keystorePassword);
-        dest.writeString(keystoreType.name());
+        dest.writeString(keystoreType);
         dest.writeString(truststoreFilename);
         dest.writeString(truststorePassword);
-        dest.writeString(truststoreType.name());
-        dest.writeString(peerPersistenceFile.getAbsolutePath());
+        dest.writeString(truststoreType);
         dest.writeString(Boolean.toString(useCompression));
-        dest.writeString(transportProtocol.name());
+        dest.writeString(transportProtocol);
         dest.writeString(portName);
         dest.writeString(portIdentifier);
         dest.writeLong(preferredBatchDurationNanos);
@@ -142,7 +135,6 @@ public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig,
         dest.writeString(proxyPassword);
     }
 
-    @Override
     public String getUrl() {
         Set<String> urls = getUrls();
         if (urls == null || urls.size() == 0) {
@@ -151,7 +143,6 @@ public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig,
         return urls.iterator().next();
     }
 
-    @Override
     public Set<String> getUrls() {
         return urls;
     }
@@ -160,69 +151,71 @@ public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig,
         this.urls = urls;
     }
 
-    @Override
     public long getTimeout(TimeUnit timeUnit) {
         return timeUnit.convert(timeoutNanos, TimeUnit.NANOSECONDS);
     }
 
-    @Override
     public long getIdleConnectionExpiration(TimeUnit timeUnit) {
         return timeUnit.convert(idleConnectionExpirationNanos, TimeUnit.NANOSECONDS);
     }
 
-    @Override
     public long getPenalizationPeriod(TimeUnit timeUnit) {
         return timeUnit.convert(penalizationPeriodNanos, TimeUnit.NANOSECONDS);
     }
 
-    @Override
     public SSLContext getSslContext() {
-        KeyManagerFactory keyManagerFactory;
-
-        String keystoreFilename = getKeystoreFilename();
-        String keystorePassword = getKeystorePassword();
-        KeystoreType keystoreType = getKeystoreType();
-
-        if (keystoreFilename != null && keystorePassword != null && keystoreType != null) {
-            try {
-                keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-                KeyStore keystore = KeyStoreUtils.getKeyStore(keystoreType.name());
-                loadKeystore(keystore, keystoreFilename, keystorePassword);
-                keyManagerFactory.init(keystore, keystorePassword.toCharArray());
-            } catch (Exception e) {
-                throw new IllegalStateException("Failed to load Keystore", e);
-            }
-        } else {
-            keyManagerFactory = null;
-        }
-
-        TrustManagerFactory trustManagerFactory;
-
-        String truststoreFilename = getTruststoreFilename();
-        String truststorePassword = getTruststorePassword();
-        KeystoreType truststoreType = getTruststoreType();
-
-        if (truststoreFilename != null && truststorePassword != null && truststoreType != null) {
-            try {
-                trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-                KeyStore trustStore = KeyStoreUtils.getTrustStore(this.getTruststoreType().name());
-                loadKeystore(trustStore, truststoreFilename, truststorePassword);
-                trustManagerFactory.init(trustStore);
-            } catch (Exception e) {
-                throw new IllegalStateException("Failed to load Truststore", e);
-            }
-        } else {
-            trustManagerFactory = null;
-        }
-
-        if (keyManagerFactory != null && trustManagerFactory != null) {
+        KeyManager[] keyManagers = getKeyManagers();
+        TrustManager[] trustManagers = getTrustManagers();
+        if (keyManagers != null && trustManagers != null) {
             try {
                 SSLContext sslContext = SSLContext.getInstance("TLS");
-                sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), new SecureRandom());
+                sslContext.init(getKeyManagers(), trustManagers, new SecureRandom());
                 sslContext.getDefaultSSLParameters().setNeedClientAuth(true);
                 return sslContext;
             } catch (Exception e) {
                 throw new IllegalStateException("Created keystore and truststore but failed to initialize SSLContext", e);
+            }
+        } else {
+            return null;
+        }
+    }
+
+    private KeyManager[] getKeyManagers() {
+        String keystoreFilename = getKeystoreFilename();
+        String keystorePassword = getKeystorePassword();
+        String keystoreType = getKeystoreType();
+
+        if (keystoreFilename != null && keystorePassword != null && keystoreType != null) {
+            try {
+                KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                KeyStore keystore = KeyStore.getInstance(keystoreType);
+                loadKeystore(keystore, keystoreFilename, keystorePassword);
+                keyManagerFactory.init(keystore, keystorePassword.toCharArray());
+                return keyManagerFactory.getKeyManagers();
+            } catch (Exception e) {
+                throw new IllegalStateException("Failed to load Keystore", e);
+            }
+        } else {
+            return null;
+        }
+    }
+
+    private TrustManager[] getTrustManagers() {
+        TrustManagerFactory trustManagerFactory;
+
+        String truststoreFilename = getTruststoreFilename();
+        String truststorePassword = getTruststorePassword();
+        String truststoreType = getTruststoreType();
+
+        if (truststoreFilename != null && truststorePassword != null && truststoreType != null) {
+            try {
+                trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                KeyStore trustStore = KeyStore.getInstance(truststoreType);
+                loadKeystore(trustStore, truststoreFilename, truststorePassword);
+                trustManagerFactory.init(trustStore);
+                return trustManagerFactory.getTrustManagers();
+            } catch (Exception e) {
+                throw new IllegalStateException("Failed to load Truststore", e);
             }
         } else {
             return null;
@@ -244,7 +237,6 @@ public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig,
         }
     }
 
-    @Override
     public String getKeystoreFilename() {
         return keystoreFilename;
     }
@@ -253,7 +245,6 @@ public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig,
         this.keystoreFilename = keystoreFilename;
     }
 
-    @Override
     public String getKeystorePassword() {
         return keystorePassword;
     }
@@ -262,16 +253,14 @@ public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig,
         this.keystorePassword = keystorePassword;
     }
 
-    @Override
-    public KeystoreType getKeystoreType() {
+    public String getKeystoreType() {
         return keystoreType;
     }
 
-    public void setKeystoreType(KeystoreType keystoreType) {
+    public void setKeystoreType(String keystoreType) {
         this.keystoreType = keystoreType;
     }
 
-    @Override
     public String getTruststoreFilename() {
         return truststoreFilename;
     }
@@ -280,7 +269,6 @@ public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig,
         this.truststoreFilename = truststoreFilename;
     }
 
-    @Override
     public String getTruststorePassword() {
         return truststorePassword;
     }
@@ -289,25 +277,14 @@ public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig,
         this.truststorePassword = truststorePassword;
     }
 
-    @Override
-    public KeystoreType getTruststoreType() {
+    public String getTruststoreType() {
         return truststoreType;
     }
 
-    public void setTruststoreType(KeystoreType truststoreType) {
+    public void setTruststoreType(String truststoreType) {
         this.truststoreType = truststoreType;
     }
 
-    @Override
-    public File getPeerPersistenceFile() {
-        return peerPersistenceFile;
-    }
-
-    public void setPeerPersistenceFile(File peerPersistenceFile) {
-        this.peerPersistenceFile = peerPersistenceFile;
-    }
-
-    @Override
     public boolean isUseCompression() {
         return useCompression;
     }
@@ -316,16 +293,14 @@ public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig,
         this.useCompression = useCompression;
     }
 
-    @Override
-    public SiteToSiteTransportProtocol getTransportProtocol() {
+    public String getTransportProtocol() {
         return transportProtocol;
     }
 
-    public void setTransportProtocol(SiteToSiteTransportProtocol transportProtocol) {
+    public void setTransportProtocol(String transportProtocol) {
         this.transportProtocol = transportProtocol;
     }
 
-    @Override
     public String getPortName() {
         return portName;
     }
@@ -334,7 +309,6 @@ public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig,
         this.portName = portName;
     }
 
-    @Override
     public String getPortIdentifier() {
         return portIdentifier;
     }
@@ -343,12 +317,10 @@ public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig,
         this.portIdentifier = portIdentifier;
     }
 
-    @Override
     public long getPreferredBatchDuration(TimeUnit timeUnit) {
         return timeUnit.convert(preferredBatchDurationNanos, TimeUnit.NANOSECONDS);
     }
 
-    @Override
     public long getPreferredBatchSize() {
         return preferredBatchSize;
     }
@@ -357,7 +329,6 @@ public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig,
         this.preferredBatchSize = preferredBatchSize;
     }
 
-    @Override
     public int getPreferredBatchCount() {
         return preferredBatchCount;
     }
@@ -366,7 +337,6 @@ public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig,
         this.preferredBatchCount = preferredBatchCount;
     }
 
-    @Override
     public ParcelableEventReporter getEventReporter() {
         return eventReporter;
     }
@@ -407,11 +377,19 @@ public class ParcelableSiteToSiteClientConfig implements SiteToSiteClientConfig,
         this.proxyPassword = proxyPassword;
     }
 
-    @Override
-    public HttpProxy getHttpProxy() {
-        if (proxyHost != null) {
-            return new HttpProxy(proxyHost, proxyPort, proxyUsername, proxyPassword);
-        }
-        return null;
+    public String getProxyHost() {
+        return proxyHost;
+    }
+
+    public int getProxyPort() {
+        return proxyPort;
+    }
+
+    public String getProxyUsername() {
+        return proxyUsername;
+    }
+
+    public String getProxyPassword() {
+        return proxyPassword;
     }
 }

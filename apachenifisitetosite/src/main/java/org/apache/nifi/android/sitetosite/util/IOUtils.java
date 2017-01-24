@@ -15,11 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.android.sitetosite.packet;
+package org.apache.nifi.android.sitetosite.util;
 
-import android.os.Parcelable;
+import java.io.IOException;
+import java.io.InputStream;
 
-import org.apache.nifi.remote.protocol.DataPacket;
+public class IOUtils {
+    private static final int MAX_LONG_LEN = String.valueOf(Long.MAX_VALUE).length();
 
-public interface ParcelableDataPacket extends DataPacket, Parcelable {
+    public static long readInputStreamAndParseAsLong(InputStream inputStream) throws IOException {
+        byte[] buf = new byte[MAX_LONG_LEN];
+        int read;
+        int offset = 0;
+        while((read = (inputStream.read(buf, offset, MAX_LONG_LEN - offset))) != -1) {
+            offset += read;
+        }
+        return Long.valueOf(new String(buf, 0, offset));
+    }
 }

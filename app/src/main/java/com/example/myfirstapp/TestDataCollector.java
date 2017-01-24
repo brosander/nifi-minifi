@@ -21,7 +21,7 @@ import android.os.Parcel;
 
 import org.apache.nifi.android.sitetosite.collectors.DataCollector;
 import org.apache.nifi.android.sitetosite.packet.EmptyDataPacket;
-import org.apache.nifi.android.sitetosite.packet.ParcelableDataPacket;
+import org.apache.nifi.android.sitetosite.packet.DataPacket;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -44,10 +44,10 @@ public class TestDataCollector implements DataCollector {
     };
 
     @Override
-    public Iterable<ParcelableDataPacket> getDataPackets() {
+    public Iterable<DataPacket> getDataPackets() {
         Map<String, String> attributes = new HashMap<>();
         attributes.put("number", Integer.toString(num++));
-        return Arrays.<ParcelableDataPacket>asList(new EmptyDataPacket(attributes));
+        return Arrays.<DataPacket>asList(new EmptyDataPacket(attributes));
     }
 
     @Override

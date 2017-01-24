@@ -17,7 +17,6 @@
 
 package org.apache.nifi.android.sitetosite.packet;
 
-import org.apache.nifi.flowfile.attributes.CoreAttributes;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,9 +61,9 @@ public class FileDataPacketTest {
     @Test
     public void testAttributes() {
         Map<String, String> attributes = fileDataPacket.getAttributes();
-        assertEquals(tempFile.getName(), attributes.get(CoreAttributes.FILENAME.key()));
-        assertEquals(tempFile.getParentFile().getPath(), attributes.get(CoreAttributes.PATH.key()));
-        assertEquals(tempFile.getParentFile().getAbsolutePath(), attributes.get(CoreAttributes.ABSOLUTE_PATH.key()));
+        assertEquals(tempFile.getName(), attributes.get("filename"));
+        assertEquals(tempFile.getParentFile().getPath(), attributes.get("path"));
+        assertEquals(tempFile.getParentFile().getAbsolutePath(), attributes.get("absolute.path"));
     }
 
     @Test

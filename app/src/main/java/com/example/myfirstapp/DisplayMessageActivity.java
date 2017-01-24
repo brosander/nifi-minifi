@@ -28,22 +28,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.apache.nifi.android.sitetosite.collectors.ListFileCollector;
-import org.apache.nifi.android.sitetosite.collectors.filters.RegexFileFilter;
+import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
+import org.apache.nifi.android.sitetosite.packet.DataPacket;
 import org.apache.nifi.android.sitetosite.packet.FileDataPacket;
-import org.apache.nifi.android.sitetosite.packet.ParcelableDataPacket;
-import org.apache.nifi.android.sitetosite.persist.SiteToSiteInfoBuilder;
 import org.apache.nifi.android.sitetosite.service.SiteToSiteRepeating;
 import org.apache.nifi.android.sitetosite.service.SiteToSiteService;
-import org.apache.nifi.remote.client.KeystoreType;
-import org.apache.nifi.remote.protocol.SiteToSiteTransportProtocol;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -80,24 +74,22 @@ public class DisplayMessageActivity extends AppCompatActivity {
             @Override
             protected String doInBackground(String... params) {
                 try {
-                    Security.addProvider(new BouncyCastleProvider());
                     Context applicationContext = getApplicationContext();
-                    new SiteToSiteInfoBuilder()
-                            .setUrls(new HashSet<>(Arrays.asList("https://192.168.199.145:9443/nifi")))
-                            .setPortName("input")
-                            .setTransportProtocol(SiteToSiteTransportProtocol.HTTP)
-                            .setKeystoreFilename("classpath:keystore.bks")
-                            .setKeystorePass("dky/UyjnxapXPeNNLE3/PRGpdAnCaOOmAAWg0F1Jm3Q")
-                            .setKeystoreType(KeystoreType.BKS)
-                            .setTruststoreFilename("classpath:truststore.bks")
-                            .setTruststorePass("Kr6ut7JD7DOxnquDhesorRAruHpRElS/lpzXWIt0e+M")
-                            .setTruststoreType(KeystoreType.BKS)
-                            .createSiteToSiteInfo().save(applicationContext);
-                    AlarmManager alarmManager = (AlarmManager) applicationContext.getSystemService(Context.ALARM_SERVICE);
+                    SiteToSiteClientConfig siteToSiteClientConfig = new SiteToSiteClientConfig();
+                    siteToSiteClientConfig.setUrls(new HashSet<>(Arrays.asList("http://192.168.199.145:8080/nifi")));
+//                    siteToSiteClientConfig.setUrls(new HashSet<>(Arrays.asList("https://192.168.199.145:9443/nifi")));
+                    siteToSiteClientConfig.setPortName("input");
+                    /*siteToSiteClientConfig.setKeystoreFilename("classpath:keystore.bks");
+                    siteToSiteClientConfig.setKeystorePassword("dky/UyjnxapXPeNNLE3/PRGpdAnCaOOmAAWg0F1Jm3Q");
+                    siteToSiteClientConfig.setKeystoreType("BKS");
+                    siteToSiteClientConfig.setTruststoreFilename("classpath:truststore.bks");
+                    siteToSiteClientConfig.setTruststorePassword("Kr6ut7JD7DOxnquDhesorRAruHpRElS/lpzXWIt0e+M");
+                    siteToSiteClientConfig.setTruststoreType("BKS");*/
+//                    AlarmManager alarmManager = (AlarmManager) applicationContext.getSystemService(Context.ALARM_SERVICE);
 //                    PendingIntent pendingIntent = SiteToSiteRepeating.createPendingIntent(applicationContext, new ListFileCollector(getExternalMediaDirs()[0], new RegexFileFilter(".*", false)), null);
-                    PendingIntent pendingIntent = SiteToSiteRepeating.createPendingIntent(applicationContext, new TestDataCollector(), null);
-                    alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), 1000, pendingIntent);
-//                    SiteToSiteService.sendDataPackets(applicationContext, new ArrayList<>(Arrays.<ParcelableDataPacket>asList(new FileDataPacket(finalTestFile))), null);
+//                    PendingIntent pendingIntent = SiteToSiteRepeating.createPendingIntent(applicationContext, new TestDataCollector(), siteToSiteClientConfig, null);
+//                    alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), 1000, pendingIntent);
+                    SiteToSiteService.sendDataPackets(applicationContext, new ArrayList<>(Arrays.<DataPacket>asList(new FileDataPacket(finalTestFile))), siteToSiteClientConfig, null);
                 } catch (Throwable e) {
                     System.err.println("We done failed S2S-in'");
                     e.printStackTrace();

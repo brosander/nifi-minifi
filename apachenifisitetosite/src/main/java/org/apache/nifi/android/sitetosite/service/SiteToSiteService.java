@@ -24,12 +24,13 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.ResultReceiver;
 import android.support.v4.content.WakefulBroadcastReceiver;
+import android.util.Log;
 
-import org.apache.nifi.android.sitetosite.packet.ParcelableDataPacket;
-import org.apache.nifi.android.sitetosite.persist.SiteToSiteInfo;
-import org.apache.nifi.remote.Transaction;
-import org.apache.nifi.remote.TransferDirection;
-import org.apache.nifi.remote.client.SiteToSiteClient;
+import org.apache.nifi.android.sitetosite.client.SiteToSiteClient;
+import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
+import org.apache.nifi.android.sitetosite.client.Transaction;
+import org.apache.nifi.android.sitetosite.packet.DataPacket;
+import org.apache.nifi.android.sitetosite.util.IntentUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,12 +41,11 @@ public class SiteToSiteService extends IntentService {
     public static final String DATA_PACKETS = "DATA_PACKETS";
     public static final String RESULT_RECEIVER = "RESULT_RECEIVER";
     public static final String SHOULD_COMPLETE_WAKEFUL_INTENT = "SHOULD_COMPLETE_WAKEFUL_INTENT";
+    public static final String SITE_TO_SITE_CONFIG = "SITE_TO_SITE_CONFIG";
 
     public static final int SUCCESS_RESULT_CODE = 0;
     public static final int IOE_RESULT_CODE = 1;
     public static final String CANONICAL_NAME = SiteToSiteService.class.getCanonicalName();
-
-    private SiteToSiteClient client;
 
     public SiteToSiteService() {
         super(SiteToSiteService.class.getName());
@@ -61,15 +61,13 @@ public class SiteToSiteService extends IntentService {
             if (intent.getBooleanExtra(SHOULD_COMPLETE_WAKEFUL_INTENT, false)) {
                 WakefulBroadcastReceiver.completeWakefulIntent(intent);
             }
-            List<ParcelableDataPacket> packets = intent.getExtras().getParcelableArrayList(DATA_PACKETS);
+            List<DataPacket> packets = intent.getExtras().getParcelableArrayList(DATA_PACKETS);
             if (packets.size() > 0) {
                 ResultReceiver resultReceiver = intent.getExtras().getParcelable(RESULT_RECEIVER);
                 try {
-                    if (client == null) {
-                        client = SiteToSiteInfo.load(getBaseContext()).createSiteToSiteClient();
-                    }
-                    Transaction transaction = client.createTransaction(TransferDirection.SEND);
-                    for (ParcelableDataPacket packet : packets) {
+                    SiteToSiteClient client = new SiteToSiteClient(IntentUtils.<SiteToSiteClientConfig>getParcelable(intent, SITE_TO_SITE_CONFIG));
+                    Transaction transaction = client.createTransaction();
+                    for (DataPacket packet : packets) {
                         transaction.send(packet);
                     }
                     transaction.confirm();
@@ -78,6 +76,7 @@ public class SiteToSiteService extends IntentService {
                         resultReceiver.send(SUCCESS_RESULT_CODE, new Bundle());
                     }
                 } catch (IOException e) {
+                    Log.d(CANONICAL_NAME, e.getMessage(), e);
                     if (resultReceiver != null) {
                         Bundle resultData = new Bundle();
                         resultData.putString("MESSAGE", e.getMessage());
@@ -90,27 +89,29 @@ public class SiteToSiteService extends IntentService {
                     }
                 }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
             wakeLock.release();
         }
     }
 
-    public static void sendDataPackets(Context context, Iterable<ParcelableDataPacket> packets, ResultReceiver resultReceiver) {
-        context.startService(getIntent(context, packets, resultReceiver));
+    public static void sendDataPackets(Context context, Iterable<DataPacket> packets, SiteToSiteClientConfig siteToSiteClientConfig, ResultReceiver resultReceiver) {
+        context.startService(getIntent(context, packets, siteToSiteClientConfig, resultReceiver));
     }
 
-    public static void sendDataPackets(Context context, ParcelableDataPacket packet, ResultReceiver resultReceiver) {
-        context.startService(getIntent(context, Arrays.asList(packet), resultReceiver));
+    public static void sendDataPacket(Context context, DataPacket packet, SiteToSiteClientConfig siteToSiteClientConfig, ResultReceiver resultReceiver) {
+        context.startService(getIntent(context, Arrays.asList(packet), siteToSiteClientConfig, resultReceiver));
     }
 
-    public static Intent getIntent(Context context, Iterable<ParcelableDataPacket> packets, ResultReceiver resultReceiver) {
-        return getIntent(context, packets, resultReceiver, false);
+    public static Intent getIntent(Context context, Iterable<DataPacket> packets, SiteToSiteClientConfig siteToSiteClientConfig, ResultReceiver resultReceiver) {
+        return getIntent(context, packets, siteToSiteClientConfig, resultReceiver, false);
     }
 
-    public static Intent getIntent(Context context, Iterable<ParcelableDataPacket> packets, ResultReceiver resultReceiver, boolean completeWakefulIntent) {
+    public static Intent getIntent(Context context, Iterable<DataPacket> packets, SiteToSiteClientConfig siteToSiteClientConfig, ResultReceiver resultReceiver, boolean completeWakefulIntent) {
         Intent intent = new Intent(context, SiteToSiteService.class);
-        ArrayList<ParcelableDataPacket> packetList = new ArrayList<>();
-        for (ParcelableDataPacket packet : packets) {
+        ArrayList<DataPacket> packetList = new ArrayList<>();
+        for (DataPacket packet : packets) {
             packetList.add(packet);
         }
         intent.putParcelableArrayListExtra(DATA_PACKETS, packetList);
@@ -120,6 +121,7 @@ public class SiteToSiteService extends IntentService {
         if (completeWakefulIntent) {
             intent.putExtra(SHOULD_COMPLETE_WAKEFUL_INTENT, true);
         }
+        IntentUtils.putParcelable(siteToSiteClientConfig, intent, SITE_TO_SITE_CONFIG);
         return intent;
     }
 }

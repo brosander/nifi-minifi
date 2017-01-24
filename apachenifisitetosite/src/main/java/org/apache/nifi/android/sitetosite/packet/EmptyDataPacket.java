@@ -19,8 +19,6 @@ package org.apache.nifi.android.sitetosite.packet;
 
 import android.os.Parcel;
 
-import org.apache.nifi.remote.protocol.DataPacket;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -29,7 +27,7 @@ import java.util.Map;
 /**
  * Data packet with empty payload
  */
-public class EmptyDataPacket implements ParcelableDataPacket {
+public class EmptyDataPacket implements DataPacket {
     private final Map<String, String> attributes;
 
     public static final Creator<EmptyDataPacket> CREATOR = new Creator<EmptyDataPacket>() {

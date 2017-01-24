@@ -15,11 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.android.sitetosite.persist;
+package org.apache.nifi.android.sitetosite.util;
 
-import android.os.Parcelable;
+import java.nio.charset.Charset;
 
-import org.apache.nifi.events.EventReporter;
-
-public interface ParcelableEventReporter extends EventReporter, Parcelable {
+public class Charsets {
+    public static final Charset UTF_8 = Charset.forName("UTF-8");
 }

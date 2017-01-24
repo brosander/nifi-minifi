@@ -19,10 +19,6 @@ package org.apache.nifi.android.sitetosite.packet;
 
 import android.os.Parcel;
 
-import org.apache.nifi.flowfile.attributes.CoreAttributes;
-import org.apache.nifi.stream.io.LimitingInputStream;
-import org.apache.nifi.stream.io.MinimumLengthInputStream;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -33,7 +29,7 @@ import java.util.Map;
 /**
  * Data packet for a file object
  */
-public class FileDataPacket implements ParcelableDataPacket {
+public class FileDataPacket implements DataPacket {
     private final File file;
 
     public FileDataPacket(File file) {
@@ -55,17 +51,16 @@ public class FileDataPacket implements ParcelableDataPacket {
     @Override
     public Map<String, String> getAttributes() {
         final Map<String, String> attributes = new HashMap<>();
-        attributes.put(CoreAttributes.PATH.key(), file.getParentFile().getPath());
-        attributes.put(CoreAttributes.ABSOLUTE_PATH.key(), file.getParentFile().getAbsolutePath());
-        attributes.put(CoreAttributes.FILENAME.key(), file.getName());
+        attributes.put("path", file.getParentFile().getPath());
+        attributes.put("absolute.path", file.getParentFile().getAbsolutePath());
+        attributes.put("filename", file.getName());
         return attributes;
     }
 
     @Override
     public InputStream getData() {
-        long size = getSize();
         try {
-            return new MinimumLengthInputStream(new LimitingInputStream(new FileInputStream(file), size), size);
+            return new FileInputStream(file);
         } catch (FileNotFoundException e) {
             throw new DataPacketGetDataException(e);
         }

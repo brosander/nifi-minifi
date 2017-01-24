@@ -15,20 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.android.sitetosite.collectors;
+package org.apache.nifi.android.sitetosite.client.protocol;
 
-import android.os.Parcelable;
-
-import org.apache.nifi.android.sitetosite.packet.DataPacket;
+import java.io.IOException;
 
 /**
- * Fetches data packets to send via site-to-site
+ * A ProtocolException occurs when unexpected data is received, for example an
+ * invalid Response Code.
  */
-public interface DataCollector extends Parcelable {
-    /**
-     * Returns the data packets
-     *
-     * @return the data packets
-     */
-    Iterable<DataPacket> getDataPackets();
+public class ProtocolException extends IOException {
+    private static final long serialVersionUID = 5763900324505818495L;
+
+    public ProtocolException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
+
+    public ProtocolException(final String message) {
+        super(message);
+    }
+
+    public ProtocolException(final Throwable cause) {
+        super(cause);
+    }
 }

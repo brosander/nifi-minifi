@@ -15,20 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.android.sitetosite.collectors;
+package org.apache.nifi.android.sitetosite.client.protocol;
 
-import android.os.Parcelable;
-
-import org.apache.nifi.android.sitetosite.packet.DataPacket;
-
-/**
- * Fetches data packets to send via site-to-site
- */
-public interface DataCollector extends Parcelable {
-    /**
-     * Returns the data packets
-     *
-     * @return the data packets
-     */
-    Iterable<DataPacket> getDataPackets();
+public enum HttpMethod {
+    GET,
+    POST,
+    PUT,
+    DELETE
 }

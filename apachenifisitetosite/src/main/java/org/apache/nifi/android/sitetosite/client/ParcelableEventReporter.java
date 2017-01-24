@@ -15,20 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.android.sitetosite.collectors;
+package org.apache.nifi.android.sitetosite.client;
 
 import android.os.Parcelable;
 
-import org.apache.nifi.android.sitetosite.packet.DataPacket;
+public interface ParcelableEventReporter extends Parcelable {
+    enum Severity {
+        INFO,
+        WARNING,
+        ERROR;
+    }
 
-/**
- * Fetches data packets to send via site-to-site
- */
-public interface DataCollector extends Parcelable {
-    /**
-     * Returns the data packets
-     *
-     * @return the data packets
-     */
-    Iterable<DataPacket> getDataPackets();
+    void reportEvent(Severity severity, String category, String message);
 }

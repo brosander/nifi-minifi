@@ -15,20 +15,33 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.android.sitetosite.collectors;
+package org.apache.nifi.android.sitetosite.packet;
 
 import android.os.Parcelable;
 
-import org.apache.nifi.android.sitetosite.packet.DataPacket;
+import java.io.InputStream;
+import java.util.Map;
 
-/**
- * Fetches data packets to send via site-to-site
- */
-public interface DataCollector extends Parcelable {
+public interface DataPacket extends Parcelable {
+
     /**
-     * Returns the data packets
+     * The key-value attributes that are to be associated with the data
      *
-     * @return the data packets
+     * @return all attributes
      */
-    Iterable<DataPacket> getDataPackets();
+    Map<String, String> getAttributes();
+
+    /**
+     * An InputStream from which the content can be read
+     *
+     * @return input stream to the data
+     */
+    InputStream getData();
+
+    /**
+     * The length of the InputStream.
+     *
+     * @return length of the inputstream.
+     */
+    long getSize();
 }

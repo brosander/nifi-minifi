@@ -24,8 +24,8 @@ import org.apache.nifi.android.sitetosite.collectors.filters.DirectoryFileFilter
 import org.apache.nifi.android.sitetosite.collectors.filters.LastModifiedFileFilter;
 import org.apache.nifi.android.sitetosite.collectors.filters.OrFileFilter;
 import org.apache.nifi.android.sitetosite.collectors.filters.ParcelableFileFilter;
+import org.apache.nifi.android.sitetosite.packet.DataPacket;
 import org.apache.nifi.android.sitetosite.packet.FileDataPacket;
-import org.apache.nifi.android.sitetosite.packet.ParcelableDataPacket;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -70,9 +70,9 @@ public class ListFileCollector implements DataCollector {
     }
 
     @Override
-    public Iterable<ParcelableDataPacket> getDataPackets() {
+    public Iterable<DataPacket> getDataPackets() {
         long maxLastModified = System.currentTimeMillis() - 1;
-        List<ParcelableDataPacket> dataPackets = new ArrayList<>();
+        List<DataPacket> dataPackets = new ArrayList<>();
         FileFilter fileFilter;
         if (filterModified) {
             // Filter out any files not modified in window
@@ -86,7 +86,7 @@ public class ListFileCollector implements DataCollector {
         return dataPackets;
     }
 
-    private void listRecursive(File base, FileFilter fileFilter, List<ParcelableDataPacket> output) {
+    private void listRecursive(File base, FileFilter fileFilter, List<DataPacket> output) {
         for (final File file : base.listFiles(fileFilter)) {
             if (file.isFile()) {
                 output.add(new FileDataPacket(file));
