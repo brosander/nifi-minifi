@@ -76,15 +76,15 @@ public class DisplayMessageActivity extends AppCompatActivity {
                 try {
                     Context applicationContext = getApplicationContext();
                     SiteToSiteClientConfig siteToSiteClientConfig = new SiteToSiteClientConfig();
-                    siteToSiteClientConfig.setUrls(new HashSet<>(Arrays.asList("http://192.168.199.145:8080/nifi")));
-//                    siteToSiteClientConfig.setUrls(new HashSet<>(Arrays.asList("https://192.168.199.145:9443/nifi")));
+//                    siteToSiteClientConfig.setUrls(new HashSet<>(Arrays.asList("http://bryan-Oryx-Pro:8080/nifi")));
                     siteToSiteClientConfig.setPortName("input");
-                    /*siteToSiteClientConfig.setKeystoreFilename("classpath:keystore.bks");
+                    siteToSiteClientConfig.setUrls(new HashSet<>(Arrays.asList("https://bryan-Oryx-Pro:9443/nifi")));
+                    siteToSiteClientConfig.setKeystoreFilename("classpath:keystore.bks");
                     siteToSiteClientConfig.setKeystorePassword("dky/UyjnxapXPeNNLE3/PRGpdAnCaOOmAAWg0F1Jm3Q");
                     siteToSiteClientConfig.setKeystoreType("BKS");
                     siteToSiteClientConfig.setTruststoreFilename("classpath:truststore.bks");
                     siteToSiteClientConfig.setTruststorePassword("Kr6ut7JD7DOxnquDhesorRAruHpRElS/lpzXWIt0e+M");
-                    siteToSiteClientConfig.setTruststoreType("BKS");*/
+                    siteToSiteClientConfig.setTruststoreType("BKS");
 //                    AlarmManager alarmManager = (AlarmManager) applicationContext.getSystemService(Context.ALARM_SERVICE);
 //                    PendingIntent pendingIntent = SiteToSiteRepeating.createPendingIntent(applicationContext, new ListFileCollector(getExternalMediaDirs()[0], new RegexFileFilter(".*", false)), null);
 //                    PendingIntent pendingIntent = SiteToSiteRepeating.createPendingIntent(applicationContext, new TestDataCollector(), siteToSiteClientConfig, null);

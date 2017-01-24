@@ -30,31 +30,119 @@ import java.net.HttpURLConnection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedOutputStream;
 import java.util.zip.GZIPOutputStream;
+
+import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.HANDSHAKE_PROPERTY_BATCH_COUNT;
+import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.HANDSHAKE_PROPERTY_BATCH_DURATION;
+import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.HANDSHAKE_PROPERTY_BATCH_SIZE;
+import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.HANDSHAKE_PROPERTY_REQUEST_EXPIRATION;
+import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.HANDSHAKE_PROPERTY_USE_COMPRESSION;
+import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.LOCATION_HEADER_NAME;
+import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.LOCATION_URI_INTENT_NAME;
+import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.LOCATION_URI_INTENT_VALUE;
+import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.SERVER_SIDE_TRANSACTION_TTL;
 
 public class Transaction {
     private static final Map<String, String> BEGIN_TRANSACTION_HEADERS = initBeginTransactionHeaders();
     private static final Map<String, String> END_TRANSACTION_HEADERS = initEndTransactionHeaders();
 
+    private final Map<String, String> handshakeProperties;
     private final String transactionUrl;
     private final SiteToSiteClientRequestManager siteToSiteClientRequestManager;
     private final CRC32 crc;
     private final OutputStream outputStream;
     private final HttpURLConnection httpURLConnection;
+    private final ScheduledExecutorService ttlExtendTaskExecutor;
+    private final ScheduledFuture<?> ttlExtendFuture;
 
-    public Transaction(SiteToSiteClientRequestManager siteToSiteClientRequestManager, String transactionUrl, boolean compress) throws IOException {
+    public Transaction(String peerUrl, String portIdentifier, SiteToSiteClientRequestManager siteToSiteClientRequestManager, SiteToSiteClientConfig siteToSiteClientConfig, ScheduledExecutorService ttlExtendTaskExecutor) throws IOException {
+        this.handshakeProperties = createHandshakeProperties(siteToSiteClientConfig);
         this.siteToSiteClientRequestManager = siteToSiteClientRequestManager;
-        this.transactionUrl = transactionUrl;
+        this.ttlExtendTaskExecutor = ttlExtendTaskExecutor;
+
+        HttpURLConnection createTransactionConnection = siteToSiteClientRequestManager.openConnection(peerUrl + "/data-transfer/input-ports/" + portIdentifier + "/transactions", handshakeProperties, HttpMethod.POST);
+
+        int responseCode = createTransactionConnection.getResponseCode();
+        if (responseCode < 200 || responseCode > 299) {
+            throw new IOException("Got response code " + responseCode);
+        }
+        int ttl;
+        if (LOCATION_URI_INTENT_VALUE.equals(createTransactionConnection.getHeaderField(LOCATION_URI_INTENT_NAME))) {
+            String ttlString = createTransactionConnection.getHeaderField(SERVER_SIDE_TRANSACTION_TTL);
+            if (ttlString == null || ttlString.isEmpty()) {
+                throw new IOException("Expected " + SERVER_SIDE_TRANSACTION_TTL + " header");
+            } else {
+                try {
+                    ttl = Integer.parseInt(ttlString);
+                } catch (Exception e) {
+                    throw new IOException("Unable to parse " + SERVER_SIDE_TRANSACTION_TTL + " as int: " + ttlString, e);
+                }
+            }
+            transactionUrl = createTransactionConnection.getHeaderField(LOCATION_HEADER_NAME);
+        } else {
+            throw new IOException("Expected header " + LOCATION_URI_INTENT_NAME + " == " + LOCATION_URI_INTENT_VALUE);
+        }
+
         crc = new CRC32();
-        httpURLConnection = siteToSiteClientRequestManager.openConnection(transactionUrl + "/flow-files", BEGIN_TRANSACTION_HEADERS, HttpMethod.POST);
-        OutputStream outputStream = httpURLConnection.getOutputStream();
-        if (compress) {
+        Map<String, String> beginTransactionHeaders = new HashMap<>(BEGIN_TRANSACTION_HEADERS);
+        beginTransactionHeaders.putAll(handshakeProperties);
+        this.httpURLConnection = siteToSiteClientRequestManager.openConnection(transactionUrl + "/flow-files", beginTransactionHeaders, HttpMethod.POST);
+        OutputStream outputStream = this.httpURLConnection.getOutputStream();
+        if (siteToSiteClientConfig.isUseCompression()) {
             outputStream = new GZIPOutputStream(outputStream);
         }
         outputStream = new CheckedOutputStream(outputStream, crc);
         this.outputStream = outputStream;
+        ttlExtendFuture = ttlExtendTaskExecutor.scheduleWithFixedDelay(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    HttpURLConnection ttlExtendConnection = Transaction.this.siteToSiteClientRequestManager.openConnection(transactionUrl, HttpMethod.PUT);
+                    try {
+
+                    } finally {
+                        ttlExtendConnection.disconnect();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, ttl / 2, ttl / 2, TimeUnit.SECONDS);
+    }
+
+    private Map<String, String> createHandshakeProperties(SiteToSiteClientConfig siteToSiteClientConfig) {
+        Map<String, String> handshakeProperties = new HashMap<>();
+
+        if (siteToSiteClientConfig.isUseCompression()) {
+            handshakeProperties.put(HANDSHAKE_PROPERTY_USE_COMPRESSION, "true");
+        }
+
+        long requestExpirationMillis = siteToSiteClientConfig.getIdleConnectionExpiration(TimeUnit.MILLISECONDS);
+        if (requestExpirationMillis > 0) {
+            handshakeProperties.put(HANDSHAKE_PROPERTY_REQUEST_EXPIRATION, String.valueOf(requestExpirationMillis));
+        }
+
+        int batchCount = siteToSiteClientConfig.getPreferredBatchCount();
+        if (batchCount > 0) {
+            handshakeProperties.put(HANDSHAKE_PROPERTY_BATCH_COUNT, String.valueOf(batchCount));
+        }
+
+        long batchSize = siteToSiteClientConfig.getPreferredBatchSize();
+        if (batchSize > 0) {
+            handshakeProperties.put(HANDSHAKE_PROPERTY_BATCH_SIZE, String.valueOf(batchSize));
+        }
+
+        long batchDurationMillis = siteToSiteClientConfig.getPreferredBatchDuration(TimeUnit.MILLISECONDS);
+        if (batchDurationMillis > 0) {
+            handshakeProperties.put(HANDSHAKE_PROPERTY_BATCH_DURATION, String.valueOf(batchDurationMillis));
+        }
+         return Collections.unmodifiableMap(handshakeProperties);
     }
 
     private static Map<String, String> initEndTransactionHeaders() {
@@ -119,10 +207,20 @@ public class Transaction {
     }
 
     private void endTransaction(ResponseCode responseCodeToSend) throws IOException {
+        ttlExtendFuture.cancel(false);
+        try {
+            ttlExtendFuture.get();
+        } catch (Exception e) {
+            if (!(e instanceof CancellationException)) {
+                throw new IOException("Error waiting on ttl extension thread to end.", e);
+            }
+        }
         httpURLConnection.disconnect();
         Map<String, String> queryParameters = new HashMap<>();
         queryParameters.put("responseCode", Integer.toString(responseCodeToSend.getCode()));
-        HttpURLConnection delete = siteToSiteClientRequestManager.openConnection(transactionUrl, END_TRANSACTION_HEADERS, queryParameters, HttpMethod.DELETE);
+        Map<String, String> endTransactionHeaders = new HashMap<>(END_TRANSACTION_HEADERS);
+        endTransactionHeaders.putAll(handshakeProperties);
+        HttpURLConnection delete = siteToSiteClientRequestManager.openConnection(transactionUrl, endTransactionHeaders, queryParameters, HttpMethod.DELETE);
 
         int responseCode = delete.getResponseCode();
         if (responseCode < 200 || responseCode > 299) {

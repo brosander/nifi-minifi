@@ -17,15 +17,49 @@
 
 package org.apache.nifi.android.sitetosite.client;
 
-public class Peer {
+import android.os.SystemClock;
+
+public class Peer implements Comparable<Peer> {
     private final String url;
+    private int flowFileCount;
     private long lastFailure = 0L;
 
-    public Peer(String url) {
+    public Peer(String url, int flowFileCount) {
         this.url = url;
+        this.flowFileCount = flowFileCount;
     }
 
     public String getUrl() {
         return url;
+    }
+
+    public int getFlowFileCount() {
+        return flowFileCount;
+    }
+
+    public void setFlowFileCount(int flowFileCount) {
+        this.flowFileCount = flowFileCount;
+    }
+
+    public void setLastFailure(long lastFailure) {
+        this.lastFailure = lastFailure;
+    }
+
+    public void markFailure() {
+        lastFailure = SystemClock.elapsedRealtime();
+    }
+
+    @Override
+    public int compareTo(Peer o) {
+        if (lastFailure > o.lastFailure) {
+            return 1;
+        } else if (lastFailure < o.lastFailure) {
+            return -1;
+        } else if (flowFileCount < o.flowFileCount) {
+            return 1;
+        } else if (flowFileCount > o.flowFileCount) {
+            return -1;
+        }
+        return url.compareTo(o.url);
     }
 }

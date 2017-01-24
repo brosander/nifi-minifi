@@ -17,16 +17,8 @@
 
 package org.apache.nifi.android.sitetosite.client;
 
-import android.util.JsonReader;
-
-import org.apache.nifi.android.sitetosite.util.Charsets;
-
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 
-@SuppressWarnings("deprecation")
 public class SiteToSiteClient {
     public static final String LOCATION_HEADER_NAME = "Location";
     public static final String LOCATION_URI_INTENT_NAME = "x-location-uri-intent";
@@ -39,7 +31,6 @@ public class SiteToSiteClient {
     public static final String HANDSHAKE_PROPERTY_BATCH_COUNT = "x-nifi-site-to-site-batch-count";
     public static final String HANDSHAKE_PROPERTY_BATCH_SIZE = "x-nifi-site-to-site-batch-size";
     public static final String HANDSHAKE_PROPERTY_BATCH_DURATION = "x-nifi-site-to-site-batch-duration";
-    public static final String CANONICAL_NAME = SiteToSiteClient.class.getCanonicalName();
 
     private final PeerTracker peerTracker;
     private final String portIdentifier;
@@ -47,105 +38,16 @@ public class SiteToSiteClient {
 
     public SiteToSiteClient(SiteToSiteClientConfig siteToSiteClientConfig) throws IOException {
         siteToSiteClientRequestManager = new SiteToSiteClientRequestManager(siteToSiteClientConfig);
-        peerTracker = new PeerTracker(siteToSiteClientRequestManager, siteToSiteClientConfig.getUrls());
+        peerTracker = new PeerTracker(siteToSiteClientRequestManager, siteToSiteClientConfig.getUrls(), siteToSiteClientConfig);
         String portIdentifier = siteToSiteClientConfig.getPortIdentifier();
         if (portIdentifier == null) {
-            this.portIdentifier = getPortIdentifier(siteToSiteClientConfig.getPortName());
+            this.portIdentifier = peerTracker.getPortIdentifier(siteToSiteClientConfig.getPortName());
         } else {
             this.portIdentifier = portIdentifier;
         }
     }
 
-    private String getPortIdentifier(String portName) throws IOException {
-        HttpURLConnection httpURLConnection = peerTracker.execute("/site-to-site");
-        try {
-            return getPortIdentifier(httpURLConnection.getInputStream(), portName);
-        } finally {
-            httpURLConnection.disconnect();
-        }
-    }
-
-    private String getPortIdentifier(InputStream inputStream, String portName) throws IOException {
-        JsonReader jsonReader = new JsonReader(new InputStreamReader(inputStream, Charsets.UTF_8));
-        try {
-            return getPortIdentifierFromController(portName, jsonReader);
-        } finally {
-            jsonReader.close();
-        }
-    }
-
-    private String getPortIdentifierFromController(String portName, JsonReader jsonReader) throws IOException {
-        jsonReader.beginObject();
-        String id = null;
-        while (jsonReader.hasNext()) {
-            if (id == null && "controller".equals(jsonReader.nextName())) {
-                id = getPortIdentifierFromInputPorts(portName, jsonReader);
-            } else {
-                jsonReader.skipValue();
-            }
-        }
-        jsonReader.endObject();
-        return id;
-    }
-
-    private String getPortIdentifierFromInputPorts(String portName, JsonReader jsonReader) throws IOException {
-        jsonReader.beginObject();
-        String id = null;
-        while (jsonReader.hasNext()) {
-            if ("inputPorts".equals(jsonReader.nextName())) {
-                jsonReader.beginArray();
-                while (jsonReader.hasNext()) {
-                    if (id == null) {
-                        id = getPortIdentifierFromInputPort(portName, jsonReader);
-                    } else {
-                        jsonReader.skipValue();
-                    }
-                }
-                jsonReader.endArray();
-            } else {
-                jsonReader.skipValue();
-            }
-        }
-        jsonReader.endObject();
-        return id;
-    }
-
-    private String getPortIdentifierFromInputPort(String portName, JsonReader jsonReader) throws IOException {
-        jsonReader.beginObject();
-        String id = null;
-        String name = null;
-        while (jsonReader.hasNext()) {
-            String key = jsonReader.nextName();
-            if (id == null && "id".equals(key)) {
-                id = jsonReader.nextString();
-            } else if (name == null && "name".equals(key)) {
-                name = jsonReader.nextString();
-            } else {
-                jsonReader.skipValue();
-            }
-        }
-        jsonReader.endObject();
-        if (portName.equals(name)) {
-            return id;
-        }
-        return null;
-    }
-
     public Transaction createTransaction() throws IOException {
-        HttpURLConnection httpURLConnection = peerTracker.execute("/data-transfer/input-ports/" + portIdentifier + "/transactions");
-        try {
-            httpURLConnection.setRequestMethod("POST");
-
-            int responseCode = httpURLConnection.getResponseCode();
-            if (responseCode < 200 || responseCode > 299) {
-                throw new IOException("Got response code " + responseCode);
-            }
-            if (LOCATION_URI_INTENT_VALUE.equals(httpURLConnection.getHeaderField(LOCATION_URI_INTENT_NAME))) {
-                return new Transaction(siteToSiteClientRequestManager, httpURLConnection.getHeaderField(LOCATION_HEADER_NAME), false);
-            }
-        } finally {
-            httpURLConnection.disconnect();
-        }
-        return null;
+        return peerTracker.createTransaction(portIdentifier);
     }
 }
