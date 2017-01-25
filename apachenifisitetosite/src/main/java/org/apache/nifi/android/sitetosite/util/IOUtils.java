@@ -27,7 +27,7 @@ public class IOUtils {
         byte[] buf = new byte[MAX_LONG_LEN];
         int read;
         int offset = 0;
-        while((read = (inputStream.read(buf, offset, MAX_LONG_LEN - offset))) != -1) {
+        while((read = (inputStream.read(buf, offset, MAX_LONG_LEN - offset))) != -1 && offset < buf.length) {
             offset += read;
         }
         return Long.valueOf(new String(buf, 0, offset));

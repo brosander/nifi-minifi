@@ -60,10 +60,6 @@ public class Peer implements Comparable<Peer>, Parcelable {
         this.flowFileCount = flowFileCount;
     }
 
-    public void setLastFailure(long lastFailure) {
-        this.lastFailure = lastFailure;
-    }
-
     public void markFailure() {
         lastFailure = SystemClock.elapsedRealtime();
     }
@@ -75,9 +71,9 @@ public class Peer implements Comparable<Peer>, Parcelable {
         } else if (lastFailure < o.lastFailure) {
             return -1;
         } else if (flowFileCount < o.flowFileCount) {
-            return 1;
-        } else if (flowFileCount > o.flowFileCount) {
             return -1;
+        } else if (flowFileCount > o.flowFileCount) {
+            return 1;
         }
         return url.compareTo(o.url);
     }
@@ -92,5 +88,18 @@ public class Peer implements Comparable<Peer>, Parcelable {
         dest.writeString(url);
         dest.writeInt(flowFileCount);
         dest.writeLong(lastFailure);
+    }
+
+    public long getLastFailure() {
+        return lastFailure;
+    }
+
+    @Override
+    public String toString() {
+        return "Peer{" +
+                "url='" + url + '\'' +
+                ", flowFileCount=" + flowFileCount +
+                ", lastFailure=" + lastFailure +
+                '}';
     }
 }

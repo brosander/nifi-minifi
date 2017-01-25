@@ -73,7 +73,7 @@ public class FileDataPacketTest {
         int read = 0;
         InputStream data = fileDataPacket.getData();
         try {
-            while ((read = data.read(bytes, index, bytes.length - index)) != -1) {
+            while ((read = data.read(bytes, index, bytes.length - index)) != -1 && index < bytes.length) {
                 index += read;
             }
         } finally {
