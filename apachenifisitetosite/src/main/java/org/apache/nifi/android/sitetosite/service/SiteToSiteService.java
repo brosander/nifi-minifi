@@ -76,7 +76,7 @@ public class SiteToSiteService extends IntentService {
                         resultReceiver.send(SUCCESS_RESULT_CODE, new Bundle());
                     }
                 } catch (IOException e) {
-                    Log.d(CANONICAL_NAME, e.getMessage(), e);
+                    Log.d(CANONICAL_NAME, "Error sending packets.", e);
                     if (resultReceiver != null) {
                         Bundle resultData = new Bundle();
                         resultData.putString("MESSAGE", e.getMessage());
@@ -90,7 +90,7 @@ public class SiteToSiteService extends IntentService {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(CANONICAL_NAME, "Unexpected error sending packets.", e);
         } finally {
             wakeLock.release();
         }

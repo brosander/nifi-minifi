@@ -17,6 +17,7 @@
 
 package org.apache.nifi.android.sitetosite.client;
 
+import org.apache.nifi.android.sitetosite.client.protocol.CompressionOutputStream;
 import org.apache.nifi.android.sitetosite.client.protocol.HttpMethod;
 import org.apache.nifi.android.sitetosite.client.protocol.ResponseCode;
 import org.apache.nifi.android.sitetosite.packet.DataPacket;
@@ -36,7 +37,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedOutputStream;
-import java.util.zip.GZIPOutputStream;
 
 import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.HANDSHAKE_PROPERTY_BATCH_COUNT;
 import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.HANDSHAKE_PROPERTY_BATCH_DURATION;
@@ -58,13 +58,11 @@ public class Transaction {
     private final CRC32 crc;
     private final OutputStream outputStream;
     private final HttpURLConnection httpURLConnection;
-    private final ScheduledExecutorService ttlExtendTaskExecutor;
     private final ScheduledFuture<?> ttlExtendFuture;
 
     public Transaction(String peerUrl, String portIdentifier, SiteToSiteClientRequestManager siteToSiteClientRequestManager, SiteToSiteClientConfig siteToSiteClientConfig, ScheduledExecutorService ttlExtendTaskExecutor) throws IOException {
         this.handshakeProperties = createHandshakeProperties(siteToSiteClientConfig);
         this.siteToSiteClientRequestManager = siteToSiteClientRequestManager;
-        this.ttlExtendTaskExecutor = ttlExtendTaskExecutor;
 
         HttpURLConnection createTransactionConnection = siteToSiteClientRequestManager.openConnection(peerUrl + "/data-transfer/input-ports/" + portIdentifier + "/transactions", handshakeProperties, HttpMethod.POST);
 
@@ -95,7 +93,7 @@ public class Transaction {
         this.httpURLConnection = siteToSiteClientRequestManager.openConnection(transactionUrl + "/flow-files", beginTransactionHeaders, HttpMethod.POST);
         OutputStream outputStream = this.httpURLConnection.getOutputStream();
         if (siteToSiteClientConfig.isUseCompression()) {
-            outputStream = new GZIPOutputStream(outputStream);
+            outputStream = new CompressionOutputStream(outputStream);
         }
         outputStream = new CheckedOutputStream(outputStream, crc);
         this.outputStream = outputStream;

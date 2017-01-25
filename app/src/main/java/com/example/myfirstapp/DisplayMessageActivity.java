@@ -30,6 +30,7 @@ import android.widget.TextView;
 
 import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
 import org.apache.nifi.android.sitetosite.packet.DataPacket;
+import org.apache.nifi.android.sitetosite.packet.EmptyDataPacket;
 import org.apache.nifi.android.sitetosite.packet.FileDataPacket;
 import org.apache.nifi.android.sitetosite.service.SiteToSiteRepeating;
 import org.apache.nifi.android.sitetosite.service.SiteToSiteService;
@@ -40,6 +41,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class DisplayMessageActivity extends AppCompatActivity {
@@ -77,19 +79,24 @@ public class DisplayMessageActivity extends AppCompatActivity {
                     Context applicationContext = getApplicationContext();
                     SiteToSiteClientConfig siteToSiteClientConfig = new SiteToSiteClientConfig();
 //                    siteToSiteClientConfig.setUrls(new HashSet<>(Arrays.asList("http://bryan-Oryx-Pro:8080/nifi")));
-                    siteToSiteClientConfig.setPortName("input");
-                    siteToSiteClientConfig.setUrls(new HashSet<>(Arrays.asList("https://bryan-Oryx-Pro:9443/nifi")));
+                    siteToSiteClientConfig.setPortName("From Android");
+                    siteToSiteClientConfig.setUrls(new HashSet<>(Arrays.asList("https://nifi.android:9443/nifi")));
                     siteToSiteClientConfig.setKeystoreFilename("classpath:keystore.bks");
-                    siteToSiteClientConfig.setKeystorePassword("dky/UyjnxapXPeNNLE3/PRGpdAnCaOOmAAWg0F1Jm3Q");
+                    siteToSiteClientConfig.setKeystorePassword("8RAIaQ/gMqgbKFkfQCRKSW9u0eP15QQeuTG7C1pB+w0");
                     siteToSiteClientConfig.setKeystoreType("BKS");
                     siteToSiteClientConfig.setTruststoreFilename("classpath:truststore.bks");
-                    siteToSiteClientConfig.setTruststorePassword("Kr6ut7JD7DOxnquDhesorRAruHpRElS/lpzXWIt0e+M");
+                    siteToSiteClientConfig.setTruststorePassword("ks4Fx6eJWgVZ6lrBWCKY3xRGNlF6v8TlDLnMe7B8HrU");
                     siteToSiteClientConfig.setTruststoreType("BKS");
+                    siteToSiteClientConfig.setProxyHost("192.168.199.145");
+                    siteToSiteClientConfig.setProxyPort(3128);
+                    siteToSiteClientConfig.setUseCompression(true);
 //                    AlarmManager alarmManager = (AlarmManager) applicationContext.getSystemService(Context.ALARM_SERVICE);
 //                    PendingIntent pendingIntent = SiteToSiteRepeating.createPendingIntent(applicationContext, new ListFileCollector(getExternalMediaDirs()[0], new RegexFileFilter(".*", false)), null);
 //                    PendingIntent pendingIntent = SiteToSiteRepeating.createPendingIntent(applicationContext, new TestDataCollector(), siteToSiteClientConfig, null);
 //                    alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), 1000, pendingIntent);
-                    SiteToSiteService.sendDataPackets(applicationContext, new ArrayList<>(Arrays.<DataPacket>asList(new FileDataPacket(finalTestFile))), siteToSiteClientConfig, null);
+                    HashMap<String, String> attributes = new HashMap<>();
+                    attributes.put("hello", "world");
+                    SiteToSiteService.sendDataPackets(applicationContext, new ArrayList<>(Arrays.<DataPacket>asList(new FileDataPacket(finalTestFile), new EmptyDataPacket(attributes))), siteToSiteClientConfig, null);
                 } catch (Throwable e) {
                     System.err.println("We done failed S2S-in'");
                     e.printStackTrace();
