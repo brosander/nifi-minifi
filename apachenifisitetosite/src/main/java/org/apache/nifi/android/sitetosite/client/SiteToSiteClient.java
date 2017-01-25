@@ -42,6 +42,7 @@ public class SiteToSiteClient {
         String portIdentifier = siteToSiteClientConfig.getPortIdentifier();
         if (portIdentifier == null) {
             this.portIdentifier = peerTracker.getPortIdentifier(siteToSiteClientConfig.getPortName());
+            siteToSiteClientConfig.setPortIdentifier(this.portIdentifier);
         } else {
             this.portIdentifier = portIdentifier;
         }

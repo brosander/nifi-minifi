@@ -17,16 +17,35 @@
 
 package org.apache.nifi.android.sitetosite.client;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.os.SystemClock;
 
-public class Peer implements Comparable<Peer> {
+public class Peer implements Comparable<Peer>, Parcelable {
     private final String url;
     private int flowFileCount;
     private long lastFailure = 0L;
 
+    public static final Creator<Peer> CREATOR = new Creator<Peer>() {
+        @Override
+        public Peer createFromParcel(Parcel source) {
+            return new Peer(source.readString(), source.readInt(), source.readLong());
+        }
+
+        @Override
+        public Peer[] newArray(int size) {
+            return new Peer[size];
+        }
+    };
+
     public Peer(String url, int flowFileCount) {
+        this(url, flowFileCount, 0L);
+    }
+
+    public Peer(String url, int flowFileCount, long lastFailure) {
         this.url = url;
         this.flowFileCount = flowFileCount;
+        this.lastFailure = lastFailure;
     }
 
     public String getUrl() {
@@ -61,5 +80,17 @@ public class Peer implements Comparable<Peer> {
             return -1;
         }
         return url.compareTo(o.url);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(url);
+        dest.writeInt(flowFileCount);
+        dest.writeLong(lastFailure);
     }
 }

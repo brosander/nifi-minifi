@@ -67,6 +67,8 @@ public class SiteToSiteClientConfig implements Parcelable {
             result.proxyPort = source.readInt();
             result.proxyUsername = source.readString();
             result.proxyPassword = source.readString();
+            result.peerUpdateIntervalNanos = source.readLong();
+            result.peerStatus = source.readParcelable(SiteToSiteClientConfig.class.getClassLoader());
             return result;
         }
 
@@ -99,6 +101,8 @@ public class SiteToSiteClientConfig implements Parcelable {
     private int proxyPort;
     private String proxyUsername;
     private String proxyPassword;
+    private long peerUpdateIntervalNanos = TimeUnit.MINUTES.toNanos(30);
+    private PeerStatus peerStatus;
 
     public SiteToSiteClientConfig() {
 
@@ -133,6 +137,8 @@ public class SiteToSiteClientConfig implements Parcelable {
         dest.writeInt(proxyPort);
         dest.writeString(proxyUsername);
         dest.writeString(proxyPassword);
+        dest.writeLong(peerUpdateIntervalNanos);
+        dest.writeParcelable(peerStatus, flags);
     }
 
     public String getUrl() {
@@ -391,5 +397,21 @@ public class SiteToSiteClientConfig implements Parcelable {
 
     public String getProxyPassword() {
         return proxyPassword;
+    }
+
+    public long getPeerUpdateIntervalNanos() {
+        return peerUpdateIntervalNanos;
+    }
+
+    public void setPeerUpdateIntervalNanos(long peerUpdateIntervalNanos) {
+        this.peerUpdateIntervalNanos = peerUpdateIntervalNanos;
+    }
+
+    public PeerStatus getPeerStatus() {
+        return peerStatus;
+    }
+
+    public void setPeerStatus(PeerStatus peerStatus) {
+        this.peerStatus = peerStatus;
     }
 }

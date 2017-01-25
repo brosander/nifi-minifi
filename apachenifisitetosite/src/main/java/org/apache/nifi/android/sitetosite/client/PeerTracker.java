@@ -17,6 +17,7 @@
 
 package org.apache.nifi.android.sitetosite.client;
 
+import android.os.SystemClock;
 import android.util.Log;
 
 import org.apache.nifi.android.sitetosite.client.parser.PeerListParser;
@@ -26,7 +27,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -34,27 +34,34 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 public class PeerTracker {
     public static final String CANONICAL_NAME = PeerTracker.class.getCanonicalName();
     private final SiteToSiteClientRequestManager siteToSiteClientRequestManager;
     private final Set<String> initialPeers;
-    private final List<Peer> peerList;
     private final ScheduledExecutorService ttlExtendTaskExecutor;
     private final SiteToSiteClientConfig siteToSiteClientConfig;
+    private PeerStatus peerStatus;
 
     public PeerTracker(SiteToSiteClientRequestManager siteToSiteClientRequestManager, Set<String> initialPeers, SiteToSiteClientConfig siteToSiteClientConfig) throws IOException {
         this.siteToSiteClientRequestManager = siteToSiteClientRequestManager;
         this.siteToSiteClientConfig = siteToSiteClientConfig;
         this.initialPeers = new HashSet<>();
-        this.peerList = new ArrayList<>(initialPeers.size());
+        List<Peer> peerList = new ArrayList<>();
         for (String initialPeer : initialPeers) {
             URL url = new URL(initialPeer);
             String peerUrl = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort() + "/nifi-api";
             initialPeers.add(peerUrl);
             peerList.add(new Peer(peerUrl, 0));
         }
-        updatePeers();
+        PeerStatus peerStatus = siteToSiteClientConfig.getPeerStatus();
+        if (peerStatus == null) {
+            this.peerStatus = new PeerStatus(peerList, 0L);
+            updatePeers();
+        } else {
+            this.peerStatus = peerStatus;
+        }
         ttlExtendTaskExecutor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
             private final ThreadFactory defaultFactory = Executors.defaultThreadFactory();
 
@@ -70,7 +77,8 @@ public class PeerTracker {
 
     public synchronized void updatePeers() throws IOException {
         IOException lastException = null;
-        for (Peer peer : peerList) {
+        long lastPeerUpdate = SystemClock.elapsedRealtime();
+        for (Peer peer : peerStatus.getPeers()) {
             String peerUrl = peer.getUrl() + "/site-to-site/peers";
             try {
                 HttpURLConnection httpURLConnection = siteToSiteClientRequestManager.openConnection(peerUrl);
@@ -81,7 +89,7 @@ public class PeerTracker {
                     }
                     Map<String, Peer> newPeerMap = PeerListParser.parsePeers(httpURLConnection.getInputStream());
                     if (newPeerMap != null) {
-                        for (Peer oldPeer : peerList) {
+                        for (Peer oldPeer : peerStatus.getPeers()) {
                             String url = oldPeer.getUrl();
                             Peer newPeer = newPeerMap.get(url);
                             if (newPeer != null) {
@@ -91,9 +99,8 @@ public class PeerTracker {
                                 newPeerMap.put(url, oldPeer);
                             }
                         }
-                        peerList.clear();
-                        peerList.addAll(newPeerMap.values());
-                        Collections.sort(peerList);
+                        peerStatus = new PeerStatus(newPeerMap.values(), lastPeerUpdate);
+                        siteToSiteClientConfig.setPeerStatus(peerStatus);
                         return;
                     }
                 } finally {
@@ -111,10 +118,15 @@ public class PeerTracker {
 
     public synchronized Transaction createTransaction(String portIdentifier) throws IOException {
         IOException lastException = null;
-        for (Peer peer : peerList) {
+        updatePeersIfNecessary();
+        for (Peer peer : peerStatus.getPeers()) {
             String peerUrl = peer.getUrl();
             try {
-                return new Transaction(peerUrl, portIdentifier, siteToSiteClientRequestManager, siteToSiteClientConfig, ttlExtendTaskExecutor);
+                Transaction transaction = new Transaction(peerUrl, portIdentifier, siteToSiteClientRequestManager, siteToSiteClientConfig, ttlExtendTaskExecutor);
+                if (lastException != null) {
+                    peerStatus.sort();
+                }
+                return transaction;
             } catch (IOException e) {
                 peer.markFailure();
                 Log.d(CANONICAL_NAME, "Unable to create transaction for port " + portIdentifier + " to peer " + peerUrl);
@@ -126,7 +138,8 @@ public class PeerTracker {
 
     public synchronized String getPortIdentifier(String portName) throws IOException {
         IOException lastException = null;
-        for (Peer peer : peerList) {
+        updatePeersIfNecessary();
+        for (Peer peer : peerStatus.getPeers()) {
             String peerUrl = peer.getUrl() + "/site-to-site";
             HttpURLConnection httpURLConnection = siteToSiteClientRequestManager.openConnection(peerUrl);
             try {
@@ -135,7 +148,7 @@ public class PeerTracker {
                     throw new IOException("Didn't find port named " + portName);
                 }
                 if (lastException != null) {
-                    Collections.sort(peerList);
+                    peerStatus.sort();
                 }
                 return identifier;
             } catch (IOException e) {
@@ -147,5 +160,12 @@ public class PeerTracker {
             }
         }
         throw lastException;
+    }
+
+    private void updatePeersIfNecessary() throws IOException {
+        long elapsedRealtime = SystemClock.elapsedRealtime();
+        if (TimeUnit.NANOSECONDS.convert(elapsedRealtime - peerStatus.getLastPeerUpdate(), TimeUnit.MILLISECONDS) > siteToSiteClientConfig.getPeerUpdateIntervalNanos()) {
+            updatePeers();
+        }
     }
 }

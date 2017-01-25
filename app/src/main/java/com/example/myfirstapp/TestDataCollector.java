@@ -18,13 +18,16 @@
 package com.example.myfirstapp;
 
 import android.os.Parcel;
+import android.support.annotation.NonNull;
 
 import org.apache.nifi.android.sitetosite.collectors.DataCollector;
 import org.apache.nifi.android.sitetosite.packet.EmptyDataPacket;
 import org.apache.nifi.android.sitetosite.packet.DataPacket;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TestDataCollector implements DataCollector {
@@ -45,9 +48,18 @@ public class TestDataCollector implements DataCollector {
 
     @Override
     public Iterable<DataPacket> getDataPackets() {
+        List<DataPacket> result = new ArrayList<>(10);
+        for (int i = 0; i < 10; i++) {
+            result.add(getEmptyDataPacket());
+        }
+        return result;
+    }
+
+    @NonNull
+    private EmptyDataPacket getEmptyDataPacket() {
         Map<String, String> attributes = new HashMap<>();
         attributes.put("number", Integer.toString(num++));
-        return Arrays.<DataPacket>asList(new EmptyDataPacket(attributes));
+        return new EmptyDataPacket(attributes);
     }
 
     @Override

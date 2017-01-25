@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.os.ResultReceiver;
 import android.support.v4.content.WakefulBroadcastReceiver;
 
+import org.apache.nifi.android.sitetosite.client.SiteToSiteClient;
 import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
 import org.apache.nifi.android.sitetosite.collectors.DataCollector;
 import org.apache.nifi.android.sitetosite.packet.DataPacket;
@@ -33,6 +34,7 @@ import java.util.Random;
 public class SiteToSiteRepeating extends WakefulBroadcastReceiver {
     public static final String DATA_COLLECTOR = "DATA_COLLECTOR";
     public static final String REQUEST_CODE = "REQUEST_CODE";
+    public static final String REPEATING_INTENT = "REPEATING_INTENT";
     private static final Random random = new Random();
 
     @Override
@@ -43,19 +45,28 @@ public class SiteToSiteRepeating extends WakefulBroadcastReceiver {
 
         // Update the pending intent with any state change in data collector
         int requestCode = getRequestCode(intent);
-        ResultReceiver resultReceiver = IntentUtils.getParcelable(intent, SiteToSiteService.RESULT_RECEIVER);
-        PendingIntent.getBroadcast(context, requestCode, getIntent(context, dataCollector, siteToSiteClientConfig, requestCode, resultReceiver), PendingIntent.FLAG_UPDATE_CURRENT);
+        TransactionResultCallback transactionResultCallback = IntentUtils.getParcelable(intent, SiteToSiteService.TRANSACTION_RESULT_CALLBACK);
+        Intent repeatingIntent = getIntent(context, dataCollector, siteToSiteClientConfig, requestCode, transactionResultCallback);
+        PendingIntent.getBroadcast(context, requestCode, repeatingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Intent packetIntent = SiteToSiteService.getIntent(context, dataPackets, siteToSiteClientConfig, resultReceiver, true);
+        Intent packetIntent = SiteToSiteService.getIntent(context, dataPackets, siteToSiteClientConfig, transactionResultCallback, true);
+        IntentUtils.putParcelable(repeatingIntent, packetIntent, REPEATING_INTENT);
         startWakefulService(context, packetIntent);
     }
 
-    public synchronized static PendingIntent createPendingIntent(Context context, DataCollector dataCollector, SiteToSiteClientConfig siteToSiteClientConfig, ResultReceiver resultReceiver) {
-        Intent intent = getIntent(context, dataCollector, siteToSiteClientConfig, null, resultReceiver);
+    public synchronized static PendingIntent createPendingIntent(Context context, DataCollector dataCollector, SiteToSiteClientConfig siteToSiteClientConfig, TransactionResultCallback transactionResultCallback) {
+        Intent intent = getIntent(context, dataCollector, siteToSiteClientConfig, null, transactionResultCallback);
         return PendingIntent.getBroadcast(context, getRequestCode(intent), intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    private static Intent getIntent(Context context, DataCollector dataCollector, SiteToSiteClientConfig siteToSiteClientConfig, Integer requestCode, ResultReceiver resultReceiver) {
+    static void updateIntentConfig(Context context, Intent intent, SiteToSiteClientConfig siteToSiteClientConfig) {
+        int requestCode = getRequestCode(intent);
+        DataCollector dataCollector = IntentUtils.getParcelable(intent, DATA_COLLECTOR);
+        TransactionResultCallback transactionResultCallback = IntentUtils.getParcelable(intent, SiteToSiteService.TRANSACTION_RESULT_CALLBACK);
+        PendingIntent.getBroadcast(context, requestCode, getIntent(context, dataCollector, siteToSiteClientConfig, requestCode, transactionResultCallback), PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private static Intent getIntent(Context context, DataCollector dataCollector, SiteToSiteClientConfig siteToSiteClientConfig, Integer requestCode, TransactionResultCallback transactionResultCallback) {
         Intent intent = new Intent(context, SiteToSiteRepeating.class);
         intent.setExtrasClassLoader(dataCollector.getClass().getClassLoader());
 
@@ -70,7 +81,7 @@ public class SiteToSiteRepeating extends WakefulBroadcastReceiver {
 
         intent.putExtra(REQUEST_CODE, requestCode);
         IntentUtils.putParcelable(dataCollector, intent, DATA_COLLECTOR);
-        IntentUtils.putParcelable(resultReceiver, intent, SiteToSiteService.RESULT_RECEIVER);
+        IntentUtils.putParcelable(transactionResultCallback, intent, SiteToSiteService.TRANSACTION_RESULT_CALLBACK);
         IntentUtils.putParcelable(siteToSiteClientConfig, intent, SiteToSiteService.SITE_TO_SITE_CONFIG);
         return intent;
     }
