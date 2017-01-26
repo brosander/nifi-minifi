@@ -34,25 +34,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    // Provide special handling that allow us to make use of libs from javax.*
-    dexOptions {
-        preDexLibraries = false
-        additionalParameters=['--core-library']
-    }
 
-    // Defeat duplicated files that cause APK to fail build
-    packagingOptions {
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/DEPENDENCIES'
-        exclude 'META-INF/ASL2.0'
-    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
         targetCompatibility JavaVersion.VERSION_1_7
-    }
-
-    lintOptions {
-        abortOnError false
     }
 }
 
@@ -61,14 +46,6 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile project(':apachenifisitetosite')
-    compile 'org.slf4j:slf4j-api:1.7.12'
-    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.8'
-    compile group: 'ch.qos.logback', name: 'logback-core', version: '1.1.8'
     compile 'com.android.support:appcompat-v7:25.1.0'
-//compile group: 'org.apache.httpcomponents' , name: 'httpclient-android' , version: '4.3.5.1'
-    // Attempts to use nifi-site-to-site-client natively and recover libs not in Android
-    compile 'javax.xml.bind:jaxb-api:2.2.12'
-    compile 'it.tidalwave.thesefoolishthings:it-tidalwave-android-awt:1.0.10'
-
     testCompile 'junit:junit:4.12'
 }

@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -165,7 +164,7 @@ public class SiteToSiteClientConfig implements Parcelable {
         if (keyManagers != null || trustManagers != null) {
             try {
                 SSLContext sslContext = SSLContext.getInstance("TLS");
-                sslContext.init(getKeyManagers(), trustManagers, new SecureRandom());
+                sslContext.init(getKeyManagers(), trustManagers, null);
                 sslContext.getDefaultSSLParameters().setNeedClientAuth(true);
                 return sslContext;
             } catch (Exception e) {

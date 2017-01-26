@@ -17,22 +17,17 @@
 
 package com.example.myfirstapp;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
-import org.apache.nifi.android.sitetosite.packet.DataPacket;
 import org.apache.nifi.android.sitetosite.packet.EmptyDataPacket;
 import org.apache.nifi.android.sitetosite.packet.FileDataPacket;
-import org.apache.nifi.android.sitetosite.service.SiteToSiteRepeating;
 import org.apache.nifi.android.sitetosite.service.SiteToSiteService;
 
 import java.io.File;
@@ -43,9 +38,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Objects;
 
 public class DisplayMessageActivity extends AppCompatActivity {
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,11 +67,11 @@ public class DisplayMessageActivity extends AppCompatActivity {
         }
 
         final File finalTestFile = testFile;
-        AsyncTask asyncTask = new AsyncTask<String, Void, String>() {
+        AsyncTask asyncTask = new AsyncTask<Object, Void, String>() {
             private Exception exception;
 
             @Override
-            protected String doInBackground(String... params) {
+            protected String doInBackground(Object... params) {
                 try {
                     Context applicationContext = getApplicationContext();
                     SiteToSiteClientConfig siteToSiteClientConfig = new SiteToSiteClientConfig();
@@ -98,7 +95,7 @@ public class DisplayMessageActivity extends AppCompatActivity {
 //                    alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), 1000, pendingIntent);
                     HashMap<String, String> attributes = new HashMap<>();
                     attributes.put("hello", "world");
-                    SiteToSiteService.sendDataPackets(applicationContext, new ArrayList<>(Arrays.<DataPacket>asList(new FileDataPacket(finalTestFile), new EmptyDataPacket(attributes))), siteToSiteClientConfig, null);
+                    SiteToSiteService.sendDataPackets(applicationContext, new ArrayList<>(Arrays.asList(new FileDataPacket(finalTestFile), new EmptyDataPacket(attributes))), siteToSiteClientConfig, null);
                 } catch (Throwable e) {
                     System.err.println("We done failed S2S-in'");
                     e.printStackTrace();
@@ -107,7 +104,7 @@ public class DisplayMessageActivity extends AppCompatActivity {
                 return null;
             }
         };
-        asyncTask.execute(new String[]{});
+        asyncTask.execute();
 
 
         TextView resultView = (TextView) findViewById(R.id.resultTextView);

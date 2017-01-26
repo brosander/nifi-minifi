@@ -36,6 +36,7 @@ public class IntentUtils {
         intent.putExtra(name, bytes);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T extends Parcelable> T getParcelable(Intent intent, String name) {
         byte[] bytes = intent.getByteArrayExtra(name);
         if (bytes == null) {

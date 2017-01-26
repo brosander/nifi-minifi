@@ -18,6 +18,9 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.myfirstapp">
+    <!-- Needed for Site-to-Site to initiate outward connection -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="true"
@@ -35,9 +38,4 @@
         </activity>
         <activity android:name=".DisplayMessageActivity"></activity>
     </application>
-
-    <!-- Needed for Site-to-Site to initiate outward connection -->
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-
 </manifest>
