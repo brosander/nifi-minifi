@@ -196,6 +196,9 @@ public class PeerConnectionManager {
         map.put("Accept", "text/plain");
         map.put("Content-Type", "application/x-www-form-urlencoded");
         HttpURLConnection httpURLConnection = openConnection("/access/token", map, Collections.<String, String>emptyMap(), HttpMethod.POST, true);
+        int timeout = (int) siteToSiteClientConfig.getTimeout(TimeUnit.MILLISECONDS);
+        httpURLConnection.setConnectTimeout(timeout);
+        httpURLConnection.setReadTimeout(timeout);
         String payload = null;
         try {
             OutputStream outputStream = httpURLConnection.getOutputStream();

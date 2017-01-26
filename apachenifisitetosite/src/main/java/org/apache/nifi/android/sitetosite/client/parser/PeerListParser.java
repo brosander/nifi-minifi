@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PeerListParser {
-
     public static final String CANONICAL_NAME = PeerListParser.class.getCanonicalName();
 
     public static Map<String, Peer> parsePeers(InputStream inputStream) throws IOException {

@@ -22,8 +22,6 @@ import org.apache.nifi.android.sitetosite.client.peer.PeerTracker;
 import java.io.IOException;
 
 public class SiteToSiteClient {
-
-
     private final PeerTracker peerTracker;
     private final String portIdentifier;
 

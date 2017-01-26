@@ -49,8 +49,6 @@ public class SiteToSiteClientConfig implements Parcelable {
             source.readStringList(urls);
             result.urls = new HashSet<>(urls);
             result.timeoutNanos = source.readLong();
-            result.penalizationPeriodNanos = source.readLong();
-            result.idleConnectionExpirationNanos = source.readLong();
             result.keystoreFilename = source.readString();
             result.keystorePassword = source.readString();
             result.keystoreType = source.readString();
@@ -58,7 +56,6 @@ public class SiteToSiteClientConfig implements Parcelable {
             result.truststorePassword = source.readString();
             result.truststoreType = source.readString();
             result.useCompression = Boolean.valueOf(source.readString());
-            result.transportProtocol = source.readString();
             result.portName = source.readString();
             result.portIdentifier = source.readString();
             result.preferredBatchDurationNanos = source.readLong();
@@ -84,8 +81,6 @@ public class SiteToSiteClientConfig implements Parcelable {
 
     private Set<String> urls;
     private long timeoutNanos = TimeUnit.SECONDS.toNanos(30);
-    private long penalizationPeriodNanos = TimeUnit.SECONDS.toNanos(3);
-    private long idleConnectionExpirationNanos = TimeUnit.SECONDS.toNanos(30);
     private String keystoreFilename;
     private String keystorePassword;
     private String keystoreType;
@@ -93,7 +88,6 @@ public class SiteToSiteClientConfig implements Parcelable {
     private String truststorePassword;
     private String truststoreType;
     private boolean useCompression;
-    private String transportProtocol;
     private String portName;
     private String portIdentifier;
     private long preferredBatchDurationNanos;
@@ -121,8 +115,6 @@ public class SiteToSiteClientConfig implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeStringList(urls == null ? new ArrayList<String>() : new ArrayList<>(urls));
         dest.writeLong(timeoutNanos);
-        dest.writeLong(penalizationPeriodNanos);
-        dest.writeLong(idleConnectionExpirationNanos);
         dest.writeString(keystoreFilename);
         dest.writeString(keystorePassword);
         dest.writeString(keystoreType);
@@ -130,7 +122,6 @@ public class SiteToSiteClientConfig implements Parcelable {
         dest.writeString(truststorePassword);
         dest.writeString(truststoreType);
         dest.writeString(Boolean.toString(useCompression));
-        dest.writeString(transportProtocol);
         dest.writeString(portName);
         dest.writeString(portIdentifier);
         dest.writeLong(preferredBatchDurationNanos);
@@ -164,14 +155,6 @@ public class SiteToSiteClientConfig implements Parcelable {
 
     public long getTimeout(TimeUnit timeUnit) {
         return timeUnit.convert(timeoutNanos, TimeUnit.NANOSECONDS);
-    }
-
-    public long getIdleConnectionExpiration(TimeUnit timeUnit) {
-        return timeUnit.convert(idleConnectionExpirationNanos, TimeUnit.NANOSECONDS);
-    }
-
-    public long getPenalizationPeriod(TimeUnit timeUnit) {
-        return timeUnit.convert(penalizationPeriodNanos, TimeUnit.NANOSECONDS);
     }
 
     public SSLContext getSslContext() {
@@ -304,14 +287,6 @@ public class SiteToSiteClientConfig implements Parcelable {
         this.useCompression = useCompression;
     }
 
-    public String getTransportProtocol() {
-        return transportProtocol;
-    }
-
-    public void setTransportProtocol(String transportProtocol) {
-        this.transportProtocol = transportProtocol;
-    }
-
     public String getPortName() {
         return portName;
     }
@@ -350,14 +325,6 @@ public class SiteToSiteClientConfig implements Parcelable {
 
     public void setTimeoutNanos(long timeoutNanos) {
         this.timeoutNanos = timeoutNanos;
-    }
-
-    public void setPenalizationPeriodNanos(long penalizationPeriodNanos) {
-        this.penalizationPeriodNanos = penalizationPeriodNanos;
-    }
-
-    public void setIdleConnectionExpirationNanos(long idleConnectionExpirationNanos) {
-        this.idleConnectionExpirationNanos = idleConnectionExpirationNanos;
     }
 
     public void setPreferredBatchDurationNanos(long preferredBatchDurationNanos) {
