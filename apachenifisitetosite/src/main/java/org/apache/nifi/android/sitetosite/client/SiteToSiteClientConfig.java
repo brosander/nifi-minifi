@@ -69,6 +69,8 @@ public class SiteToSiteClientConfig implements Parcelable {
             result.proxyPassword = source.readString();
             result.peerUpdateIntervalNanos = source.readLong();
             result.peerStatus = source.readParcelable(SiteToSiteClientConfig.class.getClassLoader());
+            result.username = source.readString();
+            result.password = source.readString();
             return result;
         }
 
@@ -103,6 +105,8 @@ public class SiteToSiteClientConfig implements Parcelable {
     private String proxyPassword;
     private long peerUpdateIntervalNanos = TimeUnit.MINUTES.toNanos(30);
     private PeerStatus peerStatus;
+    private String username;
+    private String password;
 
     public SiteToSiteClientConfig() {
 
@@ -139,6 +143,8 @@ public class SiteToSiteClientConfig implements Parcelable {
         dest.writeString(proxyPassword);
         dest.writeLong(peerUpdateIntervalNanos);
         dest.writeParcelable(peerStatus, flags);
+        dest.writeString(username);
+        dest.writeString(password);
     }
 
     public String getUrl() {
@@ -172,7 +178,7 @@ public class SiteToSiteClientConfig implements Parcelable {
     public SSLContext getSslContext() {
         KeyManager[] keyManagers = getKeyManagers();
         TrustManager[] trustManagers = getTrustManagers();
-        if (keyManagers != null && trustManagers != null) {
+        if (keyManagers != null || trustManagers != null) {
             try {
                 SSLContext sslContext = SSLContext.getInstance("TLS");
                 sslContext.init(getKeyManagers(), trustManagers, new SecureRandom());
@@ -413,5 +419,21 @@ public class SiteToSiteClientConfig implements Parcelable {
 
     public void setPeerStatus(PeerStatus peerStatus) {
         this.peerStatus = peerStatus;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

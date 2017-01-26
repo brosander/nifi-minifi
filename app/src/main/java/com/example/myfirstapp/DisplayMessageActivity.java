@@ -80,23 +80,25 @@ public class DisplayMessageActivity extends AppCompatActivity {
                     SiteToSiteClientConfig siteToSiteClientConfig = new SiteToSiteClientConfig();
 //                    siteToSiteClientConfig.setUrls(new HashSet<>(Arrays.asList("http://bryan-Oryx-Pro:8080/nifi")));
                     siteToSiteClientConfig.setPortName("From Android");
-                    siteToSiteClientConfig.setUrls(new HashSet<>(Arrays.asList("https://nifi.android:9443/nifi")));
-                    siteToSiteClientConfig.setKeystoreFilename("classpath:keystore.bks");
+                    siteToSiteClientConfig.setUrls(new HashSet<>(Arrays.asList("https://nifi-ldap.android:9443/nifi")));
+                    /*siteToSiteClientConfig.setKeystoreFilename("classpath:keystore.bks");
                     siteToSiteClientConfig.setKeystorePassword("8RAIaQ/gMqgbKFkfQCRKSW9u0eP15QQeuTG7C1pB+w0");
-                    siteToSiteClientConfig.setKeystoreType("BKS");
+                    siteToSiteClientConfig.setKeystoreType("BKS");*/
+                    siteToSiteClientConfig.setUsername("bryan");
+                    siteToSiteClientConfig.setPassword("admin-password");
                     siteToSiteClientConfig.setTruststoreFilename("classpath:truststore.bks");
                     siteToSiteClientConfig.setTruststorePassword("ks4Fx6eJWgVZ6lrBWCKY3xRGNlF6v8TlDLnMe7B8HrU");
                     siteToSiteClientConfig.setTruststoreType("BKS");
                     siteToSiteClientConfig.setProxyHost("192.168.199.145");
                     siteToSiteClientConfig.setProxyPort(3128);
                     siteToSiteClientConfig.setUseCompression(true);
-                    AlarmManager alarmManager = (AlarmManager) applicationContext.getSystemService(Context.ALARM_SERVICE);
+//                    AlarmManager alarmManager = (AlarmManager) applicationContext.getSystemService(Context.ALARM_SERVICE);
 //                    PendingIntent pendingIntent = SiteToSiteRepeating.createPendingIntent(applicationContext, new ListFileCollector(getExternalMediaDirs()[0], new RegexFileFilter(".*", false)), null);
-                    PendingIntent pendingIntent = SiteToSiteRepeating.createPendingIntent(applicationContext, new TestDataCollector(), siteToSiteClientConfig, null);
-                    alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), 1000, pendingIntent);
+//                    PendingIntent pendingIntent = SiteToSiteRepeating.createPendingIntent(applicationContext, new TestDataCollector(), siteToSiteClientConfig, null);
+//                    alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), 1000, pendingIntent);
                     HashMap<String, String> attributes = new HashMap<>();
                     attributes.put("hello", "world");
-//                    SiteToSiteService.sendDataPackets(applicationContext, new ArrayList<>(Arrays.<DataPacket>asList(new FileDataPacket(finalTestFile), new EmptyDataPacket(attributes))), siteToSiteClientConfig, null);
+                    SiteToSiteService.sendDataPackets(applicationContext, new ArrayList<>(Arrays.<DataPacket>asList(new FileDataPacket(finalTestFile), new EmptyDataPacket(attributes))), siteToSiteClientConfig, null);
                 } catch (Throwable e) {
                     System.err.println("We done failed S2S-in'");
                     e.printStackTrace();

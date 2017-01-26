@@ -60,9 +60,9 @@ public class Transaction {
     private final HttpURLConnection httpURLConnection;
     private final ScheduledFuture<?> ttlExtendFuture;
 
-    public Transaction(String peerUrl, String portIdentifier, SiteToSiteClientRequestManager siteToSiteClientRequestManager, SiteToSiteClientConfig siteToSiteClientConfig, ScheduledExecutorService ttlExtendTaskExecutor) throws IOException {
-        this.handshakeProperties = createHandshakeProperties(siteToSiteClientConfig);
+    public Transaction(String peerUrl, String authorization, String portIdentifier, SiteToSiteClientRequestManager siteToSiteClientRequestManager, SiteToSiteClientConfig siteToSiteClientConfig, ScheduledExecutorService ttlExtendTaskExecutor) throws IOException {
         this.siteToSiteClientRequestManager = siteToSiteClientRequestManager;
+        this.handshakeProperties = createHandshakeProperties(siteToSiteClientConfig, authorization);
 
         HttpURLConnection createTransactionConnection = siteToSiteClientRequestManager.openConnection(peerUrl + "/data-transfer/input-ports/" + portIdentifier + "/transactions", handshakeProperties, HttpMethod.POST);
 
@@ -101,7 +101,7 @@ public class Transaction {
             @Override
             public void run() {
                 try {
-                    HttpURLConnection ttlExtendConnection = Transaction.this.siteToSiteClientRequestManager.openConnection(transactionUrl, HttpMethod.PUT);
+                    HttpURLConnection ttlExtendConnection = Transaction.this.siteToSiteClientRequestManager.openConnection(transactionUrl, handshakeProperties, HttpMethod.PUT);
                     try {
 
                     } finally {
@@ -114,7 +114,7 @@ public class Transaction {
         }, ttl / 2, ttl / 2, TimeUnit.SECONDS);
     }
 
-    private Map<String, String> createHandshakeProperties(SiteToSiteClientConfig siteToSiteClientConfig) {
+    private Map<String, String> createHandshakeProperties(SiteToSiteClientConfig siteToSiteClientConfig, String authorization) {
         Map<String, String> handshakeProperties = new HashMap<>();
 
         if (siteToSiteClientConfig.isUseCompression()) {
@@ -140,7 +140,12 @@ public class Transaction {
         if (batchDurationMillis > 0) {
             handshakeProperties.put(HANDSHAKE_PROPERTY_BATCH_DURATION, String.valueOf(batchDurationMillis));
         }
-         return Collections.unmodifiableMap(handshakeProperties);
+
+        if (authorization != null) {
+            handshakeProperties.put("Authorization", authorization);
+        }
+
+        return Collections.unmodifiableMap(handshakeProperties);
     }
 
     private static Map<String, String> initEndTransactionHeaders() {

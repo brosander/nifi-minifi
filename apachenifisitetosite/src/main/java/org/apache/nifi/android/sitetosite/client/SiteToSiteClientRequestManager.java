@@ -22,6 +22,7 @@ import android.util.Base64;
 import org.apache.nifi.android.sitetosite.client.protocol.HttpMethod;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -86,16 +87,7 @@ public class SiteToSiteClientRequestManager {
 
         String actualUrl = urlString;
         if (queryParameters.size() > 0) {
-            StringBuilder stringBuilder = new StringBuilder("?");
-            for (Map.Entry<String, String> entry : queryParameters.entrySet()) {
-                stringBuilder.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
-                stringBuilder.append("=");
-                stringBuilder.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
-                stringBuilder.append("&");
-            }
-            // Remove trailing &
-            stringBuilder.setLength(stringBuilder.length() - 1);
-            actualUrl = urlString + stringBuilder.toString();
+            actualUrl = urlString + "?" + urlEncodeParameters(queryParameters);
         }
         URL url = new URL(actualUrl);
         HttpURLConnection httpURLConnection;
@@ -131,6 +123,19 @@ public class SiteToSiteClientRequestManager {
         httpURLConnection.setRequestMethod(method.name());
 
         return httpURLConnection;
+    }
+
+    public static String urlEncodeParameters(Map<String, String> queryParameters) throws UnsupportedEncodingException {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Map.Entry<String, String> entry : queryParameters.entrySet()) {
+            stringBuilder.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
+            stringBuilder.append("=");
+            stringBuilder.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
+            stringBuilder.append("&");
+        }
+        // Remove trailing &
+        stringBuilder.setLength(stringBuilder.length() - 1);
+        return stringBuilder.toString();
     }
 
     protected Proxy getProxy(SiteToSiteClientConfig siteToSiteClientConfig) {
