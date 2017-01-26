@@ -17,6 +17,9 @@
 
 package org.apache.nifi.android.sitetosite.client;
 
+import android.util.Log;
+
+import org.apache.nifi.android.sitetosite.client.peer.PeerConnectionManager;
 import org.apache.nifi.android.sitetosite.client.protocol.CompressionOutputStream;
 import org.apache.nifi.android.sitetosite.client.protocol.HttpMethod;
 import org.apache.nifi.android.sitetosite.client.protocol.ResponseCode;
@@ -28,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,41 +39,47 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedOutputStream;
 
-import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.HANDSHAKE_PROPERTY_BATCH_COUNT;
-import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.HANDSHAKE_PROPERTY_BATCH_DURATION;
-import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.HANDSHAKE_PROPERTY_BATCH_SIZE;
-import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.HANDSHAKE_PROPERTY_REQUEST_EXPIRATION;
-import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.HANDSHAKE_PROPERTY_USE_COMPRESSION;
-import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.LOCATION_HEADER_NAME;
-import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.LOCATION_URI_INTENT_NAME;
-import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.LOCATION_URI_INTENT_VALUE;
-import static org.apache.nifi.android.sitetosite.client.SiteToSiteClient.SERVER_SIDE_TRANSACTION_TTL;
-
 public class Transaction {
+    public static final String CANONICAL_NAME = Transaction.class.getCanonicalName();
+
+    public static final String LOCATION_HEADER_NAME = "Location";
+    public static final String LOCATION_URI_INTENT_NAME = "x-location-uri-intent";
+    public static final String LOCATION_URI_INTENT_VALUE = "transaction-url";
+
+    public static final String SERVER_SIDE_TRANSACTION_TTL = "x-nifi-site-to-site-server-transaction-ttl";
+
+    public static final String HANDSHAKE_PROPERTY_USE_COMPRESSION = "x-nifi-site-to-site-use-compression";
+    public static final String HANDSHAKE_PROPERTY_REQUEST_EXPIRATION = "x-nifi-site-to-site-request-expiration";
+    public static final String HANDSHAKE_PROPERTY_BATCH_COUNT = "x-nifi-site-to-site-batch-count";
+    public static final String HANDSHAKE_PROPERTY_BATCH_SIZE = "x-nifi-site-to-site-batch-size";
+    public static final String HANDSHAKE_PROPERTY_BATCH_DURATION = "x-nifi-site-to-site-batch-duration";
+
     private static final Map<String, String> BEGIN_TRANSACTION_HEADERS = initBeginTransactionHeaders();
     private static final Map<String, String> END_TRANSACTION_HEADERS = initEndTransactionHeaders();
+    private static final Pattern NIFI_API_PATTERN = Pattern.compile(Pattern.quote("/nifi-api"));
 
     private final Map<String, String> handshakeProperties;
     private final String transactionUrl;
-    private final SiteToSiteClientRequestManager siteToSiteClientRequestManager;
+    private final PeerConnectionManager peerConnectionManager;
     private final CRC32 crc;
-    private final OutputStream outputStream;
-    private final HttpURLConnection httpURLConnection;
+    private final OutputStream sendFlowFilesOutputStream;
+    private final HttpURLConnection sendFlowFilesConnection;
     private final ScheduledFuture<?> ttlExtendFuture;
 
-    public Transaction(String peerUrl, String authorization, String portIdentifier, SiteToSiteClientRequestManager siteToSiteClientRequestManager, SiteToSiteClientConfig siteToSiteClientConfig, ScheduledExecutorService ttlExtendTaskExecutor) throws IOException {
-        this.siteToSiteClientRequestManager = siteToSiteClientRequestManager;
-        this.handshakeProperties = createHandshakeProperties(siteToSiteClientConfig, authorization);
+    public Transaction(PeerConnectionManager peerConnectionManager, String portIdentifier, SiteToSiteClientConfig siteToSiteClientConfig, ScheduledExecutorService ttlExtendTaskExecutor) throws IOException {
+        this.peerConnectionManager = peerConnectionManager;
+        this.handshakeProperties = createHandshakeProperties(siteToSiteClientConfig);
 
-        HttpURLConnection createTransactionConnection = siteToSiteClientRequestManager.openConnection(peerUrl + "/data-transfer/input-ports/" + portIdentifier + "/transactions", handshakeProperties, HttpMethod.POST);
-
+        HttpURLConnection createTransactionConnection = peerConnectionManager.openConnection("/data-transfer/input-ports/" + portIdentifier + "/transactions", handshakeProperties, HttpMethod.POST);
         int responseCode = createTransactionConnection.getResponseCode();
         if (responseCode < 200 || responseCode > 299) {
             throw new IOException("Got response code " + responseCode);
         }
+
         int ttl;
         if (LOCATION_URI_INTENT_VALUE.equals(createTransactionConnection.getHeaderField(LOCATION_URI_INTENT_NAME))) {
             String ttlString = createTransactionConnection.getHeaderField(SERVER_SIDE_TRANSACTION_TTL);
@@ -82,7 +92,8 @@ public class Transaction {
                     throw new IOException("Unable to parse " + SERVER_SIDE_TRANSACTION_TTL + " as int: " + ttlString, e);
                 }
             }
-            transactionUrl = createTransactionConnection.getHeaderField(LOCATION_HEADER_NAME);
+            String path = new URL(createTransactionConnection.getHeaderField(LOCATION_HEADER_NAME)).getPath();
+            transactionUrl = NIFI_API_PATTERN.matcher(path).replaceFirst("");
         } else {
             throw new IOException("Expected header " + LOCATION_URI_INTENT_NAME + " == " + LOCATION_URI_INTENT_VALUE);
         }
@@ -90,20 +101,23 @@ public class Transaction {
         crc = new CRC32();
         Map<String, String> beginTransactionHeaders = new HashMap<>(BEGIN_TRANSACTION_HEADERS);
         beginTransactionHeaders.putAll(handshakeProperties);
-        this.httpURLConnection = siteToSiteClientRequestManager.openConnection(transactionUrl + "/flow-files", beginTransactionHeaders, HttpMethod.POST);
-        OutputStream outputStream = this.httpURLConnection.getOutputStream();
+        sendFlowFilesConnection = peerConnectionManager.openConnection(transactionUrl + "/flow-files", beginTransactionHeaders, HttpMethod.POST);
+        OutputStream outputStream = sendFlowFilesConnection.getOutputStream();
         if (siteToSiteClientConfig.isUseCompression()) {
             outputStream = new CompressionOutputStream(outputStream);
         }
         outputStream = new CheckedOutputStream(outputStream, crc);
-        this.outputStream = outputStream;
+        this.sendFlowFilesOutputStream = outputStream;
         ttlExtendFuture = ttlExtendTaskExecutor.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
                 try {
-                    HttpURLConnection ttlExtendConnection = Transaction.this.siteToSiteClientRequestManager.openConnection(transactionUrl, handshakeProperties, HttpMethod.PUT);
+                    HttpURLConnection ttlExtendConnection = Transaction.this.peerConnectionManager.openConnection(transactionUrl, handshakeProperties, HttpMethod.PUT);
                     try {
-
+                        int responseCode = ttlExtendConnection.getResponseCode();
+                        if (responseCode < 200 || responseCode > 299) {
+                            Log.w(CANONICAL_NAME, "Extending ttl failed for transaction (responseCode " + responseCode + ")" + transactionUrl);
+                        }
                     } finally {
                         ttlExtendConnection.disconnect();
                     }
@@ -114,7 +128,7 @@ public class Transaction {
         }, ttl / 2, ttl / 2, TimeUnit.SECONDS);
     }
 
-    private Map<String, String> createHandshakeProperties(SiteToSiteClientConfig siteToSiteClientConfig, String authorization) {
+    private Map<String, String> createHandshakeProperties(SiteToSiteClientConfig siteToSiteClientConfig) {
         Map<String, String> handshakeProperties = new HashMap<>();
 
         if (siteToSiteClientConfig.isUseCompression()) {
@@ -141,10 +155,6 @@ public class Transaction {
             handshakeProperties.put(HANDSHAKE_PROPERTY_BATCH_DURATION, String.valueOf(batchDurationMillis));
         }
 
-        if (authorization != null) {
-            handshakeProperties.put("Authorization", authorization);
-        }
-
         return Collections.unmodifiableMap(handshakeProperties);
     }
 
@@ -162,7 +172,7 @@ public class Transaction {
     }
 
     public void send(DataPacket dataPacket) throws IOException {
-        final DataOutputStream out = new DataOutputStream(outputStream);
+        final DataOutputStream out = new DataOutputStream(sendFlowFilesOutputStream);
 
         final Map<String, String> attributes = dataPacket.getAttributes();
         out.writeInt(attributes.size());
@@ -189,12 +199,12 @@ public class Transaction {
     }
 
     public void confirm() throws IOException {
-        int responseCode = httpURLConnection.getResponseCode();
+        int responseCode = sendFlowFilesConnection.getResponseCode();
         if (responseCode != 200 && responseCode != 202) {
             throw new IOException("Got response code " + responseCode);
         }
         long calculatedCrc = crc.getValue();
-        long serverCrc = IOUtils.readInputStreamAndParseAsLong(httpURLConnection.getInputStream());
+        long serverCrc = IOUtils.readInputStreamAndParseAsLong(sendFlowFilesConnection.getInputStream());
         if (calculatedCrc != serverCrc) {
             endTransaction(ResponseCode.BAD_CHECKSUM);
             throw new IOException("Should have " + calculatedCrc + " for crc, got " + serverCrc);
@@ -218,12 +228,12 @@ public class Transaction {
                 throw new IOException("Error waiting on ttl extension thread to end.", e);
             }
         }
-        httpURLConnection.disconnect();
+        sendFlowFilesConnection.disconnect();
         Map<String, String> queryParameters = new HashMap<>();
         queryParameters.put("responseCode", Integer.toString(responseCodeToSend.getCode()));
         Map<String, String> endTransactionHeaders = new HashMap<>(END_TRANSACTION_HEADERS);
         endTransactionHeaders.putAll(handshakeProperties);
-        HttpURLConnection delete = siteToSiteClientRequestManager.openConnection(transactionUrl, endTransactionHeaders, queryParameters, HttpMethod.DELETE);
+        HttpURLConnection delete = peerConnectionManager.openConnection(transactionUrl, endTransactionHeaders, queryParameters, HttpMethod.DELETE);
 
         int responseCode = delete.getResponseCode();
         if (responseCode < 200 || responseCode > 299) {

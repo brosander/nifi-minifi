@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.android.sitetosite.client;
+package org.apache.nifi.android.sitetosite.client.peer;
 
 import android.os.Parcel;
 import android.os.Parcelable;

@@ -20,6 +20,7 @@ package org.apache.nifi.android.sitetosite.client;
 import android.os.Parcel;
 import android.os.SystemClock;
 
+import org.apache.nifi.android.sitetosite.client.peer.Peer;
 import org.junit.Before;
 import org.junit.Test;
 

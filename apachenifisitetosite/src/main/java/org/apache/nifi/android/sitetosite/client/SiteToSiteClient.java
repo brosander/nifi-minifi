@@ -17,28 +17,18 @@
 
 package org.apache.nifi.android.sitetosite.client;
 
+import org.apache.nifi.android.sitetosite.client.peer.PeerTracker;
+
 import java.io.IOException;
 
 public class SiteToSiteClient {
-    public static final String LOCATION_HEADER_NAME = "Location";
-    public static final String LOCATION_URI_INTENT_NAME = "x-location-uri-intent";
-    public static final String LOCATION_URI_INTENT_VALUE = "transaction-url";
 
-    public static final String PROTOCOL_VERSION = "x-nifi-site-to-site-protocol-version";
-    public static final String SERVER_SIDE_TRANSACTION_TTL = "x-nifi-site-to-site-server-transaction-ttl";
-    public static final String HANDSHAKE_PROPERTY_USE_COMPRESSION = "x-nifi-site-to-site-use-compression";
-    public static final String HANDSHAKE_PROPERTY_REQUEST_EXPIRATION = "x-nifi-site-to-site-request-expiration";
-    public static final String HANDSHAKE_PROPERTY_BATCH_COUNT = "x-nifi-site-to-site-batch-count";
-    public static final String HANDSHAKE_PROPERTY_BATCH_SIZE = "x-nifi-site-to-site-batch-size";
-    public static final String HANDSHAKE_PROPERTY_BATCH_DURATION = "x-nifi-site-to-site-batch-duration";
 
     private final PeerTracker peerTracker;
     private final String portIdentifier;
-    private final SiteToSiteClientRequestManager siteToSiteClientRequestManager;
 
     public SiteToSiteClient(SiteToSiteClientConfig siteToSiteClientConfig) throws IOException {
-        siteToSiteClientRequestManager = new SiteToSiteClientRequestManager(siteToSiteClientConfig);
-        peerTracker = new PeerTracker(siteToSiteClientRequestManager, siteToSiteClientConfig.getUrls(), siteToSiteClientConfig);
+        peerTracker = new PeerTracker(siteToSiteClientConfig.getUrls(), siteToSiteClientConfig);
         String portIdentifier = siteToSiteClientConfig.getPortIdentifier();
         if (portIdentifier == null) {
             this.portIdentifier = peerTracker.getPortIdentifier(siteToSiteClientConfig.getPortName());

@@ -20,7 +20,7 @@ package org.apache.nifi.android.sitetosite.client.parser;
 import android.util.JsonReader;
 import android.util.Log;
 
-import org.apache.nifi.android.sitetosite.client.Peer;
+import org.apache.nifi.android.sitetosite.client.peer.Peer;
 import org.apache.nifi.android.sitetosite.util.Charsets;
 
 import java.io.IOException;

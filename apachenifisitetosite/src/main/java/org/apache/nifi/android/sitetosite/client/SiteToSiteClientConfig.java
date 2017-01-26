@@ -20,6 +20,8 @@ package org.apache.nifi.android.sitetosite.client;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.apache.nifi.android.sitetosite.client.peer.PeerStatus;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,7 +64,6 @@ public class SiteToSiteClientConfig implements Parcelable {
             result.preferredBatchDurationNanos = source.readLong();
             result.preferredBatchSize = source.readLong();
             result.preferredBatchCount = source.readInt();
-            result.eventReporter = source.readParcelable(SiteToSiteClientConfig.class.getClassLoader());
             result.proxyHost = source.readString();
             result.proxyPort = source.readInt();
             result.proxyUsername = source.readString();
@@ -98,7 +99,6 @@ public class SiteToSiteClientConfig implements Parcelable {
     private long preferredBatchDurationNanos;
     private long preferredBatchSize;
     private int preferredBatchCount;
-    private ParcelableEventReporter eventReporter;
     private String proxyHost;
     private int proxyPort;
     private String proxyUsername;
@@ -136,7 +136,6 @@ public class SiteToSiteClientConfig implements Parcelable {
         dest.writeLong(preferredBatchDurationNanos);
         dest.writeLong(preferredBatchSize);
         dest.writeInt(preferredBatchCount);
-        dest.writeParcelable(eventReporter, flags);
         dest.writeString(proxyHost);
         dest.writeInt(proxyPort);
         dest.writeString(proxyUsername);
@@ -347,14 +346,6 @@ public class SiteToSiteClientConfig implements Parcelable {
 
     public void setPreferredBatchCount(int preferredBatchCount) {
         this.preferredBatchCount = preferredBatchCount;
-    }
-
-    public ParcelableEventReporter getEventReporter() {
-        return eventReporter;
-    }
-
-    public void setEventReporter(ParcelableEventReporter eventReporter) {
-        this.eventReporter = eventReporter;
     }
 
     public void setTimeoutNanos(long timeoutNanos) {

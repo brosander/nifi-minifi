@@ -20,5 +20,6 @@ package org.apache.nifi.android.sitetosite.util;
 import java.nio.charset.Charset;
 
 public class Charsets {
-    public static final Charset UTF_8 = Charset.forName("UTF-8");
+    public static final String UTF_8_NAME = "UTF-8";
+    public static final Charset UTF_8 = Charset.forName(UTF_8_NAME);
 }

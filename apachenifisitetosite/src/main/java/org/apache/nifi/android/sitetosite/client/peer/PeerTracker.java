@@ -15,21 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.android.sitetosite.client;
+package org.apache.nifi.android.sitetosite.client.peer;
 
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
 import android.util.Log;
 
+import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
+import org.apache.nifi.android.sitetosite.client.Transaction;
 import org.apache.nifi.android.sitetosite.client.parser.PeerListParser;
 import org.apache.nifi.android.sitetosite.client.parser.PortIdentifierParser;
-import org.apache.nifi.android.sitetosite.client.protocol.HttpMethod;
-import org.apache.nifi.android.sitetosite.util.Charsets;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -45,18 +41,16 @@ import java.util.concurrent.TimeUnit;
 
 public class PeerTracker {
     public static final String CANONICAL_NAME = PeerTracker.class.getCanonicalName();
-    private final SiteToSiteClientRequestManager siteToSiteClientRequestManager;
     private final Set<String> initialPeers;
     private final ScheduledExecutorService ttlExtendTaskExecutor;
     private final SiteToSiteClientConfig siteToSiteClientConfig;
-    private final Map<String, String> authorizations;
+    private final Map<String, PeerConnectionManager> peerConnectionManagerMap;
     private PeerStatus peerStatus;
 
-    public PeerTracker(SiteToSiteClientRequestManager siteToSiteClientRequestManager, Set<String> initialPeers, SiteToSiteClientConfig siteToSiteClientConfig) throws IOException {
-        this.siteToSiteClientRequestManager = siteToSiteClientRequestManager;
+    public PeerTracker(Set<String> initialPeers, SiteToSiteClientConfig siteToSiteClientConfig) throws IOException {
         this.siteToSiteClientConfig = siteToSiteClientConfig;
         this.initialPeers = new HashSet<>();
-        this.authorizations = new HashMap<>();
+        this.peerConnectionManagerMap = new HashMap<>();
         List<Peer> peerList = new ArrayList<>();
         for (String initialPeer : initialPeers) {
             URL url = new URL(initialPeer);
@@ -88,13 +82,12 @@ public class PeerTracker {
         IOException lastException = null;
         long lastPeerUpdate = SystemClock.elapsedRealtime();
         for (Peer peer : peerStatus.getPeers()) {
-            String peersUrl = peer.getUrl() + "/site-to-site/peers";
             try {
-                HttpURLConnection httpURLConnection = siteToSiteClientRequestManager.openConnection(peersUrl, getPeerHeaders(peer));
+                HttpURLConnection httpURLConnection = getPeerConnectionManager(peer).openConnection("/site-to-site/peers");
                 try {
                     int responseCode = httpURLConnection.getResponseCode();
                     if (responseCode < 200 || responseCode > 299) {
-                        throw new IOException("Received response code " + responseCode + " when opening " + peersUrl);
+                        throw new IOException("Received response code " + responseCode + " when opening " + peer.getUrl());
                     }
                     Map<String, Peer> newPeerMap = PeerListParser.parsePeers(httpURLConnection.getInputStream());
                     if (newPeerMap != null) {
@@ -116,7 +109,7 @@ public class PeerTracker {
                     httpURLConnection.disconnect();
                 }
             } catch (IOException e) {
-                Log.d(CANONICAL_NAME, "Unable to get peer list from " + peersUrl, e);
+                Log.d(CANONICAL_NAME, "Unable to get peer list from " + peer.getUrl(), e);
                 lastException = e;
             }
         }
@@ -125,25 +118,13 @@ public class PeerTracker {
         }
     }
 
-    @NonNull
-    private Map<String, String> getPeerHeaders(Peer peer) throws IOException {
-        loginIfNecessary(peer);
-        Map<String, String> headers = new HashMap<>();
-        String authorization = authorizations.get(peer.getUrl());
-        if (authorization != null) {
-            headers.put("Authorization", authorization);
-        }
-        return headers;
-    }
-
     public synchronized Transaction createTransaction(String portIdentifier) throws IOException {
         IOException lastException = null;
         updatePeersIfNecessary();
         for (Peer peer : peerStatus.getPeers()) {
-            loginIfNecessary(peer);
             String peerUrl = peer.getUrl();
             try {
-                Transaction transaction = new Transaction(peerUrl, authorizations.get(peerUrl), portIdentifier, siteToSiteClientRequestManager, siteToSiteClientConfig, ttlExtendTaskExecutor);
+                Transaction transaction = new Transaction(getPeerConnectionManager(peer), portIdentifier, siteToSiteClientConfig, ttlExtendTaskExecutor);
                 if (lastException != null) {
                     peerStatus.sort();
                 }
@@ -161,8 +142,7 @@ public class PeerTracker {
         IOException lastException = null;
         updatePeersIfNecessary();
         for (Peer peer : peerStatus.getPeers()) {
-            String peerUrl = peer.getUrl() + "/site-to-site";
-            HttpURLConnection httpURLConnection = siteToSiteClientRequestManager.openConnection(peerUrl, getPeerHeaders(peer));
+            HttpURLConnection httpURLConnection = getPeerConnectionManager(peer).openConnection("/site-to-site");
             try {
                 String identifier = PortIdentifierParser.getPortIdentifier(httpURLConnection.getInputStream(), portName);
                 if (identifier == null) {
@@ -174,7 +154,7 @@ public class PeerTracker {
                 return identifier;
             } catch (IOException e) {
                 peer.markFailure();
-                Log.d(CANONICAL_NAME, "Unable to get port identifier from " + peerUrl);
+                Log.d(CANONICAL_NAME, "Unable to get port identifier from " + peer.getUrl());
                 lastException = e;
             } finally {
                 httpURLConnection.disconnect();
@@ -190,48 +170,13 @@ public class PeerTracker {
         }
     }
 
-    private void loginIfNecessary(Peer peer) throws IOException {
-        if (authorizations.containsKey(peer.getUrl())) {
-            return;
+    private PeerConnectionManager getPeerConnectionManager(Peer peer) {
+        String peerUrl = peer.getUrl();
+        PeerConnectionManager result = peerConnectionManagerMap.get(peerUrl);
+        if (result == null) {
+            result = new PeerConnectionManager(peer, siteToSiteClientConfig);
+            peerConnectionManagerMap.put(peerUrl, result);
         }
-        String username = siteToSiteClientConfig.getUsername();
-        if (username != null) {
-            String password = siteToSiteClientConfig.getPassword();
-            Map<String, String> map = new HashMap<>();
-            map.put("Accept", "text/plain");
-            map.put("Content-Type", "application/x-www-form-urlencoded");
-            String peerUrl = peer.getUrl();
-            HttpURLConnection httpURLConnection = siteToSiteClientRequestManager.openConnection(peerUrl + "/access/token", map, HttpMethod.POST);
-            try {
-                OutputStream outputStream = httpURLConnection.getOutputStream();
-                try {
-                    OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream);
-                    try {
-                        Map<String, String> formParams = new HashMap<>();
-                        formParams.put("username", username);
-                        formParams.put("password", password);
-                        outputStreamWriter.write(SiteToSiteClientRequestManager.urlEncodeParameters(formParams));
-                    } finally {
-                        outputStreamWriter.close();
-                    }
-                } finally {
-                    outputStream.close();
-                }
-                int responseCode = httpURLConnection.getResponseCode();
-                if (responseCode < 200 || responseCode > 299) {
-                    throw new IOException("Got response code " + responseCode);
-                }
-                InputStream inputStream = httpURLConnection.getInputStream();
-                byte[] buf = new byte[1024];
-                StringBuilder stringBuilder = new StringBuilder();
-                int read;
-                while ((read = inputStream.read(buf, 0, buf.length)) != -1) {
-                    stringBuilder.append(new String(buf, 0, read, Charsets.UTF_8));
-                }
-                authorizations.put(peerUrl, "Bearer " + stringBuilder.toString());
-            } finally {
-                httpURLConnection.disconnect();
-            }
-        }
+        return result;
     }
 }

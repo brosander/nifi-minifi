@@ -17,6 +17,7 @@
 
 package org.apache.nifi.android.sitetosite.client;
 
+import org.apache.nifi.android.sitetosite.client.peer.Peer;
 import org.junit.Test;
 
 import java.util.ArrayList;
