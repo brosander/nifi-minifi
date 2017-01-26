@@ -56,7 +56,7 @@ public class ByteArrayDataPacket implements DataPacket {
 
     @Override
     public Map<String, String> getAttributes() {
-        return null;
+        return attributes;
     }
 
     @Override

@@ -15,33 +15,17 @@
  * limitations under the License.
  */
 
-apply plugin: 'com.android.library'
+package com.example.myfirstapp;
 
-android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+import android.os.Bundle;
+import android.preference.PreferenceFragment;
 
-    defaultConfig {
-        minSdkVersion 11
-        targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
-
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+public class ProxyPreferenceFragment extends PreferenceFragment
+{
+    @Override
+    public void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        addPreferencesFromResource(R.xml.proxy_fragment_preference);
     }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-}
-
-dependencies {
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-    compile 'com.android.support:appcompat-v7:25.1.0'
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-all:1.10.19'
 }

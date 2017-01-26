@@ -25,7 +25,7 @@ import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
 
 import java.io.IOException;
 
-public class SiteToSiteResultReceiver extends ResultReceiver implements TransactionResultCallback {
+public class SiteToSiteResultReceiver extends ResultReceiver {
     public static final String IO_EXCEPTION = "IOException";
 
     private final TransactionResultCallback delegate;
@@ -34,10 +34,10 @@ public class SiteToSiteResultReceiver extends ResultReceiver implements Transact
      * {@link #onReceiveResult} method will be called from the thread running
      * <var>handler</var> if given, or from an arbitrary thread if null.
      *
-     * @param handler
+     * @param delegate
      */
-    public SiteToSiteResultReceiver(Handler handler, TransactionResultCallback delegate) {
-        super(handler);
+    public SiteToSiteResultReceiver(TransactionResultCallback delegate) {
+        super(delegate.getHandler());
         this.delegate = delegate;
     }
 
@@ -52,18 +52,16 @@ public class SiteToSiteResultReceiver extends ResultReceiver implements Transact
         }
     }
 
-    @Override
-    public void onSuccess(SiteToSiteClientConfig siteToSiteClientConfig) {
+    public static void onSuccess(ResultReceiver resultReceiver, SiteToSiteClientConfig siteToSiteClientConfig) {
         Bundle resultData = new Bundle();
         resultData.putParcelable(SiteToSiteService.SITE_TO_SITE_CONFIG, siteToSiteClientConfig);
-        send(0, resultData);
+        resultReceiver.send(0, resultData);
     }
 
-    @Override
-    public void onException(IOException exception, SiteToSiteClientConfig siteToSiteClientConfig) {
+    public static void onException(ResultReceiver resultReceiver, IOException exception, SiteToSiteClientConfig siteToSiteClientConfig) {
         Bundle resultData = new Bundle();
         resultData.putParcelable(SiteToSiteService.SITE_TO_SITE_CONFIG, siteToSiteClientConfig);
         resultData.putSerializable(IO_EXCEPTION, exception);
-        send(1, resultData);
+        resultReceiver.send(1, resultData);
     }
 }

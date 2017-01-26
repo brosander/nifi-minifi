@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Parcelable;
 import android.os.PowerManager;
+import android.os.ResultReceiver;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 
@@ -62,7 +63,7 @@ public class SiteToSiteService extends IntentService {
             }
             List<DataPacket> packets = intent.getExtras().getParcelableArrayList(DATA_PACKETS);
             if (packets.size() > 0) {
-                TransactionResultCallback transactionResultCallback = intent.getExtras().getParcelable(TRANSACTION_RESULT_CALLBACK);
+                ResultReceiver transactionResultCallback = intent.getExtras().getParcelable(TRANSACTION_RESULT_CALLBACK);
                 SiteToSiteClientConfig siteToSiteClientConfig = IntentUtils.getParcelable(intent, SITE_TO_SITE_CONFIG);
                 try {
                     SiteToSiteClient client = new SiteToSiteClient(siteToSiteClientConfig);
@@ -73,12 +74,12 @@ public class SiteToSiteService extends IntentService {
                     transaction.confirm();
                     transaction.complete();
                     if (transactionResultCallback != null) {
-                        transactionResultCallback.onSuccess(siteToSiteClientConfig);
+                        SiteToSiteResultReceiver.onSuccess(transactionResultCallback, siteToSiteClientConfig);
                     }
                 } catch (IOException e) {
                     Log.d(CANONICAL_NAME, "Error sending packets.", e);
                     if (transactionResultCallback != null) {
-                        transactionResultCallback.onException(e, siteToSiteClientConfig);
+                        SiteToSiteResultReceiver.onException(transactionResultCallback, e, siteToSiteClientConfig);
                     }
                 } finally {
                     Intent repeatingIntent = IntentUtils.getParcelable(intent, SiteToSiteRepeating.REPEATING_INTENT);
@@ -114,7 +115,7 @@ public class SiteToSiteService extends IntentService {
         }
         intent.putParcelableArrayListExtra(DATA_PACKETS, packetList);
         if (transactionResultCallback != null) {
-            intent.putExtra(TRANSACTION_RESULT_CALLBACK, new SiteToSiteResultReceiver(null, transactionResultCallback));
+            intent.putExtra(TRANSACTION_RESULT_CALLBACK, new SiteToSiteResultReceiver(transactionResultCallback));
         }
         if (completeWakefulIntent) {
             intent.putExtra(SHOULD_COMPLETE_WAKEFUL_INTENT, true);

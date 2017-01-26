@@ -17,15 +17,7 @@
 
 package org.apache.nifi.android.sitetosite.service;
 
-import android.os.Handler;
 import android.os.Parcelable;
 
-import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
-
-import java.io.IOException;
-
-public interface TransactionResultCallback {
-    Handler getHandler();
-    void onSuccess(SiteToSiteClientConfig siteToSiteClientConfig);
-    void onException(IOException exception, SiteToSiteClientConfig siteToSiteClientConfig);
+public interface ParcelableTransactionResultCallback extends TransactionResultCallback, Parcelable {
 }

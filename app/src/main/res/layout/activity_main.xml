@@ -32,7 +32,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/edit_message"
-            android:text="Sample Site to Site Message" />
+            android:text="Hello NiFi, I'm Android" />
 
         <Button
             android:layout_width="match_parent"

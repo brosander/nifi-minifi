@@ -15,33 +15,23 @@
  * limitations under the License.
  */
 
-apply plugin: 'com.android.library'
+package com.example.myfirstapp;
 
-android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+import android.preference.PreferenceActivity;
 
-    defaultConfig {
-        minSdkVersion 11
-        targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
+import java.util.List;
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+public class SiteToSitePreferenceActivity extends PreferenceActivity
+{
+    @Override
+    public void onBuildHeaders(List<Header> target)
+    {
+        loadHeadersFromResource(R.xml.headers_preference, target);
     }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-}
 
-dependencies {
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-    compile 'com.android.support:appcompat-v7:25.1.0'
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-all:1.10.19'
+    @Override
+    protected boolean isValidFragment(String fragmentName)
+    {
+        return ProxyPreferenceFragment.class.getName().equals(fragmentName) || PeerPreferenceFragment.class.getName().equals(fragmentName);
+    }
 }

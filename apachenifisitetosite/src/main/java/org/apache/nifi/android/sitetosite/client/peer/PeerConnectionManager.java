@@ -113,12 +113,8 @@ public class PeerConnectionManager {
             loginIfNecessary();
         }
         String urlString = peer.getUrl() + path;
-        if (socketFactory == null) {
-            if (!urlString.startsWith("http://")) {
-                throw new IOException();
-            }
-        } else if (!urlString.startsWith("https://")) {
-            throw new IOException();
+        if (socketFactory != null && !urlString.startsWith("https://")) {
+            throw new IOException("When keystore and/or truststore set, must use https");
         }
 
         String actualUrl = urlString;

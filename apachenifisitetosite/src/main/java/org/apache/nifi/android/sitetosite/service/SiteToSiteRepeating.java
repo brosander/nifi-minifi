@@ -20,10 +20,8 @@ package org.apache.nifi.android.sitetosite.service;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.os.ResultReceiver;
 import android.support.v4.content.WakefulBroadcastReceiver;
 
-import org.apache.nifi.android.sitetosite.client.SiteToSiteClient;
 import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
 import org.apache.nifi.android.sitetosite.collectors.DataCollector;
 import org.apache.nifi.android.sitetosite.packet.DataPacket;
@@ -45,7 +43,7 @@ public class SiteToSiteRepeating extends WakefulBroadcastReceiver {
 
         // Update the pending intent with any state change in data collector
         int requestCode = getRequestCode(intent);
-        TransactionResultCallback transactionResultCallback = IntentUtils.getParcelable(intent, SiteToSiteService.TRANSACTION_RESULT_CALLBACK);
+        ParcelableTransactionResultCallback transactionResultCallback = IntentUtils.getParcelable(intent, SiteToSiteService.TRANSACTION_RESULT_CALLBACK);
         Intent repeatingIntent = getIntent(context, dataCollector, siteToSiteClientConfig, requestCode, transactionResultCallback);
         PendingIntent.getBroadcast(context, requestCode, repeatingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -54,7 +52,7 @@ public class SiteToSiteRepeating extends WakefulBroadcastReceiver {
         startWakefulService(context, packetIntent);
     }
 
-    public synchronized static PendingIntent createPendingIntent(Context context, DataCollector dataCollector, SiteToSiteClientConfig siteToSiteClientConfig, TransactionResultCallback transactionResultCallback) {
+    public synchronized static PendingIntent createPendingIntent(Context context, DataCollector dataCollector, SiteToSiteClientConfig siteToSiteClientConfig, ParcelableTransactionResultCallback transactionResultCallback) {
         Intent intent = getIntent(context, dataCollector, siteToSiteClientConfig, null, transactionResultCallback);
         return PendingIntent.getBroadcast(context, getRequestCode(intent), intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
@@ -62,11 +60,11 @@ public class SiteToSiteRepeating extends WakefulBroadcastReceiver {
     static void updateIntentConfig(Context context, Intent intent, SiteToSiteClientConfig siteToSiteClientConfig) {
         int requestCode = getRequestCode(intent);
         DataCollector dataCollector = IntentUtils.getParcelable(intent, DATA_COLLECTOR);
-        TransactionResultCallback transactionResultCallback = IntentUtils.getParcelable(intent, SiteToSiteService.TRANSACTION_RESULT_CALLBACK);
+        ParcelableTransactionResultCallback transactionResultCallback = IntentUtils.getParcelable(intent, SiteToSiteService.TRANSACTION_RESULT_CALLBACK);
         PendingIntent.getBroadcast(context, requestCode, getIntent(context, dataCollector, siteToSiteClientConfig, requestCode, transactionResultCallback), PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    private static Intent getIntent(Context context, DataCollector dataCollector, SiteToSiteClientConfig siteToSiteClientConfig, Integer requestCode, TransactionResultCallback transactionResultCallback) {
+    private static Intent getIntent(Context context, DataCollector dataCollector, SiteToSiteClientConfig siteToSiteClientConfig, Integer requestCode, ParcelableTransactionResultCallback transactionResultCallback) {
         Intent intent = new Intent(context, SiteToSiteRepeating.class);
         intent.setExtrasClassLoader(dataCollector.getClass().getClassLoader());
 
