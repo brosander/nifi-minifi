@@ -49,6 +49,7 @@ public class SiteToSiteClientConfig implements Parcelable {
             source.readStringList(urls);
             result.urls = new HashSet<>(urls);
             result.timeoutNanos = source.readLong();
+            result.idleConnectionExpirationNanos = source.readLong();
             result.keystoreFilename = source.readString();
             result.keystorePassword = source.readString();
             result.keystoreType = source.readString();
@@ -77,10 +78,10 @@ public class SiteToSiteClientConfig implements Parcelable {
             return new SiteToSiteClientConfig[size];
         }
     };
-    public static final String PROXY_AUTHORIZATION_HEADER = "Proxy-Authorization";
 
     private Set<String> urls;
     private long timeoutNanos = TimeUnit.SECONDS.toNanos(30);
+    private long idleConnectionExpirationNanos = TimeUnit.SECONDS.toNanos(30);
     private String keystoreFilename;
     private String keystorePassword;
     private String keystoreType;
@@ -115,6 +116,7 @@ public class SiteToSiteClientConfig implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeStringList(urls == null ? new ArrayList<String>() : new ArrayList<>(urls));
         dest.writeLong(timeoutNanos);
+        dest.writeLong(idleConnectionExpirationNanos);
         dest.writeString(keystoreFilename);
         dest.writeString(keystorePassword);
         dest.writeString(keystoreType);
@@ -393,5 +395,13 @@ public class SiteToSiteClientConfig implements Parcelable {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public long getIdleConnectionExpiration(TimeUnit timeUnit) {
+        return timeUnit.convert(idleConnectionExpirationNanos, TimeUnit.NANOSECONDS);
+    }
+
+    public void setIdleConnectionExpirationNanos(long idleConnectionExpirationNanos) {
+        this.idleConnectionExpirationNanos = idleConnectionExpirationNanos;
     }
 }
