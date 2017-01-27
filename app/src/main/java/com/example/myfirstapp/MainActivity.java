@@ -32,6 +32,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
+import org.apache.nifi.android.sitetosite.client.TransactionResult;
 import org.apache.nifi.android.sitetosite.packet.ByteArrayDataPacket;
 import org.apache.nifi.android.sitetosite.service.SiteToSiteService;
 import org.apache.nifi.android.sitetosite.service.TransactionResultCallback;
@@ -89,8 +90,13 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onSuccess(SiteToSiteClientConfig siteToSiteClientConfig) {
-                append("I've sent a message!");
+            public void onSuccess(TransactionResult transactionResult, SiteToSiteClientConfig siteToSiteClientConfig) {
+                StringBuilder stringBuilder = new StringBuilder("Sent ");
+                stringBuilder.append(transactionResult.getFlowFilesSent());
+                stringBuilder.append(" flow file(s) and received response \"");
+                stringBuilder.append(transactionResult.getResponseCode());
+                stringBuilder.append("\"");
+                append(stringBuilder.toString());
             }
 
             @Override

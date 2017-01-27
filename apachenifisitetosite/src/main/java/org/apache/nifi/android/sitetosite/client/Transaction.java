@@ -19,6 +19,7 @@ package org.apache.nifi.android.sitetosite.client;
 
 import android.util.Log;
 
+import org.apache.nifi.android.sitetosite.client.parser.TransactionResultParser;
 import org.apache.nifi.android.sitetosite.client.peer.PeerConnectionManager;
 import org.apache.nifi.android.sitetosite.client.protocol.CompressionOutputStream;
 import org.apache.nifi.android.sitetosite.client.protocol.HttpMethod;
@@ -26,9 +27,11 @@ import org.apache.nifi.android.sitetosite.client.protocol.ResponseCode;
 import org.apache.nifi.android.sitetosite.packet.DataPacket;
 import org.apache.nifi.android.sitetosite.util.IOUtils;
 
+import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -211,15 +214,15 @@ public class Transaction {
         }
     }
 
-    public void complete() throws IOException {
-        endTransaction(ResponseCode.CONFIRM_TRANSACTION);
+    public TransactionResult complete() throws IOException {
+        return endTransaction(ResponseCode.CONFIRM_TRANSACTION);
     }
 
-    public void cancel() throws IOException {
-        endTransaction(ResponseCode.CANCEL_TRANSACTION);
+    public TransactionResult cancel() throws IOException {
+        return endTransaction(ResponseCode.CANCEL_TRANSACTION);
     }
 
-    private void endTransaction(ResponseCode responseCodeToSend) throws IOException {
+    private TransactionResult endTransaction(ResponseCode responseCodeToSend) throws IOException {
         ttlExtendFuture.cancel(false);
         try {
             ttlExtendFuture.get();
@@ -234,12 +237,19 @@ public class Transaction {
         Map<String, String> endTransactionHeaders = new HashMap<>(END_TRANSACTION_HEADERS);
         endTransactionHeaders.putAll(handshakeProperties);
         HttpURLConnection delete = peerConnectionManager.openConnection(transactionUrl, endTransactionHeaders, queryParameters, HttpMethod.DELETE);
-
-        int responseCode = delete.getResponseCode();
-        if (responseCode < 200 || responseCode > 299) {
-            throw new IOException("Got response code " + responseCode);
+        try {
+            int responseCode = delete.getResponseCode();
+            if (responseCode < 200 || responseCode > 299) {
+                throw new IOException("Got response code " + responseCode);
+            }
+            InputStream inputStream = delete.getInputStream();
+            try {
+                return TransactionResultParser.parseTransactionResult(inputStream);
+            } finally {
+                inputStream.close();
+            }
+        } finally {
+            delete.disconnect();
         }
-
-        delete.disconnect();
     }
 }

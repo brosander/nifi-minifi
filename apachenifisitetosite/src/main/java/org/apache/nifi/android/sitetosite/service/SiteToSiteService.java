@@ -20,7 +20,6 @@ package org.apache.nifi.android.sitetosite.service;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Parcelable;
 import android.os.PowerManager;
 import android.os.ResultReceiver;
 import android.support.v4.content.WakefulBroadcastReceiver;
@@ -29,6 +28,7 @@ import android.util.Log;
 import org.apache.nifi.android.sitetosite.client.SiteToSiteClient;
 import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
 import org.apache.nifi.android.sitetosite.client.Transaction;
+import org.apache.nifi.android.sitetosite.client.TransactionResult;
 import org.apache.nifi.android.sitetosite.packet.DataPacket;
 import org.apache.nifi.android.sitetosite.util.IntentUtils;
 
@@ -72,9 +72,9 @@ public class SiteToSiteService extends IntentService {
                         transaction.send(packet);
                     }
                     transaction.confirm();
-                    transaction.complete();
+                    TransactionResult transactionResult = transaction.complete();
                     if (transactionResultCallback != null) {
-                        SiteToSiteResultReceiver.onSuccess(transactionResultCallback, siteToSiteClientConfig);
+                        SiteToSiteResultReceiver.onSuccess(transactionResultCallback, transactionResult, siteToSiteClientConfig);
                     }
                 } catch (IOException e) {
                     Log.d(CANONICAL_NAME, "Error sending packets.", e);

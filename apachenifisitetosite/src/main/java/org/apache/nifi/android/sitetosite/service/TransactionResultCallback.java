@@ -21,11 +21,12 @@ import android.os.Handler;
 import android.os.Parcelable;
 
 import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
+import org.apache.nifi.android.sitetosite.client.TransactionResult;
 
 import java.io.IOException;
 
 public interface TransactionResultCallback {
     Handler getHandler();
-    void onSuccess(SiteToSiteClientConfig siteToSiteClientConfig);
+    void onSuccess(TransactionResult transactionResult, SiteToSiteClientConfig siteToSiteClientConfig);
     void onException(IOException exception, SiteToSiteClientConfig siteToSiteClientConfig);
 }

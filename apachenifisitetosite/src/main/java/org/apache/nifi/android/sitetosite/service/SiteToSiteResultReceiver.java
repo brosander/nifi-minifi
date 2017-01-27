@@ -18,15 +18,16 @@
 package org.apache.nifi.android.sitetosite.service;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.ResultReceiver;
 
 import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
+import org.apache.nifi.android.sitetosite.client.TransactionResult;
 
 import java.io.IOException;
 
 public class SiteToSiteResultReceiver extends ResultReceiver {
     public static final String IO_EXCEPTION = "IOException";
+    public static final String TRANSACTION_RESULT = "TRANSACTION_RESULT";
 
     private final TransactionResultCallback delegate;
     /**
@@ -45,16 +46,19 @@ public class SiteToSiteResultReceiver extends ResultReceiver {
     protected void onReceiveResult(int resultCode, Bundle resultData) {
         super.onReceiveResult(resultCode, resultData);
         SiteToSiteClientConfig siteToSiteClientConfig = resultData.getParcelable(SiteToSiteService.SITE_TO_SITE_CONFIG);
+        TransactionResult transactionResult = resultData.getParcelable(TRANSACTION_RESULT);
+
         if (resultCode == 0) {
-            delegate.onSuccess(siteToSiteClientConfig);
+            delegate.onSuccess(transactionResult, siteToSiteClientConfig);
         } else {
             delegate.onException((IOException)resultData.getSerializable(IO_EXCEPTION), siteToSiteClientConfig);
         }
     }
 
-    public static void onSuccess(ResultReceiver resultReceiver, SiteToSiteClientConfig siteToSiteClientConfig) {
+    public static void onSuccess(ResultReceiver resultReceiver, TransactionResult transactionResult, SiteToSiteClientConfig siteToSiteClientConfig) {
         Bundle resultData = new Bundle();
         resultData.putParcelable(SiteToSiteService.SITE_TO_SITE_CONFIG, siteToSiteClientConfig);
+        resultData.putParcelable(TRANSACTION_RESULT, transactionResult);
         resultReceiver.send(0, resultData);
     }
 

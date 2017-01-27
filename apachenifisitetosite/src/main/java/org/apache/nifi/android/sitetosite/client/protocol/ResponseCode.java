@@ -144,6 +144,9 @@ public enum ResponseCode {
     }
 
     public static ResponseCode fromCode(final int code) {
+        if (code == -1) {
+            return null;
+        }
         final ResponseCode responseCode = codeArray[code];
         return (responseCode == null) ? UNRECOGNIZED_RESPONSE_CODE : responseCode;
     }
