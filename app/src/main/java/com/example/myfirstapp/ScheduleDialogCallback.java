@@ -15,18 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.android.sitetosite.service;
+package com.example.myfirstapp;
 
-import android.content.Context;
-import android.os.Parcelable;
+import java.util.concurrent.TimeUnit;
 
-import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
-import org.apache.nifi.android.sitetosite.client.TransactionResult;
+public interface ScheduleDialogCallback {
+    enum TimeUnits {
+        MS(TimeUnit.MILLISECONDS),
+        S(TimeUnit.SECONDS),
+        M(TimeUnit.MINUTES),
+        H(TimeUnit.HOURS);
 
-import java.io.IOException;
+        private final TimeUnit timeUnit;
 
-public interface ParcelableTransactionResultCallback extends Parcelable {
-    void onSuccess(Context context, TransactionResult transactionResult, SiteToSiteClientConfig siteToSiteClientConfig);
+        TimeUnits(TimeUnit timeUnit) {
+            this.timeUnit = timeUnit;
+        }
 
-    void onException(Context context, IOException exception, SiteToSiteClientConfig siteToSiteClientConfig);
+        public long convertToMillis(long duration) {
+            return timeUnit.toMillis(duration);
+        }
+    }
+
+    void onConfirm(long intervalMillis);
 }

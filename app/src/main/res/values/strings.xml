@@ -20,8 +20,19 @@
     <string name="edit_message">Enter a message</string>
     <string name="edit_message_default">Hello NiFi, I\'m Android</string>
     <string name="button_send">Send</string>
-    <string name="button_schedule">Schedule (TODO)</string>
+    <string name="button_schedule">Schedule</string>
     <string name="title_activity_settings">Settings</string>
+    <string name="schedule_config">Schedule...</string>
+    <string name="schedule_confirm">Confirm</string>
+    <string name="schedule_cancel">Cancel</string>
+    <string name="alarm_interval_prompt">Alarm Interval: </string>
+    <string name="interval_units_prompt">Units</string>
+    <string-array name="interval_units">
+        <item>MS</item>
+        <item>S</item>
+        <item>M</item>
+        <item>H</item>
+    </string-array>
 
     <!-- Strings related to Settings -->
 

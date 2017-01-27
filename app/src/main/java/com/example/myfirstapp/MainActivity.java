@@ -17,13 +17,18 @@
 
 package com.example.myfirstapp;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.AttributeSet;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,9 +36,14 @@ import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.example.myfirstapp.persistence.SiteToSiteDB;
+import com.example.myfirstapp.persistence.TransactionLogEntry;
+import com.example.myfirstapp.preference.SiteToSitePreferenceActivity;
+
 import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
 import org.apache.nifi.android.sitetosite.client.TransactionResult;
 import org.apache.nifi.android.sitetosite.packet.ByteArrayDataPacket;
+import org.apache.nifi.android.sitetosite.service.SiteToSiteRepeating;
 import org.apache.nifi.android.sitetosite.service.SiteToSiteService;
 import org.apache.nifi.android.sitetosite.service.TransactionResultCallback;
 import org.apache.nifi.android.sitetosite.util.Charsets;
@@ -44,17 +54,21 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
-    public final static String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
-    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+public class MainActivity extends AppCompatActivity implements ScheduleDialogCallback {
+    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
     private final Handler handler = new Handler(Looper.getMainLooper());
+    private SiteToSiteDB siteToSiteDB;
+    private long lastTimestamp = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        siteToSiteDB = new SiteToSiteDB(getApplicationContext());
+//        refresh();
     }
 
     @Override
@@ -91,19 +105,20 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSuccess(TransactionResult transactionResult, SiteToSiteClientConfig siteToSiteClientConfig) {
-                StringBuilder stringBuilder = new StringBuilder("Sent ");
-                stringBuilder.append(transactionResult.getFlowFilesSent());
-                stringBuilder.append(" flow file(s) and received response \"");
-                stringBuilder.append(transactionResult.getResponseCode());
-                stringBuilder.append("\"");
-                append(stringBuilder.toString());
+                siteToSiteDB.save(new TransactionLogEntry(new Date(), transactionResult.getFlowFilesSent(), transactionResult.getResponseCode().toString()));
+                refresh();
             }
 
             @Override
             public void onException(IOException exception, SiteToSiteClientConfig siteToSiteClientConfig) {
-                append(exception.getMessage());
+                siteToSiteDB.save(new TransactionLogEntry(new Date(), 0, exception.getMessage()));
+                refresh();
             }
         });
+    }
+
+    public void schedule(View view) {
+        new ScheduleDialogFragment().show(getSupportFragmentManager(), "schedule");
     }
 
     private SiteToSiteClientConfig getClientConfig() {
@@ -121,17 +136,22 @@ public class MainActivity extends AppCompatActivity {
         return siteToSiteClientConfig;
     }
 
+    private void refresh() {
+        for (TransactionLogEntry transactionLogEntry : siteToSiteDB.getLogEntries(lastTimestamp)) {
+            StringBuilder stringBuilder = new StringBuilder("Sent ");
+            stringBuilder.append(transactionLogEntry.getNumFlowFiles());
+            stringBuilder.append(" flow file(s) and received response \"");
+            stringBuilder.append(transactionLogEntry.getResponse());
+            stringBuilder.append("\"");
+            append(stringBuilder.toString());
+            lastTimestamp = Math.max(lastTimestamp, transactionLogEntry.getCreated().getTime());
+        }
+    }
+
     private void append(String text) {
         TextView resultView = (TextView) findViewById(R.id.sendResults);
-        int lineCount = resultView.getLineCount();
-        CharSequence resultViewText = resultView.getText();
-        if (lineCount == 1 && resultViewText.equals("Send result")) {
-            resultView.setText("");
-        }
         trimToLineCount(resultView, 100);
-
         resultView.append("[" + simpleDateFormat.format(new Date()) + "] - " + text + System.lineSeparator());
-
         final ScrollView scroll = (ScrollView) findViewById(R.id.scrollView);
         scroll.post(new Runnable() {
             @Override
@@ -161,5 +181,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    @Override
+    public void onConfirm(long intervalMillis) {
+        PendingIntent pendingIntent = SiteToSiteRepeating.createPendingIntent(getApplicationContext(), new TestDataCollector(((EditText) findViewById(R.id.edit_message)).getText().toString()), getClientConfig(), new RepeatingTransactionResultCallback());
+        ((AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE)).setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), intervalMillis, pendingIntent);
     }
 }

@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
-package com.example.myfirstapp;
+package com.example.myfirstapp.preference;
 
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
+
+import com.example.myfirstapp.R;
 
 public class ProxyPreferenceFragment extends PreferenceFragment
 {

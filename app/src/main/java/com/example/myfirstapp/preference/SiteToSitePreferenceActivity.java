@@ -15,17 +15,25 @@
  * limitations under the License.
  */
 
-package com.example.myfirstapp;
+package com.example.myfirstapp.preference;
 
-import android.os.Bundle;
-import android.preference.PreferenceFragment;
+import android.preference.PreferenceActivity;
 
-public class PeerPreferenceFragment extends PreferenceFragment
+import com.example.myfirstapp.R;
+
+import java.util.List;
+
+public class SiteToSitePreferenceActivity extends PreferenceActivity
 {
     @Override
-    public void onCreate(Bundle savedInstanceState)
+    public void onBuildHeaders(List<Header> target)
     {
-        super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.peer_fragment_preference);
+        loadHeadersFromResource(R.xml.headers_preference, target);
+    }
+
+    @Override
+    protected boolean isValidFragment(String fragmentName)
+    {
+        return ProxyPreferenceFragment.class.getName().equals(fragmentName) || PeerPreferenceFragment.class.getName().equals(fragmentName);
     }
 }

@@ -20,13 +20,16 @@ package org.apache.nifi.android.sitetosite.service;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.support.v4.content.WakefulBroadcastReceiver;
 
 import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
+import org.apache.nifi.android.sitetosite.client.TransactionResult;
 import org.apache.nifi.android.sitetosite.collectors.DataCollector;
 import org.apache.nifi.android.sitetosite.packet.DataPacket;
 import org.apache.nifi.android.sitetosite.util.IntentUtils;
 
+import java.io.IOException;
 import java.util.Random;
 
 public class SiteToSiteRepeating extends WakefulBroadcastReceiver {
@@ -36,18 +39,33 @@ public class SiteToSiteRepeating extends WakefulBroadcastReceiver {
     private static final Random random = new Random();
 
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(final Context context, Intent intent) {
         DataCollector dataCollector = IntentUtils.getParcelable(intent, DATA_COLLECTOR);
         SiteToSiteClientConfig siteToSiteClientConfig = IntentUtils.getParcelable(intent, SiteToSiteService.SITE_TO_SITE_CONFIG);
         Iterable<DataPacket> dataPackets = dataCollector.getDataPackets();
 
         // Update the pending intent with any state change in data collector
         int requestCode = getRequestCode(intent);
-        ParcelableTransactionResultCallback transactionResultCallback = IntentUtils.getParcelable(intent, SiteToSiteService.TRANSACTION_RESULT_CALLBACK);
+        final ParcelableTransactionResultCallback transactionResultCallback = IntentUtils.getParcelable(intent, SiteToSiteService.TRANSACTION_RESULT_CALLBACK);
         Intent repeatingIntent = getIntent(context, dataCollector, siteToSiteClientConfig, requestCode, transactionResultCallback);
         PendingIntent.getBroadcast(context, requestCode, repeatingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Intent packetIntent = SiteToSiteService.getIntent(context, dataPackets, siteToSiteClientConfig, transactionResultCallback, true);
+        Intent packetIntent = SiteToSiteService.getIntent(context, dataPackets, siteToSiteClientConfig, new TransactionResultCallback() {
+            @Override
+            public Handler getHandler() {
+                return null;
+            }
+
+            @Override
+            public void onSuccess(TransactionResult transactionResult, SiteToSiteClientConfig siteToSiteClientConfig) {
+                transactionResultCallback.onSuccess(context, transactionResult, siteToSiteClientConfig);
+            }
+
+            @Override
+            public void onException(IOException exception, SiteToSiteClientConfig siteToSiteClientConfig) {
+                transactionResultCallback.onException(context, exception, siteToSiteClientConfig);
+            }
+        }, true);
         IntentUtils.putParcelable(repeatingIntent, packetIntent, REPEATING_INTENT);
         startWakefulService(context, packetIntent);
     }

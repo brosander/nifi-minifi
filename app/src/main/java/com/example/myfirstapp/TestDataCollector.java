@@ -21,21 +21,22 @@ import android.os.Parcel;
 import android.support.annotation.NonNull;
 
 import org.apache.nifi.android.sitetosite.collectors.DataCollector;
-import org.apache.nifi.android.sitetosite.packet.EmptyDataPacket;
+import org.apache.nifi.android.sitetosite.packet.ByteArrayDataPacket;
 import org.apache.nifi.android.sitetosite.packet.DataPacket;
+import org.apache.nifi.android.sitetosite.util.Charsets;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class TestDataCollector implements DataCollector {
+    private final String message;
     private int num = 0;
     public static Creator<TestDataCollector> CREATOR = new Creator<TestDataCollector>() {
         @Override
         public TestDataCollector createFromParcel(Parcel source) {
-            TestDataCollector result = new TestDataCollector();
+            TestDataCollector result = new TestDataCollector(source.readString());
             result.num = source.readInt();
             return result;
         }
@@ -46,20 +47,20 @@ public class TestDataCollector implements DataCollector {
         }
     };
 
+    public TestDataCollector(String message) {
+        this.message = message;
+    }
+
     @Override
     public Iterable<DataPacket> getDataPackets() {
-        List<DataPacket> result = new ArrayList<>(10);
-        for (int i = 0; i < 10; i++) {
-            result.add(getEmptyDataPacket());
-        }
-        return result;
+        return new ArrayList<>(Arrays.asList(getDataPacket()));
     }
 
     @NonNull
-    private EmptyDataPacket getEmptyDataPacket() {
+    private DataPacket getDataPacket() {
         Map<String, String> attributes = new HashMap<>();
         attributes.put("number", Integer.toString(num++));
-        return new EmptyDataPacket(attributes);
+        return new ByteArrayDataPacket(attributes, message.getBytes(Charsets.UTF_8));
     }
 
     @Override
@@ -69,6 +70,7 @@ public class TestDataCollector implements DataCollector {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(message);
         dest.writeInt(num);
     }
 }
