@@ -28,6 +28,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
@@ -37,14 +38,17 @@ import org.apache.nifi.android.sitetosite.service.TransactionResultCallback;
 import org.apache.nifi.android.sitetosite.util.Charsets;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
-
     public final static String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
+    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,21 +82,20 @@ public class MainActivity extends AppCompatActivity {
         Map<String, String> attributes = new HashMap<>();
         ByteArrayDataPacket dataPacket = new ByteArrayDataPacket(attributes, ((EditText) findViewById(R.id.edit_message)).getText().toString().getBytes(Charsets.UTF_8));
         SiteToSiteService.sendDataPacket(getApplicationContext(), dataPacket, getClientConfig(), new TransactionResultCallback() {
+
             @Override
             public Handler getHandler() {
-                return new Handler(Looper.getMainLooper());
+                return handler;
             }
 
             @Override
             public void onSuccess(SiteToSiteClientConfig siteToSiteClientConfig) {
-                TextView resultView = (TextView) findViewById(R.id.sendResults);
-                resultView.setText("I've sent a message!");
+                append("I've sent a message!");
             }
 
             @Override
             public void onException(IOException exception, SiteToSiteClientConfig siteToSiteClientConfig) {
-                TextView resultView = (TextView) findViewById(R.id.sendResults);
-                resultView.setText(exception.getMessage());
+                append(exception.getMessage());
             }
         });
     }
@@ -110,5 +113,47 @@ public class MainActivity extends AppCompatActivity {
         siteToSiteClientConfig.setProxyPassword(preferences.getString("proxy_port_password", null));
         siteToSiteClientConfig.setProxyPassword(preferences.getString("proxy_port_password", null));
         return siteToSiteClientConfig;
+    }
+
+    private void append(String text) {
+        TextView resultView = (TextView) findViewById(R.id.sendResults);
+        int lineCount = resultView.getLineCount();
+        CharSequence resultViewText = resultView.getText();
+        if (lineCount == 1 && resultViewText.equals("Send result")) {
+            resultView.setText("");
+        }
+        trimToLineCount(resultView, 100);
+
+        resultView.append("[" + simpleDateFormat.format(new Date()) + "] - " + text + System.lineSeparator());
+
+        final ScrollView scroll = (ScrollView) findViewById(R.id.scrollView);
+        scroll.post(new Runnable() {
+            @Override
+            public void run() {
+                scroll.fullScroll(View.FOCUS_DOWN);
+            }
+        });
+    }
+
+    private void trimToLineCount(TextView resultView, int lineCount) {
+        CharSequence resultViewText = resultView.getText();
+        String lineSeparator = System.lineSeparator();
+        int lineSepLength = lineSeparator.length();
+        while (resultView.getLineCount() > lineCount) {
+            int length = resultViewText.length() + 1 - lineSepLength;
+            for (int i = 0; i < length; i++) {
+                boolean match = true;
+                for (int o = 0; o < lineSepLength; o++) {
+                    if (resultViewText.charAt(i + o) != lineSeparator.charAt(o)) {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) {
+                    resultView.setText(resultViewText.subSequence(i + 1, resultViewText.length()));
+                    break;
+                }
+            }
+        }
     }
 }
