@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.example.myfirstapp.persistence;
+package org.apache.nifi.sitetositedemo.persistence;
 
 import java.util.Date;
 

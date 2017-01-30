@@ -15,7 +15,7 @@
   ~ limitations under the License.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.myfirstapp">
+    package="org.apache.nifi.sitetositedemo">
 
     <!-- Needed for Site-to-Site to initiate outward connection -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -27,12 +27,12 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".MainActivity">
+        <activity android:name="org.apache.nifi.sitetositedemo.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".preference.SiteToSitePreferenceActivity" android:label="Settings"></activity>
+        <activity android:name="org.apache.nifi.sitetositedemo.preference.SiteToSitePreferenceActivity" android:label="Settings"></activity>
     </application>
 </manifest>

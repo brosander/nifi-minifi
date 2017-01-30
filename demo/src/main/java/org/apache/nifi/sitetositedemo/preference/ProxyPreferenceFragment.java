@@ -15,19 +15,19 @@
  * limitations under the License.
  */
 
-package com.example.myfirstapp.preference;
+package org.apache.nifi.sitetositedemo.preference;
 
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 
-import com.example.myfirstapp.R;
+import org.apache.nifi.sitetositedemo.R;
 
-public class PeerPreferenceFragment extends PreferenceFragment
+public class ProxyPreferenceFragment extends PreferenceFragment
 {
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.peer_fragment_preference);
+        addPreferencesFromResource(R.xml.proxy_fragment_preference);
     }
 }

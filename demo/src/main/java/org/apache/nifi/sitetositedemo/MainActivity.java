@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.example.myfirstapp;
+package org.apache.nifi.sitetositedemo;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -37,10 +37,10 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.example.myfirstapp.persistence.PendingIntentWrapper;
-import com.example.myfirstapp.persistence.SiteToSiteDB;
-import com.example.myfirstapp.persistence.TransactionLogEntry;
-import com.example.myfirstapp.preference.SiteToSitePreferenceActivity;
+import org.apache.nifi.sitetositedemo.persistence.PendingIntentWrapper;
+import org.apache.nifi.sitetositedemo.persistence.SiteToSiteDB;
+import org.apache.nifi.sitetositedemo.persistence.TransactionLogEntry;
+import org.apache.nifi.sitetositedemo.preference.SiteToSitePreferenceActivity;
 
 import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
 import org.apache.nifi.android.sitetosite.client.TransactionResult;

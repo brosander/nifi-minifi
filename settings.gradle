@@ -15,4 +15,4 @@
  * limitations under the License.
  */
 
-include ':app', ':apachenifisitetosite'
+include ':demo', ':s2s'

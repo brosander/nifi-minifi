@@ -15,20 +15,27 @@
  * limitations under the License.
  */
 
-package com.example.myfirstapp;
+package org.apache.nifi.sitetositedemo;
 
-import org.junit.Test;
+import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
+public interface ScheduleDialogCallback {
+    enum TimeUnits {
+        MS(TimeUnit.MILLISECONDS),
+        S(TimeUnit.SECONDS),
+        M(TimeUnit.MINUTES),
+        H(TimeUnit.HOURS);
 
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
- */
-public class ExampleUnitTest {
-    @Test
-    public void addition_isCorrect() throws Exception {
-        assertEquals(4, 2 + 2);
+        private final TimeUnit timeUnit;
+
+        TimeUnits(TimeUnit timeUnit) {
+            this.timeUnit = timeUnit;
+        }
+
+        public long convertToMillis(long duration) {
+            return timeUnit.toMillis(duration);
+        }
     }
+
+    void onConfirm(long intervalMillis);
 }

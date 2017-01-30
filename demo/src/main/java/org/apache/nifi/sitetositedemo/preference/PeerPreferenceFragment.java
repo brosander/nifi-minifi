@@ -15,29 +15,19 @@
  * limitations under the License.
  */
 
-package com.example.myfirstapp;
+package org.apache.nifi.sitetositedemo.preference;
 
-import android.content.Context;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
+import android.os.Bundle;
+import android.preference.PreferenceFragment;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.nifi.sitetositedemo.R;
 
-import static org.junit.Assert.*;
-
-/**
- * Instrumentation test, which will execute on an Android device.
- *
- * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
- */
-@RunWith(AndroidJUnit4.class)
-public class ExampleInstrumentedTest {
-    @Test
-    public void useAppContext() throws Exception {
-        // Context of the app under test.
-        Context appContext = InstrumentationRegistry.getTargetContext();
-
-        assertEquals("com.example.myfirstapp", appContext.getPackageName());
+public class PeerPreferenceFragment extends PreferenceFragment
+{
+    @Override
+    public void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        addPreferencesFromResource(R.xml.peer_fragment_preference);
     }
 }

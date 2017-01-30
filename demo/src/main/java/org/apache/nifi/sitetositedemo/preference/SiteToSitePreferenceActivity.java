@@ -15,19 +15,25 @@
  * limitations under the License.
  */
 
-package com.example.myfirstapp.preference;
+package org.apache.nifi.sitetositedemo.preference;
 
-import android.os.Bundle;
-import android.preference.PreferenceFragment;
+import android.preference.PreferenceActivity;
 
-import com.example.myfirstapp.R;
+import org.apache.nifi.sitetositedemo.R;
 
-public class ProxyPreferenceFragment extends PreferenceFragment
+import java.util.List;
+
+public class SiteToSitePreferenceActivity extends PreferenceActivity
 {
     @Override
-    public void onCreate(Bundle savedInstanceState)
+    public void onBuildHeaders(List<Header> target)
     {
-        super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.proxy_fragment_preference);
+        loadHeadersFromResource(R.xml.headers_preference, target);
+    }
+
+    @Override
+    protected boolean isValidFragment(String fragmentName)
+    {
+        return ProxyPreferenceFragment.class.getName().equals(fragmentName) || PeerPreferenceFragment.class.getName().equals(fragmentName);
     }
 }
