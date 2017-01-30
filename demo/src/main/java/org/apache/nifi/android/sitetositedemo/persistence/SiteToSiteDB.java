@@ -57,17 +57,11 @@ public class SiteToSiteDB {
             public void onCreate(SQLiteDatabase db) {
                 db.execSQL("CREATE TABLE " + S2S_TABLE_NAME + " (" + ID_COLUMN + " INTEGER PRIMARY KEY, " + S2S_CREATED_COLUMN + " INTEGER, " + S2S_NUM_FILES_COLUMN + " INTEGER, " + S2S_RESPONSE_COLUMN + " TEXT)");
                 db.execSQL("CREATE TABLE " + PENDING_INTENT_TABLE_NAME + " (" + ID_COLUMN + " INTEGER PRIMARY KEY, " + PENDING_INTENT_REQUEST_CODE + " INTEGER, " + PENDING_INTENT_CONTENT_COLUMN + " BLOB)");
-                createPendingIntentTable(db);
-            }
-
-            private void createPendingIntentTable(SQLiteDatabase db) {
             }
 
             @Override
             public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-                if (oldVersion == 1) {
-                    createPendingIntentTable(db);
-                }
+
             }
         };
     }
