@@ -70,9 +70,10 @@ public class SiteToSiteRepeating extends WakefulBroadcastReceiver {
         startWakefulService(context, packetIntent);
     }
 
-    public synchronized static PendingIntent createPendingIntent(Context context, DataCollector dataCollector, SiteToSiteClientConfig siteToSiteClientConfig, ParcelableTransactionResultCallback transactionResultCallback) {
+    public synchronized static SiteToSiteRepeatableIntent createPendingIntent(Context context, DataCollector dataCollector, SiteToSiteClientConfig siteToSiteClientConfig, ParcelableTransactionResultCallback transactionResultCallback) {
         Intent intent = getIntent(context, dataCollector, siteToSiteClientConfig, null, transactionResultCallback);
-        return PendingIntent.getBroadcast(context, getRequestCode(intent), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        int requestCode = getRequestCode(intent);
+        return new SiteToSiteRepeatableIntent(requestCode, intent, PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
     static void updateIntentConfig(Context context, Intent intent, SiteToSiteClientConfig siteToSiteClientConfig) {

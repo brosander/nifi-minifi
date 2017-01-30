@@ -19,8 +19,10 @@ package com.example.myfirstapp;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,14 +30,14 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.AttributeSet;
+import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.example.myfirstapp.persistence.PendingIntentWrapper;
 import com.example.myfirstapp.persistence.SiteToSiteDB;
 import com.example.myfirstapp.persistence.TransactionLogEntry;
 import com.example.myfirstapp.preference.SiteToSitePreferenceActivity;
@@ -43,6 +45,7 @@ import com.example.myfirstapp.preference.SiteToSitePreferenceActivity;
 import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
 import org.apache.nifi.android.sitetosite.client.TransactionResult;
 import org.apache.nifi.android.sitetosite.packet.ByteArrayDataPacket;
+import org.apache.nifi.android.sitetosite.service.SiteToSiteRepeatableIntent;
 import org.apache.nifi.android.sitetosite.service.SiteToSiteRepeating;
 import org.apache.nifi.android.sitetosite.service.SiteToSiteService;
 import org.apache.nifi.android.sitetosite.service.TransactionResultCallback;
@@ -68,7 +71,20 @@ public class MainActivity extends AppCompatActivity implements ScheduleDialogCal
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         siteToSiteDB = new SiteToSiteDB(getApplicationContext());
-//        refresh();
+        TextView sendResults = (TextView) findViewById(R.id.sendResults);
+        sendResults.setMovementMethod(new ScrollingMovementMethod());
+        sendResults.post(new Runnable() {
+            @Override
+            public void run() {
+                getApplicationContext().registerReceiver(new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        refresh();
+                    }
+                }, new IntentFilter(SiteToSiteDB.ENTRY_SAVED), null, handler);
+                refresh();
+            }
+        });
     }
 
     @Override
@@ -106,13 +122,11 @@ public class MainActivity extends AppCompatActivity implements ScheduleDialogCal
             @Override
             public void onSuccess(TransactionResult transactionResult, SiteToSiteClientConfig siteToSiteClientConfig) {
                 siteToSiteDB.save(new TransactionLogEntry(new Date(), transactionResult.getFlowFilesSent(), transactionResult.getResponseCode().toString()));
-                refresh();
             }
 
             @Override
             public void onException(IOException exception, SiteToSiteClientConfig siteToSiteClientConfig) {
                 siteToSiteDB.save(new TransactionLogEntry(new Date(), 0, exception.getMessage()));
-                refresh();
             }
         });
     }
@@ -137,55 +151,37 @@ public class MainActivity extends AppCompatActivity implements ScheduleDialogCal
     }
 
     private void refresh() {
+        final TextView resultView = (TextView) findViewById(R.id.sendResults);
         for (TransactionLogEntry transactionLogEntry : siteToSiteDB.getLogEntries(lastTimestamp)) {
-            StringBuilder stringBuilder = new StringBuilder("Sent ");
+            StringBuilder stringBuilder = new StringBuilder(System.lineSeparator());
+            stringBuilder.append("[");
+            stringBuilder.append(simpleDateFormat.format(transactionLogEntry.getCreated()));
+            stringBuilder.append("] - Sent ");
             stringBuilder.append(transactionLogEntry.getNumFlowFiles());
             stringBuilder.append(" flow file(s) and received response \"");
             stringBuilder.append(transactionLogEntry.getResponse());
             stringBuilder.append("\"");
-            append(stringBuilder.toString());
+            stringBuilder.append(System.lineSeparator());
             lastTimestamp = Math.max(lastTimestamp, transactionLogEntry.getCreated().getTime());
-        }
-    }
-
-    private void append(String text) {
-        TextView resultView = (TextView) findViewById(R.id.sendResults);
-        trimToLineCount(resultView, 100);
-        resultView.append("[" + simpleDateFormat.format(new Date()) + "] - " + text + System.lineSeparator());
-        final ScrollView scroll = (ScrollView) findViewById(R.id.scrollView);
-        scroll.post(new Runnable() {
-            @Override
-            public void run() {
-                scroll.fullScroll(View.FOCUS_DOWN);
-            }
-        });
-    }
-
-    private void trimToLineCount(TextView resultView, int lineCount) {
-        CharSequence resultViewText = resultView.getText();
-        String lineSeparator = System.lineSeparator();
-        int lineSepLength = lineSeparator.length();
-        while (resultView.getLineCount() > lineCount) {
-            int length = resultViewText.length() + 1 - lineSepLength;
-            for (int i = 0; i < length; i++) {
-                boolean match = true;
-                for (int o = 0; o < lineSepLength; o++) {
-                    if (resultViewText.charAt(i + o) != lineSeparator.charAt(o)) {
-                        match = false;
-                        break;
-                    }
-                }
-                if (match) {
-                    resultView.setText(resultViewText.subSequence(i + 1, resultViewText.length()));
-                    break;
-                }
-            }
+            resultView.append(stringBuilder.toString());
         }
     }
 
     @Override
     public void onConfirm(long intervalMillis) {
-        PendingIntent pendingIntent = SiteToSiteRepeating.createPendingIntent(getApplicationContext(), new TestDataCollector(((EditText) findViewById(R.id.edit_message)).getText().toString()), getClientConfig(), new RepeatingTransactionResultCallback());
-        ((AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE)).setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), intervalMillis, pendingIntent);
+        SiteToSiteRepeatableIntent siteToSiteRepeatableIntent = SiteToSiteRepeating.createPendingIntent(getApplicationContext(), new TestDataCollector(((EditText) findViewById(R.id.edit_message)).getText().toString()), getClientConfig(), new RepeatingTransactionResultCallback());
+        siteToSiteDB.save(siteToSiteRepeatableIntent);
+        ((AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE)).setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), intervalMillis, siteToSiteRepeatableIntent.getPendingIntent());
+    }
+
+    public void cancelAlarms(View view) {
+        AlarmManager alarmManager = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+        for (PendingIntentWrapper pendingIntentWrapper : siteToSiteDB.getPendingIntents()) {
+            PendingIntent pendingIntent = pendingIntentWrapper.getPendingIntent();
+            if (pendingIntent != null) {
+                alarmManager.cancel(pendingIntent);
+            }
+            siteToSiteDB.deletePendingIntent(pendingIntentWrapper.getRowId());
+        }
     }
 }
