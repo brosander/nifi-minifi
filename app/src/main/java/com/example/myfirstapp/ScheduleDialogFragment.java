@@ -17,6 +17,7 @@
 
 package com.example.myfirstapp;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -33,7 +34,8 @@ public class ScheduleDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        final View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_schedule, null);
+        // Lint warning not relevant for alert dialogs
+        @SuppressLint("InflateParams") final View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_schedule, null);
         view.post(new Runnable() {
             @Override
             public void run() {
