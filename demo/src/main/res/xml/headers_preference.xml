@@ -20,12 +20,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <header
-        android:fragment="org.apache.nifi.sitetositedemo.preference.PeerPreferenceFragment"
+        android:fragment="org.apache.nifi.android.sitetositedemo.preference.PeerPreferenceFragment"
         android:title="Peer Settings"
         android:summary="Connection configuration for Apache NiFi host(s)." />
 
     <header
-        android:fragment="org.apache.nifi.sitetositedemo.preference.ProxyPreferenceFragment"
+        android:fragment="org.apache.nifi.android.sitetositedemo.preference.ProxyPreferenceFragment"
         android:title="Proxy Settings"
         android:summary="Send site-to-site through an HTTP proxy." />
 

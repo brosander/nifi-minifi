@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.sitetositedemo.preference;
+package org.apache.nifi.android.sitetositedemo.preference;
 
 import android.preference.PreferenceActivity;
 
-import org.apache.nifi.sitetositedemo.R;
+import org.apache.nifi.android.sitetositedemo.R;
 
 import java.util.List;
 

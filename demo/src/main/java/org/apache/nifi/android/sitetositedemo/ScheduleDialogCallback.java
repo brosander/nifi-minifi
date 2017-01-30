@@ -15,19 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.sitetositedemo.preference;
+package org.apache.nifi.android.sitetositedemo;
 
-import android.os.Bundle;
-import android.preference.PreferenceFragment;
+import java.util.concurrent.TimeUnit;
 
-import org.apache.nifi.sitetositedemo.R;
+public interface ScheduleDialogCallback {
+    enum TimeUnits {
+        MS(TimeUnit.MILLISECONDS),
+        S(TimeUnit.SECONDS),
+        M(TimeUnit.MINUTES),
+        H(TimeUnit.HOURS);
 
-public class PeerPreferenceFragment extends PreferenceFragment
-{
-    @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.peer_fragment_preference);
+        private final TimeUnit timeUnit;
+
+        TimeUnits(TimeUnit timeUnit) {
+            this.timeUnit = timeUnit;
+        }
+
+        public long convertToMillis(long duration) {
+            return timeUnit.toMillis(duration);
+        }
     }
+
+    void onConfirm(long intervalMillis);
 }

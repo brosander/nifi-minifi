@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.sitetositedemo;
+package org.apache.nifi.android.sitetositedemo;
 
 import android.os.Parcel;
 import android.support.annotation.NonNull;

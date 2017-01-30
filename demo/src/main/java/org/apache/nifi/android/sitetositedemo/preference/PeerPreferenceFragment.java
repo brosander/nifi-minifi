@@ -15,24 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.sitetositedemo.persistence;
+package org.apache.nifi.android.sitetositedemo.preference;
 
-import android.app.PendingIntent;
+import android.os.Bundle;
+import android.preference.PreferenceFragment;
 
-public class PendingIntentWrapper {
-    private final long rowId;
-    private final PendingIntent pendingIntent;
+import org.apache.nifi.android.sitetositedemo.R;
 
-    public PendingIntentWrapper(long rowId, PendingIntent pendingIntent) {
-        this.rowId = rowId;
-        this.pendingIntent = pendingIntent;
-    }
-
-    public long getRowId() {
-        return rowId;
-    }
-
-    public PendingIntent getPendingIntent() {
-        return pendingIntent;
+public class PeerPreferenceFragment extends PreferenceFragment
+{
+    @Override
+    public void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        addPreferencesFromResource(R.xml.peer_fragment_preference);
     }
 }

@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.sitetositedemo;
+package org.apache.nifi.android.sitetositedemo;
 
 import android.content.Context;
 import android.os.Parcel;
 
-import org.apache.nifi.sitetositedemo.persistence.SiteToSiteDB;
-import org.apache.nifi.sitetositedemo.persistence.TransactionLogEntry;
+import org.apache.nifi.android.sitetositedemo.persistence.SiteToSiteDB;
+import org.apache.nifi.android.sitetositedemo.persistence.TransactionLogEntry;
 
 import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
 import org.apache.nifi.android.sitetosite.client.TransactionResult;

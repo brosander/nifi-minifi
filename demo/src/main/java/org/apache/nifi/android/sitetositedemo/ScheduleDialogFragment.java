@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.sitetositedemo;
+package org.apache.nifi.android.sitetositedemo;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;

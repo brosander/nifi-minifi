@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.sitetositedemo.persistence;
+package org.apache.nifi.android.sitetositedemo.persistence;
 
 import java.util.Date;
 
