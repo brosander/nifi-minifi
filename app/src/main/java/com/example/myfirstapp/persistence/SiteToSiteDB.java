@@ -91,15 +91,19 @@ public class SiteToSiteDB {
         SQLiteDatabase readableDatabase = sqLiteOpenHelper.getReadableDatabase();
         try {
             Cursor cursor = readableDatabase.query(false, S2S_TABLE_NAME, new String[]{ID_COLUMN, S2S_CREATED_COLUMN, S2S_NUM_FILES_COLUMN, S2S_RESPONSE_COLUMN}, S2S_CREATED_COLUMN + " > " + lastTimestamp, null, null, null, "CREATED", null);
-            int idIndex = cursor.getColumnIndexOrThrow(ID_COLUMN);
-            int createdIndex = cursor.getColumnIndexOrThrow(S2S_CREATED_COLUMN);
-            int numFilesIndex = cursor.getColumnIndexOrThrow(S2S_NUM_FILES_COLUMN);
-            int responseIndex = cursor.getColumnIndexOrThrow(S2S_RESPONSE_COLUMN);
-            while (cursor.moveToNext()) {
-                transactionLogEntries.add(new TransactionLogEntry(cursor.getLong(idIndex),
-                        new Date(cursor.getLong(createdIndex)),
-                        cursor.getInt(numFilesIndex),
-                        cursor.getString(responseIndex)));
+            try {
+                int idIndex = cursor.getColumnIndexOrThrow(ID_COLUMN);
+                int createdIndex = cursor.getColumnIndexOrThrow(S2S_CREATED_COLUMN);
+                int numFilesIndex = cursor.getColumnIndexOrThrow(S2S_NUM_FILES_COLUMN);
+                int responseIndex = cursor.getColumnIndexOrThrow(S2S_RESPONSE_COLUMN);
+                while (cursor.moveToNext()) {
+                    transactionLogEntries.add(new TransactionLogEntry(cursor.getLong(idIndex),
+                            new Date(cursor.getLong(createdIndex)),
+                            cursor.getInt(numFilesIndex),
+                            cursor.getString(responseIndex)));
+                }
+            } finally {
+                cursor.close();
             }
         } finally {
             readableDatabase.close();
@@ -137,17 +141,21 @@ public class SiteToSiteDB {
         SQLiteDatabase readableDatabase = sqLiteOpenHelper.getReadableDatabase();
         try {
             Cursor cursor = readableDatabase.query(false, PENDING_INTENT_TABLE_NAME, new String[]{ID_COLUMN, PENDING_INTENT_REQUEST_CODE, PENDING_INTENT_CONTENT_COLUMN}, null, null, null, null, null, null);
-            int idIndex = cursor.getColumnIndexOrThrow(ID_COLUMN);
-            int requestCodeIndex = cursor.getColumnIndexOrThrow(PENDING_INTENT_REQUEST_CODE);
-            int contentIndex = cursor.getColumnIndexOrThrow(PENDING_INTENT_CONTENT_COLUMN);
-            while (cursor.moveToNext()) {
-                Parcel parcel = Parcel.obtain();
-                byte[] bytes = cursor.getBlob(contentIndex);
-                parcel.unmarshall(bytes, 0, bytes.length);
-                parcel.setDataPosition(0);
-                int requestCode = cursor.getInt(requestCodeIndex);
-                Intent intent = Intent.CREATOR.createFromParcel(parcel);
-                pendingIntents.add(new PendingIntentWrapper(cursor.getLong(idIndex), PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_NO_CREATE)));
+            try {
+                int idIndex = cursor.getColumnIndexOrThrow(ID_COLUMN);
+                int requestCodeIndex = cursor.getColumnIndexOrThrow(PENDING_INTENT_REQUEST_CODE);
+                int contentIndex = cursor.getColumnIndexOrThrow(PENDING_INTENT_CONTENT_COLUMN);
+                while (cursor.moveToNext()) {
+                    Parcel parcel = Parcel.obtain();
+                    byte[] bytes = cursor.getBlob(contentIndex);
+                    parcel.unmarshall(bytes, 0, bytes.length);
+                    parcel.setDataPosition(0);
+                    int requestCode = cursor.getInt(requestCodeIndex);
+                    Intent intent = Intent.CREATOR.createFromParcel(parcel);
+                    pendingIntents.add(new PendingIntentWrapper(cursor.getLong(idIndex), PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_NO_CREATE)));
+                }
+            } finally {
+                cursor.close();
             }
         } finally {
             readableDatabase.close();

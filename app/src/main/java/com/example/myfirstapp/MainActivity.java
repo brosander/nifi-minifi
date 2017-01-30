@@ -61,6 +61,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements ScheduleDialogCallback {
+    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
     private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
     private final Handler handler = new Handler(Looper.getMainLooper());
     private SiteToSiteDB siteToSiteDB;
@@ -147,13 +148,16 @@ public class MainActivity extends AppCompatActivity implements ScheduleDialogCal
         siteToSiteClientConfig.setProxyUsername(preferences.getString("proxy_port_username", null));
         siteToSiteClientConfig.setProxyPassword(preferences.getString("proxy_port_password", null));
         siteToSiteClientConfig.setProxyPassword(preferences.getString("proxy_port_password", null));
+        siteToSiteClientConfig.setTruststoreFilename("classpath:truststore.bks");
+        siteToSiteClientConfig.setTruststoreType("BKS");
+        siteToSiteClientConfig.setTruststorePassword("ks4Fx6eJWgVZ6lrBWCKY3xRGNlF6v8TlDLnMe7B8HrU");
         return siteToSiteClientConfig;
     }
 
     private void refresh() {
         final TextView resultView = (TextView) findViewById(R.id.sendResults);
         for (TransactionLogEntry transactionLogEntry : siteToSiteDB.getLogEntries(lastTimestamp)) {
-            StringBuilder stringBuilder = new StringBuilder(System.lineSeparator());
+            StringBuilder stringBuilder = new StringBuilder(LINE_SEPARATOR);
             stringBuilder.append("[");
             stringBuilder.append(simpleDateFormat.format(transactionLogEntry.getCreated()));
             stringBuilder.append("] - Sent ");
@@ -161,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements ScheduleDialogCal
             stringBuilder.append(" flow file(s) and received response \"");
             stringBuilder.append(transactionLogEntry.getResponse());
             stringBuilder.append("\"");
-            stringBuilder.append(System.lineSeparator());
+            stringBuilder.append(LINE_SEPARATOR);
             lastTimestamp = Math.max(lastTimestamp, transactionLogEntry.getCreated().getTime());
             resultView.append(stringBuilder.toString());
         }

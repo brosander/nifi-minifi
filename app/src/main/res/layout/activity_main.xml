@@ -18,85 +18,59 @@
 
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/sendResults"
+        android:layout_weight="1"
+        android:maxLines="100"
+        android:minLines="1"
+        android:background="@color/colorBackground"
+        android:gravity="bottom"
+        android:scrollbarAlwaysDrawVerticalTrack="true"
+        android:scrollbars="vertical"/>
+
+    <EditText android:id="@+id/edit_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/edit_message"
+        android:text="@string/edit_message_default" />
 
     <LinearLayout
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        style="?android:attr/buttonBarStyle">
 
-        <!--<ScrollView
+        <Button
+            android:text="@string/button_cancel"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:id="@+id/button3"
             android:layout_weight="1"
-            android:id="@+id/scrollView"
-            android:background="@color/colorBackground">
+            android:onClick="cancelAlarms"
+            style="?android:attr/buttonBarButtonStyle"/>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" >
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:id="@+id/sendResults"
-                    android:layout_weight="1"
-                    android:maxLines="100"
-                    android:minLines="1"/>
-            </LinearLayout>
-        </ScrollView>-->
-        <TextView
+        <Button
+            android:text="@string/button_schedule"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/sendResults"
+            android:id="@+id/button2"
             android:layout_weight="1"
-            android:maxLines="100"
-            android:minLines="1"
-            android:background="@color/colorBackground"
-            android:gravity="bottom"
-            android:scrollbarAlwaysDrawVerticalTrack="true"
-            android:scrollbars="vertical"/>
+            android:onClick="schedule"
+            style="?android:attr/buttonBarButtonStyle"/>
 
-        <EditText android:id="@+id/edit_message"
+        <Button
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/edit_message"
-            android:text="@string/edit_message_default" />
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <Button
-                android:text="@string/button_cancel"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/button3"
-                android:layout_weight="1"
-                android:onClick="cancelAlarms"/>
-
-            <Button
-                android:text="@string/button_schedule"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/button2"
-                android:layout_weight="1"
-                android:onClick="schedule" />
-
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="@string/button_send"
-                android:id="@+id/button"
-                android:layout_weight="1"
-                android:onClick="sendMessage" />
-
-        </LinearLayout>
-
+            android:layout_height="match_parent"
+            android:text="@string/button_send"
+            android:id="@+id/button"
+            android:layout_weight="1"
+            android:onClick="sendMessage"
+            style="?android:attr/buttonBarButtonStyle"/>
     </LinearLayout>
-
 </LinearLayout>
