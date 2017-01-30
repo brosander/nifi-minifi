@@ -148,9 +148,6 @@ public class MainActivity extends AppCompatActivity implements ScheduleDialogCal
         siteToSiteClientConfig.setProxyUsername(preferences.getString("proxy_port_username", null));
         siteToSiteClientConfig.setProxyPassword(preferences.getString("proxy_port_password", null));
         siteToSiteClientConfig.setProxyPassword(preferences.getString("proxy_port_password", null));
-        siteToSiteClientConfig.setTruststoreFilename("classpath:truststore.bks");
-        siteToSiteClientConfig.setTruststoreType("BKS");
-        siteToSiteClientConfig.setTruststorePassword("ks4Fx6eJWgVZ6lrBWCKY3xRGNlF6v8TlDLnMe7B8HrU");
         return siteToSiteClientConfig;
     }
 
