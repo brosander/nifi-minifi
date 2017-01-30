@@ -90,7 +90,7 @@ public class SiteToSiteDB {
         List<TransactionLogEntry> transactionLogEntries = new ArrayList<>();
         SQLiteDatabase readableDatabase = sqLiteOpenHelper.getReadableDatabase();
         try {
-            Cursor cursor = readableDatabase.query(false, S2S_TABLE_NAME, new String[]{ID_COLUMN, S2S_CREATED_COLUMN, S2S_NUM_FILES_COLUMN, S2S_RESPONSE_COLUMN}, S2S_CREATED_COLUMN + " > " + lastTimestamp, null, null, null, "CREATED", null);
+            Cursor cursor = readableDatabase.query(false, S2S_TABLE_NAME, new String[]{ID_COLUMN, S2S_CREATED_COLUMN, S2S_NUM_FILES_COLUMN, S2S_RESPONSE_COLUMN}, S2S_CREATED_COLUMN + " > ?", new String[]{Long.toString(lastTimestamp)}, null, null, "CREATED", null);
             try {
                 int idIndex = cursor.getColumnIndexOrThrow(ID_COLUMN);
                 int createdIndex = cursor.getColumnIndexOrThrow(S2S_CREATED_COLUMN);
@@ -130,7 +130,7 @@ public class SiteToSiteDB {
     public void deletePendingIntent(long id) {
         SQLiteDatabase writableDatabase = sqLiteOpenHelper.getWritableDatabase();
         try {
-            writableDatabase.delete(PENDING_INTENT_TABLE_NAME, "ID = " + id, null);
+            writableDatabase.delete(PENDING_INTENT_TABLE_NAME, "ID = ?",  new String[]{Long.toString(id)});
         } finally {
             writableDatabase.close();
         }
