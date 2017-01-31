@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -147,7 +148,7 @@ public class SiteToSiteClientConfig implements Parcelable {
     }
 
     public Set<String> getUrls() {
-        return urls;
+        return Collections.unmodifiableSet(urls);
     }
 
     public void setUrls(Set<String> urls) {

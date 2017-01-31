@@ -19,6 +19,7 @@ package org.apache.nifi.android.sitetosite.client.peer;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.SystemClock;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,7 +48,14 @@ public class PeerStatus implements Parcelable {
     };
 
     public PeerStatus(Collection<Peer> peers, long lastPeerUpdate) {
-        this.peers = new ArrayList<>(peers);
+        this.peers = new ArrayList<>(peers.size());
+        for (Peer peer : peers) {
+            if (peer.getLastFailure() > SystemClock.elapsedRealtime()) {
+                this.peers.add(new Peer(peer.getUrl(), peer.getFlowFileCount()));
+            } else {
+                this.peers.add(peer);
+            }
+        }
         this.lastPeerUpdate = lastPeerUpdate;
         sort();
     }

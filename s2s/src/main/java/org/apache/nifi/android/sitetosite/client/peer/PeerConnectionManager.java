@@ -68,7 +68,7 @@ public class PeerConnectionManager {
         }
         proxy = getProxy(siteToSiteClientConfig);
         String proxyUsername = siteToSiteClientConfig.getProxyUsername();
-        if (proxy != null && proxyUsername != null) {
+        if (proxy != null && proxyUsername != null && !proxyUsername.isEmpty()) {
             proxyAuth = Base64.encodeToString((proxyUsername + ":" + siteToSiteClientConfig.getProxyPassword()).getBytes(Charsets.UTF_8), Base64.DEFAULT);
         } else {
             proxyAuth = null;
@@ -142,6 +142,10 @@ public class PeerConnectionManager {
             httpURLConnection.setRequestProperty("Authorization", authorization);
         }
 
+        int timeout = (int) siteToSiteClientConfig.getTimeout(TimeUnit.MILLISECONDS);
+        httpURLConnection.setConnectTimeout(timeout);
+        httpURLConnection.setReadTimeout(timeout);
+
         Map<String, String> finalHeaders = new HashMap<>(headers);
 
         if (!finalHeaders.containsKey("Accept")) {
@@ -163,7 +167,7 @@ public class PeerConnectionManager {
 
     private Proxy getProxy(SiteToSiteClientConfig siteToSiteClientConfig) {
         String proxyHost = siteToSiteClientConfig.getProxyHost();
-        if (proxyHost == null) {
+        if (proxyHost == null || proxyHost.isEmpty()) {
             return null;
         }
 
@@ -182,7 +186,7 @@ public class PeerConnectionManager {
         }
 
         String username = siteToSiteClientConfig.getUsername();
-        if (username == null) {
+        if (username == null || username.isEmpty()) {
             authorizationExpiration = Long.MAX_VALUE;
             return;
         }
@@ -192,9 +196,6 @@ public class PeerConnectionManager {
         map.put("Accept", "text/plain");
         map.put("Content-Type", "application/x-www-form-urlencoded");
         HttpURLConnection httpURLConnection = openConnection("/access/token", map, Collections.<String, String>emptyMap(), HttpMethod.POST, true);
-        int timeout = (int) siteToSiteClientConfig.getTimeout(TimeUnit.MILLISECONDS);
-        httpURLConnection.setConnectTimeout(timeout);
-        httpURLConnection.setReadTimeout(timeout);
         String payload = null;
         try {
             OutputStream outputStream = httpURLConnection.getOutputStream();

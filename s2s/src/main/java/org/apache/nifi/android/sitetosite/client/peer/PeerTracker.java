@@ -55,16 +55,22 @@ public class PeerTracker {
         for (String initialPeer : initialPeers) {
             URL url = new URL(initialPeer);
             String peerUrl = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort() + "/nifi-api";
-            initialPeers.add(peerUrl);
+            this.initialPeers.add(peerUrl);
             peerList.add(new Peer(peerUrl, 0));
         }
+
         PeerStatus peerStatus = siteToSiteClientConfig.getPeerStatus();
         if (peerStatus == null) {
             this.peerStatus = new PeerStatus(peerList, 0L);
             updatePeers();
+        } else if (peerStatus.getLastPeerUpdate() > SystemClock.elapsedRealtime()) {
+            // Device has been restarted
+            this.peerStatus = new PeerStatus(peerStatus.getPeers(), 0L);
+            updatePeers();
         } else {
             this.peerStatus = peerStatus;
         }
+
         ttlExtendTaskExecutor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
             private final ThreadFactory defaultFactory = Executors.defaultThreadFactory();
 

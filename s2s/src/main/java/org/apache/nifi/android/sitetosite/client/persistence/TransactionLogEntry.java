@@ -15,25 +15,32 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.android.sitetositedemo.persistence;
+package org.apache.nifi.android.sitetosite.client.persistence;
 
+import org.apache.nifi.android.sitetosite.client.TransactionResult;
+
+import java.io.IOException;
 import java.util.Date;
 
 public class TransactionLogEntry {
     private long id;
     private final Date created;
-    private final int numFlowFiles;
-    private final String response;
+    private final TransactionResult transactionResult;
+    private final IOException ioException;
 
-    public TransactionLogEntry(Date created, int numFlowFiles, String response) {
-        this(-1, created, numFlowFiles, response);
+    public TransactionLogEntry(TransactionResult transactionResult) {
+        this(-1, new Date(), transactionResult, null);
     }
 
-    public TransactionLogEntry(long id, Date created, int numFlowFiles, String response) {
+    public TransactionLogEntry(IOException ioException) {
+        this(-1, new Date(), null, ioException);
+    }
+
+    public TransactionLogEntry(long id, Date created, TransactionResult transactionResult, IOException ioException) {
         this.id = id;
         this.created = created;
-        this.numFlowFiles = numFlowFiles;
-        this.response = response;
+        this.transactionResult = transactionResult;
+        this.ioException = ioException;
     }
 
     public long getId() {
@@ -44,15 +51,15 @@ public class TransactionLogEntry {
         return created;
     }
 
-    public int getNumFlowFiles() {
-        return numFlowFiles;
-    }
-
-    public String getResponse() {
-        return response;
-    }
-
     protected void setId(long id) {
         this.id = id;
+    }
+
+    public TransactionResult getTransactionResult() {
+        return transactionResult;
+    }
+
+    public IOException getIoException() {
+        return ioException;
     }
 }

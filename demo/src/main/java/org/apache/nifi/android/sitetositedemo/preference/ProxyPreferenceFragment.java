@@ -22,11 +22,9 @@ import android.preference.PreferenceFragment;
 
 import org.apache.nifi.android.sitetositedemo.R;
 
-public class ProxyPreferenceFragment extends PreferenceFragment
-{
+public class ProxyPreferenceFragment extends PreferenceFragment {
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.proxy_fragment_preference);
     }

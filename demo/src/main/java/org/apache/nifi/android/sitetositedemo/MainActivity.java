@@ -37,9 +37,10 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import org.apache.nifi.android.sitetositedemo.persistence.PendingIntentWrapper;
-import org.apache.nifi.android.sitetositedemo.persistence.SiteToSiteDB;
-import org.apache.nifi.android.sitetositedemo.persistence.TransactionLogEntry;
+import org.apache.nifi.android.sitetosite.client.peer.PeerStatus;
+import org.apache.nifi.android.sitetosite.client.persistence.PendingIntentWrapper;
+import org.apache.nifi.android.sitetosite.client.persistence.SiteToSiteDB;
+import org.apache.nifi.android.sitetosite.client.persistence.TransactionLogEntry;
 import org.apache.nifi.android.sitetositedemo.preference.SiteToSitePreferenceActivity;
 
 import org.apache.nifi.android.sitetosite.client.SiteToSiteClientConfig;
@@ -52,6 +53,8 @@ import org.apache.nifi.android.sitetosite.service.TransactionResultCallback;
 import org.apache.nifi.android.sitetosite.util.Charsets;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -82,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements ScheduleDialogCal
                     public void onReceive(Context context, Intent intent) {
                         refresh();
                     }
-                }, new IntentFilter(SiteToSiteDB.ENTRY_SAVED), null, handler);
+                }, new IntentFilter(SiteToSiteDB.TRANSACTION_LOG_ENTRY_SAVED), null, handler);
                 refresh();
             }
         });
@@ -122,12 +125,14 @@ public class MainActivity extends AppCompatActivity implements ScheduleDialogCal
 
             @Override
             public void onSuccess(TransactionResult transactionResult, SiteToSiteClientConfig siteToSiteClientConfig) {
-                siteToSiteDB.save(new TransactionLogEntry(new Date(), transactionResult.getFlowFilesSent(), transactionResult.getResponseCode().toString()));
+                siteToSiteDB.save(new TransactionLogEntry(transactionResult));
+                siteToSiteDB.save(siteToSiteClientConfig.getUrls(), siteToSiteClientConfig.getProxyHost(), siteToSiteClientConfig.getProxyPort(), siteToSiteClientConfig.getPeerStatus());
             }
 
             @Override
             public void onException(IOException exception, SiteToSiteClientConfig siteToSiteClientConfig) {
-                siteToSiteDB.save(new TransactionLogEntry(new Date(), 0, exception.getMessage()));
+                siteToSiteDB.save(new TransactionLogEntry(exception));
+                siteToSiteDB.save(siteToSiteClientConfig.getUrls(), siteToSiteClientConfig.getProxyHost(), siteToSiteClientConfig.getProxyPort(), siteToSiteClientConfig.getPeerStatus());
             }
         });
     }
@@ -137,17 +142,25 @@ public class MainActivity extends AppCompatActivity implements ScheduleDialogCal
     }
 
     private SiteToSiteClientConfig getClientConfig() {
-        SiteToSiteClientConfig siteToSiteClientConfig = new SiteToSiteClientConfig();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        siteToSiteClientConfig.setUrls(new HashSet<>(Arrays.asList(preferences.getString("peer_urls_preference", "http://localhost:8080/nifi"))));
+        HashSet<String> peerUrls = new HashSet<>(Arrays.asList(preferences.getString("peer_urls_preference", "http://localhost:8080/nifi")));
+        String proxyHost = preferences.getString("proxy_host_preference", "");
+        int proxyPort = Integer.parseInt(preferences.getString("proxy_port_preference", "0"));
+
+        SiteToSiteClientConfig siteToSiteClientConfig = new SiteToSiteClientConfig();
+        siteToSiteClientConfig.setUrls(peerUrls);
         siteToSiteClientConfig.setPortName(preferences.getString("input_port_preference", null));
         siteToSiteClientConfig.setUsername(preferences.getString("username_preference", null));
         siteToSiteClientConfig.setPassword(preferences.getString("password_preference", null));
-        siteToSiteClientConfig.setProxyHost(preferences.getString("proxy_host_preference", null));
-        siteToSiteClientConfig.setProxyPort(Integer.parseInt(preferences.getString("proxy_port_preference", "0")));
+        siteToSiteClientConfig.setProxyHost(proxyHost);
+        siteToSiteClientConfig.setProxyPort(proxyPort);
         siteToSiteClientConfig.setProxyUsername(preferences.getString("proxy_port_username", null));
         siteToSiteClientConfig.setProxyPassword(preferences.getString("proxy_port_password", null));
-        siteToSiteClientConfig.setProxyPassword(preferences.getString("proxy_port_password", null));
+
+        PeerStatus peerStatus = siteToSiteDB.getPeerStatus(peerUrls, proxyHost, proxyPort);
+        if (peerStatus != null) {
+            siteToSiteClientConfig.setPeerStatus(peerStatus);
+        }
         return siteToSiteClientConfig;
     }
 
@@ -157,11 +170,38 @@ public class MainActivity extends AppCompatActivity implements ScheduleDialogCal
             StringBuilder stringBuilder = new StringBuilder(LINE_SEPARATOR);
             stringBuilder.append("[");
             stringBuilder.append(simpleDateFormat.format(transactionLogEntry.getCreated()));
-            stringBuilder.append("] - Sent ");
-            stringBuilder.append(transactionLogEntry.getNumFlowFiles());
-            stringBuilder.append(" flow file(s) and received response \"");
-            stringBuilder.append(transactionLogEntry.getResponse());
-            stringBuilder.append("\"");
+            stringBuilder.append("] - ");
+
+            TransactionResult transactionResult = transactionLogEntry.getTransactionResult();
+            if (transactionResult != null) {
+                stringBuilder.append("Sent ");
+                stringBuilder.append(transactionResult.getFlowFilesSent());
+                stringBuilder.append(" flow file(s) and received response \"");
+                stringBuilder.append(transactionResult.getResponseCode());
+                stringBuilder.append("\"");
+            } else {
+                IOException ioException = transactionLogEntry.getIoException();
+                if (ioException != null) {
+                    StringWriter stringWriter = new StringWriter();
+                    try {
+                        PrintWriter printWriter = new PrintWriter(stringWriter);
+                        try {
+                            ioException.printStackTrace(printWriter);
+                        } finally {
+                            printWriter.close();
+                        }
+                    } finally {
+                        try {
+                            stringWriter.close();
+                        } catch (IOException e) {
+                            //Ignore
+                        }
+                    }
+                    stringBuilder.append(stringWriter);
+                } else {
+                    stringBuilder.append("Error, no transaction result or exception");
+                }
+            }
             stringBuilder.append(LINE_SEPARATOR);
             lastTimestamp = Math.max(lastTimestamp, transactionLogEntry.getCreated().getTime());
             resultView.append(stringBuilder.toString());

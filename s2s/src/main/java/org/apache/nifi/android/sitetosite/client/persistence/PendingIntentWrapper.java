@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.android.sitetositedemo.persistence;
+package org.apache.nifi.android.sitetosite.client.persistence;
 
 import android.app.PendingIntent;
 
