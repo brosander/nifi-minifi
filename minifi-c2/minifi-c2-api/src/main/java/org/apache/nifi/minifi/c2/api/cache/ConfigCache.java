@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.minifi.c2.provider;
+package org.apache.nifi.minifi.c2.api.cache;
 
 import org.apache.nifi.minifi.c2.api.Configuration;
-import org.apache.nifi.minifi.c2.api.ConfigurationProvider;
 import org.apache.nifi.minifi.c2.api.ConfigurationProviderException;
+import org.apache.nifi.minifi.c2.api.HasConfiguration;
 import org.apache.nifi.minifi.c2.api.InvalidParameterException;
 import org.apache.nifi.minifi.c2.api.util.Pair;
 
@@ -36,18 +36,17 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class FileSystemConfigurationProvider implements ConfigurationProvider {
-    private final String contentType;
+public class ConfigCache implements HasConfiguration {
     private final Path pathRoot;
     private final String pathPattern;
 
-    public FileSystemConfigurationProvider(String contentType, String pathRoot, String pathPattern) {
-        this.contentType = contentType;
+    public ConfigCache(String pathRoot, String pathPattern) throws IOException {
         this.pathRoot = Paths.get(pathRoot).toAbsolutePath();
+        Files.createDirectories(this.pathRoot);
         this.pathPattern = pathPattern;
     }
 
-    private static Path resolveChildAndVerifyParent(Path parent, String s) throws InvalidParameterException {
+    public static Path resolveChildAndVerifyParent(Path parent, String s) throws InvalidParameterException {
         Path child = parent.resolve(s).toAbsolutePath();
         if (child.toAbsolutePath().getParent().equals(parent)) {
             return child;
@@ -56,24 +55,11 @@ public class FileSystemConfigurationProvider implements ConfigurationProvider {
         }
     }
 
-    @Override
-    public String getContentType() {
-        return contentType;
-    }
-
-    @Override
-    public Configuration getConfiguration(String version, Map<String, List<String>> parameters) throws ConfigurationProviderException {
-        Pair<Path, String> dirPathAndFilename = getDirPathAndFilename(parameters);
-        if (version == null || version.isEmpty()) {
-            version = getMostRecentVersion(dirPathAndFilename.getFirst(), dirPathAndFilename.getSecond());
-        }
-        Path path = resolveChildAndVerifyParent(dirPathAndFilename.getFirst(), dirPathAndFilename.getSecond() + ".v" + version);
-
-        String finalVersion = version;
+    public static Configuration getConfiguration(final Path path, final String version) {
         return new Configuration() {
             @Override
             public String getVersion() {
-                return finalVersion;
+                return version;
             }
 
             @Override
@@ -91,8 +77,8 @@ public class FileSystemConfigurationProvider implements ConfigurationProvider {
         };
     }
 
-    protected String getMostRecentVersion(Path dirPath, String fileName) throws ConfigurationProviderException {
-        Pattern pattern = Pattern.compile("^" + Pattern.quote(fileName + ".v") + "([0-9]+)$");
+    public String getMostRecentVersion(Path dirPath, String fileName) throws ConfigurationProviderException {
+        Pattern pattern = getVersionPattern(fileName);
         try {
             return Files.list(dirPath).map(p -> {
                 Matcher matcher = pattern.matcher(p.getFileName().toString());
@@ -108,7 +94,11 @@ public class FileSystemConfigurationProvider implements ConfigurationProvider {
         }
     }
 
-    protected Pair<Path, String> getDirPathAndFilename(Map<String, List<String>> parameters) throws InvalidParameterException {
+    public Pattern getVersionPattern(String fileName) {
+        return Pattern.compile("^" + Pattern.quote(fileName + ".v") + "([0-9]+)$");
+    }
+
+    public Pair<Path, String> getDirPathAndFilename(Map<String, List<String>> parameters, boolean required) throws InvalidParameterException {
         String[] splitPath = substituteVariablesAndSplitPath(parameters, pathPattern);
         Path path = pathRoot.toAbsolutePath();
         for (int i = 0; i < splitPath.length - 1; i++) {
@@ -117,7 +107,9 @@ public class FileSystemConfigurationProvider implements ConfigurationProvider {
         }
         Path dirPath = path;
         if (!Files.exists(dirPath)) {
-            throw new InvalidParameterException("Calculated dir path doesn't exist: " + dirPath);
+            if (required) {
+                throw new InvalidParameterException("Calculated dir path doesn't exist: " + dirPath);
+            }
         }
         return new Pair<>(dirPath, splitPath[splitPath.length - 1]);
     }
@@ -140,5 +132,16 @@ public class FileSystemConfigurationProvider implements ConfigurationProvider {
             }
         }
         return split;
+    }
+
+    @Override
+    public Configuration getConfiguration(String version, Map<String, List<String>> parameters) throws ConfigurationProviderException {
+        Pair<Path, String> dirPathAndFilename = getDirPathAndFilename(parameters, true);
+        if (version == null || version.isEmpty()) {
+            version = getMostRecentVersion(dirPathAndFilename.getFirst(), dirPathAndFilename.getSecond());
+        }
+        Path path = resolveChildAndVerifyParent(dirPathAndFilename.getFirst(), dirPathAndFilename.getSecond() + ".v" + version);
+
+        return getConfiguration(path, version);
     }
 }
