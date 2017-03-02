@@ -28,15 +28,34 @@
     <bean id="configService" class="org.apache.nifi.minifi.c2.service.ConfigService" scope="singleton">
         <constructor-arg>
             <list>
-                <bean class="org.apache.nifi.minifi.c2.provider.FileSystemConfigurationProvider">
+                <!--<bean class="org.apache.nifi.minifi.c2.nifi.rest.NiFiRestConfigurationProvider">
+                    <constructor-arg>
+                        <bean class="org.apache.nifi.minifi.c2.api.cache.ConfigCache">
+                            <constructor-arg>
+                                <value>./cache</value>
+                            </constructor-arg>
+                            <constructor-arg>
+                                <value>${class}/${class}</value>
+                            </constructor-arg>
+                        </bean>
+                    </constructor-arg>
+                    <constructor-arg>
+                        <value>http://localhost:8081/nifi-api</value>
+                    </constructor-arg>
+                </bean>-->
+                <bean class="org.apache.nifi.minifi.c2.provider.filesystem.FileSystemConfigurationProvider">
                     <constructor-arg>
                         <value>text/yml</value>
                     </constructor-arg>
                     <constructor-arg>
-                        <value>./files</value>
-                    </constructor-arg>
-                    <constructor-arg>
-                        <value>${class}/config.yml</value>
+                        <bean class="org.apache.nifi.minifi.c2.api.cache.ConfigCache">
+                            <constructor-arg>
+                                <value>./files</value>
+                            </constructor-arg>
+                            <constructor-arg>
+                                <value>${class}/config.yml</value>
+                            </constructor-arg>
+                        </bean>
                     </constructor-arg>
                 </bean>
             </list>

@@ -15,16 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.minifi.c2.api;
+package org.apache.nifi.minifi.c2.nifi.rest;
 
-/**
- * A configuration provider is capable of taking a parameter map and returning a configuration with a given content type
- */
-public interface ConfigurationProvider extends HasConfiguration {
-    /**
-     * Gets the content type that this provider returns
-     *
-     * @return the content type that this provider returns
-     */
-    String getContentType();
+import java.io.IOException;
+
+public class TemplatesIteratorException extends RuntimeException {
+    public TemplatesIteratorException(IOException cause) {
+        super(cause);
+    }
+
+    @Override
+    public synchronized IOException getCause() {
+        return (IOException) super.getCause();
+    }
 }
