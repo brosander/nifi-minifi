@@ -15,14 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.minifi.c2.api;
+package org.apache.nifi.minifi.c2.provider.nifi.rest;
 
-import java.io.InputStream;
+import java.io.IOException;
 
-public interface Configuration {
-    String getVersion();
+public class TemplatesIteratorException extends RuntimeException {
+    public TemplatesIteratorException(IOException cause) {
+        super(cause);
+    }
 
-    boolean exists();
-
-    InputStream getInputStream() throws ConfigurationProviderException;
+    @Override
+    public synchronized IOException getCause() {
+        return (IOException) super.getCause();
+    }
 }

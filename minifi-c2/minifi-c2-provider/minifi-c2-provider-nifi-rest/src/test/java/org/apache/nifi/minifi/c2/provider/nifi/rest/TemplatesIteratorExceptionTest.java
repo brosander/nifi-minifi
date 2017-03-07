@@ -15,14 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.minifi.c2.api;
+package org.apache.nifi.minifi.c2.provider.nifi.rest;
 
-import java.io.InputStream;
+import org.apache.nifi.minifi.c2.provider.nifi.rest.TemplatesIteratorException;
+import org.junit.Test;
 
-public interface Configuration {
-    String getVersion();
+import java.io.IOException;
 
-    boolean exists();
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
-    InputStream getInputStream() throws ConfigurationProviderException;
+public class TemplatesIteratorExceptionTest {
+    @Test
+    public void testCauseConstructor() {
+        IOException ioException = mock(IOException.class);
+        assertEquals(ioException, new TemplatesIteratorException(ioException).getCause());
+    }
 }

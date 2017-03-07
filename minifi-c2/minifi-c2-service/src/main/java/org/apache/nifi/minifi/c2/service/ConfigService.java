@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
         description = "Provides configuration for MiNiFi instances"
 )
 public class ConfigService {
-    private final Logger logger = LoggerFactory.getLogger(ConfigService.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConfigService.class);
     private final List<Pair<MediaType, ConfigurationProvider>> configurationProviders;
 
     public ConfigService(List<ConfigurationProvider> configurationProviders) {
@@ -69,14 +69,21 @@ public class ConfigService {
             parameters.put(entry.getKey(), entry.getValue());
         }
         ArrayList<String> acceptValues = Collections.list(request.getHeaders("Accept"));
+        if (logger.isDebugEnabled()) {
+            logger.debug("Handling request from " + getClientString(request) + " with parameters " + parameters + " and Accept: " + acceptValues.stream().collect(Collectors.joining(", ")));
+        }
         Pair<MediaType, ConfigurationProvider> providerPair = getProvider(acceptValues);
 
-        String version = null;
-        List<String> versionList = parameters.get("version");
-        if (versionList != null && versionList.size() > 0) {
-            version = versionList.get(0);
-        }
         try {
+            Integer version = null;
+            List<String> versionList = parameters.get("version");
+            if (versionList != null && versionList.size() > 0) {
+                try {
+                    version = Integer.parseInt(versionList.get(0));
+                } catch (NumberFormatException e) {
+                    throw new InvalidParameterException("Unable to parse " + version + " as integer.", e);
+                }
+            }
             Response.ResponseBuilder ok = Response.ok();
             Configuration configuration = providerPair.getSecond().getConfiguration(version, parameters);
             ok = ok.header("X-Content-Version", configuration.getVersion());

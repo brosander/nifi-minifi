@@ -29,6 +29,7 @@
         </encoder>
 	</appender>
 
+    <logger name="org.apache.nifi.minifi.c2" level="DEBUG"/>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>

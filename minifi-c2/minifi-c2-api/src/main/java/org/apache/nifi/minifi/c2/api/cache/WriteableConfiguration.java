@@ -15,14 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.minifi.c2.api;
+package org.apache.nifi.minifi.c2.api.cache;
 
-import java.io.InputStream;
+import org.apache.nifi.minifi.c2.api.Configuration;
+import org.apache.nifi.minifi.c2.api.ConfigurationProviderException;
 
-public interface Configuration {
-    String getVersion();
+import java.io.OutputStream;
 
-    boolean exists();
+public interface WriteableConfiguration extends Configuration {
+    OutputStream getOutputStream() throws ConfigurationProviderException;
 
-    InputStream getInputStream() throws ConfigurationProviderException;
+    String getName();
 }
