@@ -15,12 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.minifi.c2.provider.filesystem;
+package org.apache.nifi.minifi.c2.provider.cache;
 
 import org.apache.nifi.minifi.c2.api.ConfigurationProviderException;
 import org.apache.nifi.minifi.c2.api.cache.ConfigurationCache;
 import org.apache.nifi.minifi.c2.api.cache.ConfigurationCacheFileInfo;
 import org.apache.nifi.minifi.c2.api.cache.WriteableConfiguration;
+import org.apache.nifi.minifi.c2.provider.cache.CacheConfigurationProvider;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,21 +32,21 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class FileSystemConfigurationProviderTest {
+public class CacheConfigurationProviderTest {
     public static final String TEST_CONTENT_TYPE = "test/contenttype";
 
-    private FileSystemConfigurationProvider fileSystemConfigurationProvider;
+    private CacheConfigurationProvider cacheConfigurationProvider;
     private ConfigurationCache configConfigurationCache;
 
     @Before
     public void setup() {
         configConfigurationCache = mock(ConfigurationCache.class);
-        fileSystemConfigurationProvider = new FileSystemConfigurationProvider(TEST_CONTENT_TYPE, configConfigurationCache);
+        cacheConfigurationProvider = new CacheConfigurationProvider(TEST_CONTENT_TYPE, configConfigurationCache);
     }
 
     @Test
     public void testContentType() {
-        assertEquals(TEST_CONTENT_TYPE, fileSystemConfigurationProvider.getContentType());
+        assertEquals(TEST_CONTENT_TYPE, cacheConfigurationProvider.getContentType());
     }
 
     @Test
@@ -59,6 +60,6 @@ public class FileSystemConfigurationProviderTest {
         when(configConfigurationCache.getCacheFileInfo(parameters)).thenReturn(configurationCacheFileInfo);
         when(configurationCacheFileInfo.getConfiguration(version)).thenReturn(configuration);
 
-        assertEquals(configuration, fileSystemConfigurationProvider.getConfiguration(version, parameters));
+        assertEquals(configuration, cacheConfigurationProvider.getConfiguration(version, parameters));
     }
 }

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.minifi.c2.provider.filesystem;
+package org.apache.nifi.minifi.c2.provider.cache;
 
 import org.apache.nifi.minifi.c2.api.Configuration;
 import org.apache.nifi.minifi.c2.api.ConfigurationProvider;
@@ -25,11 +25,11 @@ import org.apache.nifi.minifi.c2.api.cache.ConfigurationCache;
 import java.util.List;
 import java.util.Map;
 
-public class FileSystemConfigurationProvider implements ConfigurationProvider {
+public class CacheConfigurationProvider implements ConfigurationProvider {
     private final String contentType;
     private final ConfigurationCache configurationCache;
 
-    public FileSystemConfigurationProvider(String contentType, ConfigurationCache configurationCache) {
+    public CacheConfigurationProvider(String contentType, ConfigurationCache configurationCache) {
         this.contentType = contentType;
         this.configurationCache = configurationCache;
     }

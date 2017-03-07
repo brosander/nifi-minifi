@@ -43,8 +43,8 @@
                         <value>http://localhost:8081/nifi-api</value>
                     </constructor-arg>
                 </bean>
-                <!--<bean class="org.apache.nifi.minifi.c2.provider.filesystem.FileSystemConfigurationProvider">
-                    <constructor-arg>
+                <!--<bean class="org.apache.nifi.minifi.c2.provider.cache.CacheConfigurationProvider">
+                     <constructor-arg>
                         <value>text/yml</value>
                     </constructor-arg>
                     <constructor-arg>
