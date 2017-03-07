@@ -15,14 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.minifi.c2.api;
+package org.apache.nifi.minifi.c2.api.cache;
 
-import java.io.InputStream;
+import org.apache.nifi.minifi.c2.api.InvalidParameterException;
 
-public interface Configuration {
-    String getVersion();
+import java.util.List;
+import java.util.Map;
 
-    boolean exists();
-
-    InputStream getInputStream() throws ConfigurationProviderException;
+public interface ConfigurationCache {
+    ConfigurationCacheFileInfo getCacheFileInfo(Map<String, List<String>> parameters) throws InvalidParameterException;
 }

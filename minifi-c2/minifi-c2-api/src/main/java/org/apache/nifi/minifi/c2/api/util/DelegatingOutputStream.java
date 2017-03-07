@@ -17,28 +17,38 @@
 
 package org.apache.nifi.minifi.c2.api.util;
 
-public class Pair<T, U> {
-    private final T first;
-    private final U second;
+import java.io.IOException;
+import java.io.OutputStream;
 
-    public Pair(T first, U second) {
-        this.first = first;
-        this.second = second;
-    }
+public class DelegatingOutputStream extends OutputStream {
+    private final OutputStream delegate;
 
-    public T getFirst() {
-        return first;
-    }
-
-    public U getSecond() {
-        return second;
+    public DelegatingOutputStream(OutputStream delegate) {
+        this.delegate = delegate;
     }
 
     @Override
-    public String toString() {
-        return "Pair{" +
-                "first=" + first +
-                ", second=" + second +
-                '}';
+    public void write(int b) throws IOException {
+        delegate.write(b);
+    }
+
+    @Override
+    public void write(byte[] b) throws IOException {
+        delegate.write(b);
+    }
+
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+        delegate.write(b, off, len);
+    }
+
+    @Override
+    public void flush() throws IOException {
+        delegate.flush();
+    }
+
+    @Override
+    public void close() throws IOException {
+        delegate.close();
     }
 }

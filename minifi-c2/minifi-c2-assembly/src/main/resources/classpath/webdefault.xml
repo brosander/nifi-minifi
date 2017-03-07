@@ -52,7 +52,7 @@
     </listener>
   
     <!-- ==================================================================== -->
-    <!-- Removes static cache of Methods from java.beans.Introspector to      -->
+    <!-- Removes static configurationCache of Methods from java.beans.Introspector to      -->
     <!-- ensure webapp classloader can be released on undeploy                -->
     <!-- ==================================================================== -->  
     <listener>
@@ -128,9 +128,9 @@
     *                    
     *  etags             If True, weak etags will be generated and handled.
     *
-    *  maxCacheSize      The maximum total size of the cache or 0 for no cache.
-    *  maxCachedFileSize The maximum size of a file to cache
-    *  maxCachedFiles    The maximum number of files to cache
+    *  maxCacheSize      The maximum total size of the configurationCache or 0 for no configurationCache.
+    *  maxCachedFileSize The maximum size of a file to configurationCache
+    *  maxCachedFiles    The maximum number of files to configurationCache
     *
     *  useFileMappedBuffer
     *                    If set to true, it will use mapped file buffer to serve static content
@@ -138,7 +138,7 @@
     *                    a direct buffer will be used instead of a mapped file buffer.
     *                    By default, this is set to true.
     *
-    *  cacheControl      If set, all static content will have this value set as the cache-control
+    *  cacheControl      If set, all static content will have this value set as the configurationCache-control
     *                    header.
     *
     -->
