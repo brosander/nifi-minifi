@@ -35,7 +35,7 @@
                                 <value>./cache</value>
                             </constructor-arg>
                             <constructor-arg>
-                                <value>${class}/${class}</value>
+                                <value>\${class}/\${class}</value>
                             </constructor-arg>
                         </bean>
                     </constructor-arg>
@@ -53,7 +53,7 @@
                                 <value>./files</value>
                             </constructor-arg>
                             <constructor-arg>
-                                <value>${class}/config.yml</value>
+                                <value>\${class}/config.yml</value>
                             </constructor-arg>
                         </bean>
                     </constructor-arg>

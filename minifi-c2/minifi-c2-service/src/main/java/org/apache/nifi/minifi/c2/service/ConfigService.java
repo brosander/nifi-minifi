@@ -23,6 +23,7 @@ import org.apache.nifi.minifi.c2.api.ConfigurationProvider;
 import org.apache.nifi.minifi.c2.api.ConfigurationProviderException;
 import org.apache.nifi.minifi.c2.api.InvalidParameterException;
 import org.apache.nifi.minifi.c2.api.util.Pair;
+import org.apache.nifi.minifi.c2.util.HttpRequestUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +71,8 @@ public class ConfigService {
         }
         ArrayList<String> acceptValues = Collections.list(request.getHeaders("Accept"));
         if (logger.isDebugEnabled()) {
-            logger.debug("Handling request from " + getClientString(request) + " with parameters " + parameters + " and Accept: " + acceptValues.stream().collect(Collectors.joining(", ")));
+            logger.debug("Handling request from " + HttpRequestUtil.getClientString(request) + " with parameters " + parameters +
+                    " and Accept: " + acceptValues.stream().collect(Collectors.joining(", ")));
         }
         Pair<MediaType, ConfigurationProvider> providerPair = getProvider(acceptValues);
 
@@ -108,10 +110,10 @@ public class ConfigService {
             }
             return ok.build();
         } catch (InvalidParameterException e) {
-            logger.info(getClientString(request) + " made invalid request with " + getQueryString(request), e);
+            logger.info(HttpRequestUtil.getClientString(request) + " made invalid request with " + HttpRequestUtil.getQueryString(request), e);
             return Response.status(400).build();
         } catch (ConfigurationProviderException e) {
-            logger.error(getClientString(request) + " made request with " + getQueryString(request) + " that caused error in " + providerPair.getSecond(), e);
+            logger.error(HttpRequestUtil.getClientString(request) + " made request with " + HttpRequestUtil.getQueryString(request) + " that caused error in " + providerPair.getSecond(), e);
             return Response.status(500).build();
         }
     }
@@ -123,24 +125,6 @@ public class ConfigService {
             builder.append(String.format("%02x", b));
         }
         return builder.toString();
-    }
-
-    protected static String getQueryString(@Context HttpServletRequest request) {
-        String queryString = request.getQueryString();
-        if (queryString == null) {
-            return "no query string";
-        }
-        return "query string \"" + queryString + "\"";
-    }
-
-    protected static String getClientString(@Context HttpServletRequest request) {
-        String remoteHost = request.getRemoteHost();
-        String remoteAddr = request.getRemoteAddr();
-        String result =  "Client " + remoteHost;
-        if (!remoteAddr.equals(remoteHost)) {
-            result = result + " (" + remoteAddr + ")";
-        }
-        return result;
     }
 
     private Pair<MediaType, ConfigurationProvider> getProvider(List<String> acceptValues) {

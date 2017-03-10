@@ -51,6 +51,7 @@
             <directory>${project.basedir}/src/main/resources</directory>
             <outputDirectory>/</outputDirectory>
             <fileMode>0755</fileMode>
+            <filtered>true</filtered>
         </fileSet>
     </fileSets>
     <files>
