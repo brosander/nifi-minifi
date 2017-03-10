@@ -15,14 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.minifi.c2.configuration;
+package org.apache.nifi.minifi.c2.security.authentication;
 
-import org.apache.nifi.minifi.c2.security.SecurityConfiguration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.ImportResource;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 
-@org.springframework.context.annotation.Configuration
-@Import({SecurityConfiguration.class})
-@ImportResource({"classpath:minifi-c2-context.xml"})
-public class Configuration {
+import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
+
+public class C2AnonymousAuthenticationFilter extends AnonymousAuthenticationFilter {
+    public static final String ANONYMOUS = "anonymous";
+
+    public C2AnonymousAuthenticationFilter() {
+        super(ANONYMOUS);
+    }
+
+    @Override
+    protected Authentication createAuthentication(HttpServletRequest request) {
+        return new C2AuthenticationToken(ANONYMOUS, null, Arrays.asList(new SimpleGrantedAuthority("ROLE_ANONYMOUS")));
+    }
 }

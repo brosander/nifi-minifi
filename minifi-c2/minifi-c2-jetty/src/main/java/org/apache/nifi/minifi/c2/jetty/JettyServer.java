@@ -17,8 +17,15 @@
 
 package org.apache.nifi.minifi.c2.jetty;
 
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
@@ -26,27 +33,86 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class JettyServer {
     private static final Logger logger = LoggerFactory.getLogger(JettyServer.class);
     private static String C2_SERVER_HOME = System.getenv("C2_SERVER_HOME");
     private static final String WEB_DEFAULTS_XML = "webdefault.xml";
+    private static Properties properties;
 
     public static void main(String[] args) throws Exception {
+        properties = new Properties();
+        try (InputStream inputStream = JettyServer.class.getClassLoader().getResourceAsStream("c2.properties")) {
+            properties.load(inputStream);
+        }
+
         final HandlerCollection handlers = new HandlerCollection();
         for (Path path : Files.list(Paths.get(C2_SERVER_HOME, "webapps")).collect(Collectors.toList())) {
              handlers.addHandler(loadWar(path.toFile(), "/c2", JettyServer.class.getClassLoader()));
         }
-        Server server = new Server(8080);
+
+        Server server;
+        int port = Integer.parseInt(properties.getProperty("minifi.c2.server.port", "10080"));
+        if (Boolean.valueOf(properties.getProperty("minifi.c2.server.secure"))) {
+            HttpConfiguration config = new HttpConfiguration();
+            config.setSecureScheme("https");
+            config.setSecurePort(port);
+            config.addCustomizer(new SecureRequestCustomizer());
+
+            SslContextFactory sslContextFactory = new SslContextFactory();
+            KeyStore keyStore = KeyStore.getInstance(properties.getProperty("minifi.c2.server.keystoreType"));
+            try (InputStream inputStream = Files.newInputStream(Paths.get(C2_SERVER_HOME).resolve(properties.getProperty("minifi.c2.server.keystore")))) {
+                keyStore.load(inputStream, properties.getProperty("minifi.c2.server.keystorePasswd").toCharArray());
+            }
+            sslContextFactory.setKeyStore(keyStore);
+            sslContextFactory.setKeyManagerPassword(properties.getProperty("minifi.c2.server.keystorePasswd"));
+            sslContextFactory.setWantClientAuth(true);
+
+            sslContextFactory.setTrustStorePath(properties.getProperty("minifi.c2.server.truststore"));
+            sslContextFactory.setTrustStoreType(properties.getProperty("minifi.c2.server.truststoreType"));
+            sslContextFactory.setTrustStorePassword(properties.getProperty("minifi.c2.server.truststorePasswd"));
+
+            server = new Server();
+
+            ServerConnector serverConnector = new ServerConnector(server, new SslConnectionFactory(sslContextFactory, "http/1.1"), new HttpConnectionFactory(config));
+            serverConnector.setPort(port);
+
+            server.addConnector(serverConnector);
+        } else {
+            server = new Server(port);
+        }
         server.setHandler(handlers);
         server.start();
+
+        // ensure everything started successfully
+        for (Handler handler : server.getChildHandlers()) {
+            // see if the handler is a web app
+            if (handler instanceof WebAppContext) {
+                WebAppContext context = (WebAppContext) handler;
+
+                // see if this webapp had any exceptions that would
+                // cause it to be unavailable
+                if (context.getUnavailableException() != null) {
+
+                    System.err.println("Failed to start web server: " + context.getUnavailableException().getMessage());
+                    System.err.println("Shutting down...");
+                    logger.warn("Failed to start web server... shutting down.", context.getUnavailableException());
+                    server.stop();
+                    System.exit(1);
+                }
+            }
+        }
+
         server.dumpStdErr();
         server.join();
     }

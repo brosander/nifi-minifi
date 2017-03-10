@@ -15,14 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.minifi.c2.configuration;
+package org.apache.nifi.minifi.c2.util;
 
-import org.apache.nifi.minifi.c2.security.SecurityConfiguration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.ImportResource;
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 
-@org.springframework.context.annotation.Configuration
-@Import({SecurityConfiguration.class})
-@ImportResource({"classpath:minifi-c2-context.xml"})
-public class Configuration {
+public class HttpRequestUtil {
+    public static String getQueryString(HttpServletRequest request) {
+        String queryString = request.getQueryString();
+        if (queryString == null) {
+            return "no query string";
+        }
+        return "query string \"" + queryString + "\"";
+    }
+
+    public static String getClientString(ServletRequest request) {
+        String remoteHost = request.getRemoteHost();
+        String remoteAddr = request.getRemoteAddr();
+        String result =  "Client " + remoteHost;
+        if (!remoteAddr.equals(remoteHost)) {
+            result = result + " (" + remoteAddr + ")";
+        }
+        return result;
+    }
 }

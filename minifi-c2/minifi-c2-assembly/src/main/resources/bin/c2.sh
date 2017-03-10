@@ -102,21 +102,21 @@ run() {
     sudo_cmd_prefix=""
     if $cygwin; then
         C2_SERVER_HOME=$(cygpath --path --windows "${C2_SERVER_HOME}")
-        CLASSPATH="$C2_SERVER_HOME/classpath;$(cygpath --path --windows "${LIBS}")"
+        CLASSPATH="$C2_SERVER_HOME/conf;$(cygpath --path --windows "${LIBS}")"
     else
-        CLASSPATH="$C2_SERVER_HOME/classpath:${LIBS}"
+        CLASSPATH="$C2_SERVER_HOME/conf:${LIBS}"
     fi
 
     echo
     echo "Java home: ${JAVA_HOME}"
-    echo "MiNiFi Toolkit home: ${C2_SERVER_HOME}"
+    echo "C2 Server home: ${C2_SERVER_HOME}"
     echo
     echo
 
   if [ "$1" = "debug" ]; then
-    "${JAVA}" -cp "${CLASSPATH}" -Xms12m -Xmx24m -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005 org.apache.nifi.minifi.c2.jetty.JettyServer $@
+    "${JAVA}" -cp "${CLASSPATH}"  -Xms12m -Xmx24m -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005 -Djava.net.preferIPv4Stack=true org.apache.nifi.minifi.c2.jetty.JettyServer $@
   else
-    "${JAVA}" -cp "${CLASSPATH}" -Xms12m -Xmx24m org.apache.nifi.minifi.c2.jetty.JettyServer $@
+    "${JAVA}" -cp "${CLASSPATH}" -Xms12m -Xmx24m -Djava.net.preferIPv4Stack=true org.apache.nifi.minifi.c2.jetty.JettyServer $@
   fi
    return $?
 }

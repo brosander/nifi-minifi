@@ -25,6 +25,17 @@ limitations under the License.
     <artifactId>minifi-c2-assembly</artifactId>
     <packaging>pom</packaging>
     <description>This is the assembly of Apache MiNiFi's - Command And Control Server</description>
+    <properties>
+        <minifi.c2.server.port>10080</minifi.c2.server.port>
+
+        <minifi.c2.server.secure>false</minifi.c2.server.secure>
+        <minifi.c2.server.keystore>./conf/keystore.jks</minifi.c2.server.keystore>
+        <minifi.c2.server.keystoreType>jks</minifi.c2.server.keystoreType>
+        <minifi.c2.server.keystorePasswd/>
+        <minifi.c2.server.truststore>./conf/truststore.jks</minifi.c2.server.truststore>
+        <minifi.c2.server.truststoreType>jks</minifi.c2.server.truststoreType>
+        <minifi.c2.server.truststorePasswd/>
+    </properties>
     <build>
         <plugins>
             <plugin>
@@ -50,6 +61,7 @@ limitations under the License.
                                 <descriptor>src/main/assembly/dependencies.xml</descriptor>
                             </descriptors>
                             <tarLongFileMode>posix</tarLongFileMode>
+                            <escapeString>\</escapeString>
                         </configuration>
                     </execution>
                 </executions>
@@ -100,6 +112,16 @@ limitations under the License.
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
