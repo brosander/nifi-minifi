@@ -18,20 +18,36 @@
 package org.apache.nifi.minifi.c2.provider.nifi.rest;
 
 import org.apache.nifi.minifi.c2.api.ConfigurationProviderException;
+import org.apache.nifi.minifi.c2.api.InvalidParameterException;
+import org.apache.nifi.minifi.c2.api.properties.C2Properties;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.GeneralSecurityException;
 
 public class NiFiRestConnector {
     private static final Logger logger = LoggerFactory.getLogger(NiFiRestConnector.class);
 
     private final String nifiApiUrl;
+    private final SslContextFactory sslContextFactory;
 
-    public NiFiRestConnector(String nifiApiUrl) {
+    public NiFiRestConnector(String nifiApiUrl) throws InvalidParameterException, GeneralSecurityException, IOException {
+        if (nifiApiUrl.startsWith("https:")) {
+            sslContextFactory = C2Properties.getInstance().getSslContextFactory();
+            if (sslContextFactory == null) {
+                throw new InvalidParameterException("Need sslContextFactory to connect to https NiFi endpoint (" + nifiApiUrl + ")");
+            }
+        } else {
+            sslContextFactory = null;
+        }
         this.nifiApiUrl = nifiApiUrl;
     }
 
@@ -48,7 +64,15 @@ public class NiFiRestConnector {
         }
 
         try {
-            return (HttpURLConnection) url.openConnection();
+            if (sslContextFactory == null) {
+                return (HttpURLConnection) url.openConnection();
+            } else {
+                HttpsURLConnection httpsURLConnection = (HttpsURLConnection) url.openConnection();
+                SSLContext sslContext = sslContextFactory.getSslContext();
+                SSLSocketFactory socketFactory = sslContext.getSocketFactory();
+                httpsURLConnection.setSSLSocketFactory(socketFactory);
+                return httpsURLConnection;
+            }
         } catch (IOException e) {
             throw new ConfigurationProviderException("Unable to connect to " + url, e);
         }

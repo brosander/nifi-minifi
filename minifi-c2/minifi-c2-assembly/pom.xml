@@ -35,6 +35,8 @@ limitations under the License.
         <minifi.c2.server.truststore>./conf/truststore.jks</minifi.c2.server.truststore>
         <minifi.c2.server.truststoreType>jks</minifi.c2.server.truststoreType>
         <minifi.c2.server.truststorePasswd/>
+
+        <minifi.c2.server.provider.nifi.rest.api.url>http://localhost:8080/nifi-api</minifi.c2.server.provider.nifi.rest.api.url>
     </properties>
     <build>
         <plugins>

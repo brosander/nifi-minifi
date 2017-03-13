@@ -37,6 +37,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.security.GeneralSecurityException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,7 @@ public class NiFiRestConfigurationProvider implements ConfigurationProvider {
     private final ConfigurationCache configurationCache;
     private final NiFiRestConnector niFiRestConnector;
 
-    public NiFiRestConfigurationProvider(ConfigurationCache configurationCache, String nifiUrl) {
+    public NiFiRestConfigurationProvider(ConfigurationCache configurationCache, String nifiUrl) throws InvalidParameterException, GeneralSecurityException, IOException {
         this(configurationCache, new NiFiRestConnector(nifiUrl));
     }
 

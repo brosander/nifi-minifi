@@ -20,7 +20,6 @@ package org.apache.nifi.minifi.c2.service;
 import com.wordnik.swagger.annotations.Api;
 import org.apache.nifi.minifi.c2.api.Configuration;
 import org.apache.nifi.minifi.c2.api.ConfigurationProvider;
-import org.apache.nifi.minifi.c2.api.ConfigurationProviderException;
 import org.apache.nifi.minifi.c2.api.InvalidParameterException;
 import org.apache.nifi.minifi.c2.api.util.Pair;
 import org.apache.nifi.minifi.c2.util.HttpRequestUtil;
@@ -126,8 +125,8 @@ public class ConfigService {
         } catch (InvalidParameterException e) {
             logger.info(HttpRequestUtil.getClientString(request) + " made invalid request with " + HttpRequestUtil.getQueryString(request), e);
             return Response.status(400).build();
-        } catch (ConfigurationProviderException e) {
-            logger.error(HttpRequestUtil.getClientString(request) + " made request with " + HttpRequestUtil.getQueryString(request) + " that caused error in " + providerPair.getSecond(), e);
+        } catch (Throwable t) {
+            logger.error(HttpRequestUtil.getClientString(request) + " made request with " + HttpRequestUtil.getQueryString(request) + " that caused error in " + providerPair.getSecond(), t);
             return Response.status(500).build();
         }
     }
