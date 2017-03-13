@@ -17,6 +17,7 @@
 
 package org.apache.nifi.minifi.c2.jetty;
 
+import org.apache.nifi.minifi.c2.api.properties.C2Properties;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -33,28 +34,21 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class JettyServer {
     private static final Logger logger = LoggerFactory.getLogger(JettyServer.class);
     private static String C2_SERVER_HOME = System.getenv("C2_SERVER_HOME");
     private static final String WEB_DEFAULTS_XML = "webdefault.xml";
-    private static Properties properties;
 
     public static void main(String[] args) throws Exception {
-        properties = new Properties();
-        try (InputStream inputStream = JettyServer.class.getClassLoader().getResourceAsStream("c2.properties")) {
-            properties.load(inputStream);
-        }
+        C2Properties properties = C2Properties.getInstance();
 
         final HandlerCollection handlers = new HandlerCollection();
         for (Path path : Files.list(Paths.get(C2_SERVER_HOME, "webapps")).collect(Collectors.toList())) {
@@ -63,24 +57,14 @@ public class JettyServer {
 
         Server server;
         int port = Integer.parseInt(properties.getProperty("minifi.c2.server.port", "10080"));
-        if (Boolean.valueOf(properties.getProperty("minifi.c2.server.secure"))) {
+        SslContextFactory sslContextFactory = properties.getSslContextFactory();
+        if (sslContextFactory == null) {
+            server = new Server(port);
+        } else {
             HttpConfiguration config = new HttpConfiguration();
             config.setSecureScheme("https");
             config.setSecurePort(port);
             config.addCustomizer(new SecureRequestCustomizer());
-
-            SslContextFactory sslContextFactory = new SslContextFactory();
-            KeyStore keyStore = KeyStore.getInstance(properties.getProperty("minifi.c2.server.keystoreType"));
-            try (InputStream inputStream = Files.newInputStream(Paths.get(C2_SERVER_HOME).resolve(properties.getProperty("minifi.c2.server.keystore")))) {
-                keyStore.load(inputStream, properties.getProperty("minifi.c2.server.keystorePasswd").toCharArray());
-            }
-            sslContextFactory.setKeyStore(keyStore);
-            sslContextFactory.setKeyManagerPassword(properties.getProperty("minifi.c2.server.keystorePasswd"));
-            sslContextFactory.setWantClientAuth(true);
-
-            sslContextFactory.setTrustStorePath(properties.getProperty("minifi.c2.server.truststore"));
-            sslContextFactory.setTrustStoreType(properties.getProperty("minifi.c2.server.truststoreType"));
-            sslContextFactory.setTrustStorePassword(properties.getProperty("minifi.c2.server.truststorePasswd"));
 
             server = new Server();
 
@@ -88,9 +72,8 @@ public class JettyServer {
             serverConnector.setPort(port);
 
             server.addConnector(serverConnector);
-        } else {
-            server = new Server(port);
         }
+
         server.setHandler(handlers);
         server.start();
 
