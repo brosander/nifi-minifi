@@ -40,7 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -69,10 +69,24 @@ public class ConfigService {
         for (Map.Entry<String, List<String>> entry : uriInfo.getQueryParameters().entrySet()) {
             parameters.put(entry.getKey(), entry.getValue());
         }
-        ArrayList<String> acceptValues = Collections.list(request.getHeaders("Accept"));
+        List<String> acceptValues = Collections.list(request.getHeaders("Accept"));
+        boolean defaultAccept = false;
+        if (acceptValues.size() == 0) {
+            acceptValues = Arrays.asList("*/*");
+            defaultAccept = true;
+        }
         if (logger.isDebugEnabled()) {
-            logger.debug("Handling request from " + HttpRequestUtil.getClientString(request) + " with parameters " + parameters +
-                    " and Accept: " + acceptValues.stream().collect(Collectors.joining(", ")));
+            StringBuilder builder = new StringBuilder("Handling request from ")
+                    .append(HttpRequestUtil.getClientString(request))
+                    .append(" with parameters ")
+                    .append(parameters)
+                    .append(" and Accept");
+            if (defaultAccept) {
+                builder = builder.append(" default value");
+            }
+            builder = builder.append(": ")
+                    .append(acceptValues.stream().collect(Collectors.joining(", ")));
+            logger.debug(builder.toString());
         }
         Pair<MediaType, ConfigurationProvider> providerPair = getProvider(acceptValues);
 
