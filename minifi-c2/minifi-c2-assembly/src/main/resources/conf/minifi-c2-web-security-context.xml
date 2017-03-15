@@ -75,7 +75,13 @@
     <bean id="loginIdentityProvider" class="org.apache.nifi.web.security.spring.LoginIdentityProviderFactoryBean">
         <property name="properties" ref="nifiProperties"/>
     </bean>-->
-    <bean id="x509AuthenticationProvider" class="org.apache.nifi.minifi.c2.security.authentication.X509AuthenticationProvider"/>
+    <bean id="x509AuthenticationProvider" class="org.apache.nifi.minifi.c2.security.authentication.X509AuthenticationProvider">
+        <constructor-arg>
+            <bean class="org.apache.nifi.minifi.c2.security.authorization.PrincipalStringAuthorityGranter">
+                <constructor-arg value="classpath:authorities.yaml"/>
+            </bean>
+        </constructor-arg>
+    </bean>
 
     <bean id="x509AuthenticationFilter" class="org.apache.nifi.minifi.c2.security.authentication.X509AuthenticationFilter"/>
 

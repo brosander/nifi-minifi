@@ -17,17 +17,20 @@
 
 package org.apache.nifi.minifi.c2.security.authentication;
 
+import org.apache.nifi.minifi.c2.api.security.authorization.AuthorityGranter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
-import java.util.Arrays;
 
 public class X509AuthenticationProvider implements AuthenticationProvider {
     private static final Logger logger = LoggerFactory.getLogger(X509AuthenticationProvider.class);
+    private final AuthorityGranter authorityGranter;
+
+    public X509AuthenticationProvider(AuthorityGranter authorityGranter) {
+        this.authorityGranter = authorityGranter;
+    }
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -36,7 +39,7 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
             logger.debug("Authenticating " + X509AuthenticationToken.class.getSimpleName() + " with principal " +  x509AuthenticationToken.getPrincipal());
         }
         return new C2AuthenticationToken(x509AuthenticationToken.getPrincipal(), x509AuthenticationToken.getCredentials(),
-                Arrays.asList(new SimpleGrantedAuthority("login")));
+                authorityGranter.grantAuthorities(authentication));
     }
 
     @Override

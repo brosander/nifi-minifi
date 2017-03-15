@@ -29,7 +29,22 @@
     <bean id="configService" class="org.apache.nifi.minifi.c2.service.ConfigService" scope="singleton">
         <constructor-arg>
             <list>
-                <bean class="org.apache.nifi.minifi.c2.provider.nifi.rest.NiFiRestConfigurationProvider">
+                <bean class="org.apache.nifi.minifi.c2.provider.cache.CacheConfigurationProvider">
+                    <constructor-arg>
+                        <value>text/yml</value>
+                    </constructor-arg>
+                    <constructor-arg>
+                        <bean class="org.apache.nifi.minifi.c2.cache.filesystem.FileSystemConfigurationCache">
+                            <constructor-arg>
+                                <value>./files</value>
+                            </constructor-arg>
+                            <constructor-arg>
+                                <value>\${class}/config.yml</value>
+                            </constructor-arg>
+                        </bean>
+                    </constructor-arg>
+                </bean>
+                <!--<bean class="org.apache.nifi.minifi.c2.provider.nifi.rest.NiFiRestConfigurationProvider">
                     <constructor-arg>
                         <bean class="org.apache.nifi.minifi.c2.cache.filesystem.FileSystemConfigurationCache">
                             <constructor-arg>
@@ -43,23 +58,13 @@
                     <constructor-arg>
                         <value>${minifi.c2.server.provider.nifi.rest.api.url}</value>
                     </constructor-arg>
-                </bean>
-                <!--<bean class="org.apache.nifi.minifi.c2.provider.cache.CacheConfigurationProvider">
-                     <constructor-arg>
-                        <value>text/yml</value>
-                    </constructor-arg>
-                    <constructor-arg>
-                        <bean class="org.apache.nifi.minifi.c2.cache.filesystem.FileSystemConfigurationCache">
-                            <constructor-arg>
-                                <value>./files</value>
-                            </constructor-arg>
-                            <constructor-arg>
-                                <value>\${class}/config.yml</value>
-                            </constructor-arg>
-                        </bean>
-                    </constructor-arg>
                 </bean>-->
             </list>
+        </constructor-arg>
+        <constructor-arg>
+            <bean class="org.apache.nifi.minifi.c2.security.authorization.GrantedAuthorityAuthorizer">
+                <constructor-arg value="classpath:authorizations.yaml"/>
+            </bean>
         </constructor-arg>
     </bean>
 </beans>
