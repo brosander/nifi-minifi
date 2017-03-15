@@ -21,10 +21,13 @@ import com.wordnik.swagger.annotations.Api;
 import org.apache.nifi.minifi.c2.api.Configuration;
 import org.apache.nifi.minifi.c2.api.ConfigurationProvider;
 import org.apache.nifi.minifi.c2.api.InvalidParameterException;
+import org.apache.nifi.minifi.c2.api.security.authorization.AuthorizationException;
+import org.apache.nifi.minifi.c2.api.security.authorization.Authorizer;
 import org.apache.nifi.minifi.c2.api.util.Pair;
 import org.apache.nifi.minifi.c2.util.HttpRequestUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -54,8 +57,10 @@ import java.util.stream.Collectors;
 public class ConfigService {
     private static final Logger logger = LoggerFactory.getLogger(ConfigService.class);
     private final List<Pair<MediaType, ConfigurationProvider>> configurationProviders;
+    private final Authorizer authorizer;
 
-    public ConfigService(List<ConfigurationProvider> configurationProviders) {
+    public ConfigService(List<ConfigurationProvider> configurationProviders, Authorizer authorizer) {
+        this.authorizer = authorizer;
         if (configurationProviders == null || configurationProviders.size() == 0) {
             throw new IllegalArgumentException("Expected at least one configuration provider");
         }
@@ -64,6 +69,12 @@ public class ConfigService {
 
     @GET
     public Response getConfig(@Context HttpServletRequest request, @Context UriInfo uriInfo) {
+        try {
+            authorizer.authorize(SecurityContextHolder.getContext().getAuthentication(), uriInfo);
+        } catch (AuthorizationException e) {
+            logger.warn(HttpRequestUtil.getClientString(request) + " not authorized to access " + uriInfo, e);
+            return Response.status(403).build();
+        }
         Map<String, List<String>> parameters = new HashMap<>();
         for (Map.Entry<String, List<String>> entry : uriInfo.getQueryParameters().entrySet()) {
             parameters.put(entry.getKey(), entry.getValue());

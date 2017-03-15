@@ -33,11 +33,6 @@ public class X509AuthenticationToken extends AbstractAuthenticationToken {
         setAuthenticated(false);
     }
 
-    public X509AuthenticationToken(X509AuthenticationToken original, Collection<GrantedAuthority> grantedAuthorities) {
-        this(original.x509Certificates, grantedAuthorities);
-        setAuthenticated(true);
-    }
-
     protected X509AuthenticationToken(X509Certificate[] x509Certificates, Collection<GrantedAuthority> grantedAuthorities) {
         super(grantedAuthorities);
         this.x509Certificates = Arrays.copyOf(x509Certificates, x509Certificates.length, X509Certificate[].class);
