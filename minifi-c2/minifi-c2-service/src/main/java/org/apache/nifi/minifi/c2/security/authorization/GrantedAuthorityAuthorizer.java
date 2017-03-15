@@ -106,7 +106,7 @@ public class GrantedAuthorityAuthorizer implements Authorizer {
             }
             if (ALLOW.equalsIgnoreCase(ruleAction)) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Action " + action + "matchid which resulted in " + ruleAction);
+                    logger.debug("Action " + action + "matched which resulted in " + ruleAction);
                 }
                 return;
             } else {
