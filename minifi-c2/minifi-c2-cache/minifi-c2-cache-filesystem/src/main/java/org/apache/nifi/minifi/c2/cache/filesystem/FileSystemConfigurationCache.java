@@ -35,7 +35,7 @@ public class FileSystemConfigurationCache implements ConfigurationCache {
     private final String pathPattern;
 
     public FileSystemConfigurationCache(String pathRoot, String pathPattern) throws IOException {
-        this.pathRoot = Paths.get(pathRoot).toAbsolutePath();
+        this.pathRoot = Paths.get(System.getenv("C2_SERVER_HOME")).resolve(pathRoot).toAbsolutePath();
         Files.createDirectories(this.pathRoot);
         this.pathPattern = pathPattern;
     }

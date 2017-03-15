@@ -32,5 +32,6 @@ limitations under the License.
         <module>minifi-c2-service</module>
         <module>minifi-c2-jetty</module>
         <module>minifi-c2-assembly</module>
+        <module>minifi-c2-docker</module>
     </modules>
 </project>
