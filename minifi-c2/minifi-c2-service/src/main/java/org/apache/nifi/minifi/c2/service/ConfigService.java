@@ -34,6 +34,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -43,7 +44,6 @@ import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +68,7 @@ public class ConfigService {
     }
 
     @GET
-    public Response getConfig(@Context HttpServletRequest request, @Context UriInfo uriInfo) {
+    public Response getConfig(@Context HttpServletRequest request, @Context HttpHeaders httpHeaders, @Context UriInfo uriInfo) {
         try {
             authorizer.authorize(SecurityContextHolder.getContext().getAuthentication(), uriInfo);
         } catch (AuthorizationException e) {
@@ -79,10 +79,10 @@ public class ConfigService {
         for (Map.Entry<String, List<String>> entry : uriInfo.getQueryParameters().entrySet()) {
             parameters.put(entry.getKey(), entry.getValue());
         }
-        List<String> acceptValues = Collections.list(request.getHeaders("Accept"));
+        List<MediaType> acceptValues = httpHeaders.getAcceptableMediaTypes();
         boolean defaultAccept = false;
         if (acceptValues.size() == 0) {
-            acceptValues = Arrays.asList("*/*");
+            acceptValues = Arrays.asList(MediaType.WILDCARD_TYPE);
             defaultAccept = true;
         }
         if (logger.isDebugEnabled()) {
@@ -95,7 +95,7 @@ public class ConfigService {
                 builder = builder.append(" default value");
             }
             builder = builder.append(": ")
-                    .append(acceptValues.stream().collect(Collectors.joining(", ")));
+                    .append(acceptValues.stream().map(Object::toString).collect(Collectors.joining(", ")));
             logger.debug(builder.toString());
         }
         Pair<MediaType, ConfigurationProvider> providerPair = getProvider(acceptValues);
@@ -135,10 +135,10 @@ public class ConfigService {
             return ok.build();
         } catch (InvalidParameterException e) {
             logger.info(HttpRequestUtil.getClientString(request) + " made invalid request with " + HttpRequestUtil.getQueryString(request), e);
-            return Response.status(400).build();
+            return Response.status(400).entity("Invalid request.").build();
         } catch (Throwable t) {
             logger.error(HttpRequestUtil.getClientString(request) + " made request with " + HttpRequestUtil.getQueryString(request) + " that caused error in " + providerPair.getSecond(), t);
-            return Response.status(500).build();
+            return Response.status(500).entity("Internal error").build();
         }
     }
 
@@ -151,18 +151,17 @@ public class ConfigService {
         return builder.toString();
     }
 
-    private Pair<MediaType, ConfigurationProvider> getProvider(List<String> acceptValues) {
-        for (String accept : acceptValues) {
-            MediaType acceptMediaType = MediaType.valueOf(accept);
+    private Pair<MediaType, ConfigurationProvider> getProvider(List<MediaType> acceptValues) {
+        for (MediaType accept : acceptValues) {
             for (Pair<MediaType, ConfigurationProvider> configurationProviderPair : configurationProviders) {
-                if (acceptMediaType.isCompatible(configurationProviderPair.getFirst())) {
+                if (accept.isCompatible(configurationProviderPair.getFirst())) {
                     return configurationProviderPair;
                 }
             }
         }
 
-        throw new WebApplicationException(Response.status(415).entity("Unable to find configuration provider for " +
-                "\"Accept: " + acceptValues.stream().collect(Collectors.joining(", ")) + "\" supported media types are " +
+        throw new WebApplicationException(Response.status(406).entity("Unable to find configuration provider for " +
+                "\"Accept: " + acceptValues.stream().map(Object::toString).collect(Collectors.joining(", ")) + "\" supported media types are " +
                 configurationProviders.stream().map(Pair::getFirst).map(Object::toString).collect(Collectors.joining(", "))).build());
     }
 }
