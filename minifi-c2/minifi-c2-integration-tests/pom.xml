@@ -67,6 +67,16 @@ limitations under the License.
             <testResource>
                 <directory>src/test/resources</directory>
                 <filtering>true</filtering>
+                <excludes>
+                    <exclude>**/minifi-c2-context.xml</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>**/minifi-c2-context.xml</include>
+                </includes>
             </testResource>
         </testResources>
 
@@ -75,6 +85,15 @@ limitations under the License.
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <configuration>
+                    <excludes combine.children="append">
+                        <exclude>src/test/resources/mocknifi/www/nifi-api/flow/templates</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>

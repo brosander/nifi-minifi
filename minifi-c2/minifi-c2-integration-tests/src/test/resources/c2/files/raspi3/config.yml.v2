@@ -15,7 +15,7 @@
 
 MiNiFi Config Version: 3
 Flow Controller:
-  name: MiNiFi Flow V2
+  name: raspi3.v2
   comment: ''
 Core Properties:
   flow controller graceful shutdown period: 10 sec

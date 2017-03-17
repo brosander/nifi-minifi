@@ -22,12 +22,14 @@ services:
       - "10443"
     hostname: c2
     volumes:
-      - ./c2/conf/c2.properties:/opt/minifi-c2/minifi-c2-${minifi.c2.version}/conf/c2.properties
-      - ./c2/conf/authorities.yaml:/opt/minifi-c2/minifi-c2-${minifi.c2.version}/conf/authorities.yaml
-      - ./c2/conf/authorizations.yaml:/opt/minifi-c2/minifi-c2-${minifi.c2.version}/conf/authorizations.yaml
       - ./c2/files:/opt/minifi-c2/minifi-c2-${minifi.c2.version}/files
-      - ./certificates/c2/keystore.jks:/opt/minifi-c2/minifi-c2-${minifi.c2.version}/conf/keystore.jks
-      - ./certificates/c2/truststore.jks:/opt/minifi-c2/minifi-c2-${minifi.c2.version}/conf/truststore.jks
+
+      - ./c2-secure/conf/c2.properties:/opt/minifi-c2/minifi-c2-${minifi.c2.version}/conf/c2.properties
+      - ./c2-secure/conf/authorities.yaml:/opt/minifi-c2/minifi-c2-${minifi.c2.version}/conf/authorities.yaml
+      - ./c2-secure/conf/authorizations.yaml:/opt/minifi-c2/minifi-c2-${minifi.c2.version}/conf/authorizations.yaml
+
+      - ./certificates-FileSystemCacheProviderSecureTest/c2/keystore.jks:/opt/minifi-c2/minifi-c2-${minifi.c2.version}/conf/keystore.jks
+      - ./certificates-FileSystemCacheProviderSecureTest/c2/truststore.jks:/opt/minifi-c2/minifi-c2-${minifi.c2.version}/conf/truststore.jks
 
   squid:
     image: chrisdaish/squid

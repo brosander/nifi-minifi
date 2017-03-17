@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.minifi.c2.integration.test;
+package org.apache.nifi.minifi.c2.integration.test.health;
 
 import com.palantir.docker.compose.connection.Container;
 import com.palantir.docker.compose.connection.DockerPort;
