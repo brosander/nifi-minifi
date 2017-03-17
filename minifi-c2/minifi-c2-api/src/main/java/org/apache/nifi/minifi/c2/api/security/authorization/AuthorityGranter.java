@@ -22,6 +22,15 @@ import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 
+/**
+ * Interface responsible for taking an authentication object and returning the GrantedAuthorities it should have
+ */
 public interface AuthorityGranter {
+    /**
+     * Returns the authorities a given Authentication object should receive
+     *
+     * @param authentication the authentication
+     * @return the authorities it should receive
+     */
     Collection<GrantedAuthority> grantAuthorities(Authentication authentication);
 }

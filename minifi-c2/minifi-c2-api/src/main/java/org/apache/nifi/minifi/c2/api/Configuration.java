@@ -19,10 +19,27 @@ package org.apache.nifi.minifi.c2.api;
 
 import java.io.InputStream;
 
+/**
+ * Represents a MiNiFi configuration of a given version, format matches the format of the ConfigurationProvider
+ */
 public interface Configuration {
+    /**
+     * Gets the version
+     *
+     * @return the version
+     */
     String getVersion();
 
+    /**
+     * Returns a boolean indicating whether this version exists
+     *
+     * @return a boolean indicating whether this version exists
+     */
     boolean exists();
-
+    /**
+     * Returns an input stream to read the configuration with
+     *
+     * @return an input stream to read the configuration with
+     */
     InputStream getInputStream() throws ConfigurationProviderException;
 }

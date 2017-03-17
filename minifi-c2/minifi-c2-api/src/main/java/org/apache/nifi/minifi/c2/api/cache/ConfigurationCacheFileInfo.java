@@ -22,10 +22,32 @@ import org.apache.nifi.minifi.c2.api.ConfigurationProviderException;
 import java.io.IOException;
 import java.util.stream.Stream;
 
+/**
+ * Information on the different versions of a cache entry
+ */
 public interface ConfigurationCacheFileInfo {
+    /**
+     * Returns the version the file would be assigned based on its name
+     *
+     * @param filename the filename
+     * @return the version
+     */
     Integer getVersionIfMatch(String filename);
 
+    /**
+     * Returns a stream of WritableConfigurations for this cache entry
+     *
+     * @return the stream
+     * @throws IOException if there is an error getting the configurations
+     */
     Stream<WriteableConfiguration> getCachedConfigurations() throws IOException;
 
+    /**
+     * Returns a WritableConfiguration for the given version of this cache entry
+     *
+     * @param version the version
+     * @return the configuration
+     * @throws ConfigurationProviderException if there is a problem getting the configuration
+     */
     WriteableConfiguration getConfiguration(Integer version) throws ConfigurationProviderException;
 }

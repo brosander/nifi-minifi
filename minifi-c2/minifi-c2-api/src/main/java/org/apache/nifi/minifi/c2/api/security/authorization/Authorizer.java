@@ -21,6 +21,16 @@ import org.springframework.security.core.Authentication;
 
 import javax.ws.rs.core.UriInfo;
 
+/**
+ * Interface responsible for authorizing a given authentication to access a given uri
+ */
 public interface Authorizer {
+    /**
+     * Throws an AuthorizationException if the authentication should not access the given uri
+     *
+     * @param authentication the authentication
+     * @param uriInfo the uri
+     * @throws AuthorizationException if the authentication should not access the uri
+     */
     void authorize(Authentication authentication, UriInfo uriInfo) throws AuthorizationException;
 }
