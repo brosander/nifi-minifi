@@ -40,7 +40,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.net.SocketException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -141,7 +140,7 @@ public class FileSystemCacheProviderSecureTest {
         assertEquals("Raspi 3", configSchema.getFlowControllerProperties().getName());
     }
 
-    @Test(expected = SocketException.class)
+    @Test(expected = IOException.class)
     public void testUser3WrongCA() throws Exception {
         assertReturnCode("?class=raspi3", loadSslContext("user3", certificatesDirectory.getParent().resolve("badCert")), 403);
     }
