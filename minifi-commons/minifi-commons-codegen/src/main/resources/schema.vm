@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package $package;
+package $class.package;
 
 #foreach($import in $class.classImports)
 import $import;
@@ -30,7 +30,7 @@ import $import;
 #end
 
 //CHECKSTYLE:LineLength:OFF
-public class $class.name extends $class.extends #if($class.implementsString)implements $class.implementsString #end{
+public#if(!$class.concrete) abstract#end class #if(!$class.concrete) Abstract#end$class.name extends $class.extends #if($class.implementsString)implements $class.implementsString #end{
     public static final String ${underscoreNames[$class.key]}_KEY = "$class.key";
 #foreach($field in $class.fields)
     public static final String ${underscoreNames[$field.name]}_KEY = "$field.key";
@@ -46,7 +46,7 @@ public class $class.name extends $class.extends #if($class.implementsString)impl
     private $field.type ${field.name}#if($field.hasDefault()) = ${underscoreNames[$field.name]}_DEFAULT#end;
 #end
 
-    public ${class.name}() {
+    public #if(!$class.concrete) Abstract#end${class.name}() {
 #foreach($field in $class.fields)
 #if ($class.isSchema($field.type))
         $field.name = new ${field.type}();
@@ -54,7 +54,7 @@ public class $class.name extends $class.extends #if($class.implementsString)impl
 #end
     }
 
-    public ${class.name}(Map map) {
+    public #if(!$class.concrete) Abstract#end${class.name}(Map map) {
 #foreach($field in $class.fields)
 #if ($field.type.equals("int"))
 #set($extraConvert = ".intValue()")
@@ -87,6 +87,10 @@ public class $class.name extends $class.extends #if($class.implementsString)impl
 #end
 #end
 #end
+#if ($class.additionalValidator)
+
+        new ${class.additionalValidator}().validate(this);
+#end
     }
 
 #if ($class.writable)
@@ -114,4 +118,4 @@ public class $class.name extends $class.extends #if($class.implementsString)impl
 #end
 #end
 }
-//CHECKSTYLE:LineLength:OFF
+//CHECKSTYLE:LineLength:ON

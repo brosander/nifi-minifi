@@ -1,4 +1,19 @@
 {
+  "enums": [
+    {
+      "name": "KeystoreType",
+      "values": [
+        "JKS", "PKCS12"
+      ]
+    },
+    {
+      "name": "SslProtocol",
+      "caseSensitive": true,
+      "values": [
+        "SSL", "SSLv2Hello", "SSLv3", "TLS", "TLSv1", "TLSv1.1", "TLSv1.2"
+      ]
+    }
+  ],
   "classes": [
     {
       "name": "ComponentStatusRepositorySchema",
@@ -74,6 +89,24 @@
       "writable": true,
       "fields": [
         {"name": "provenanceRepoRolloverTime", "type": "String", "key": "provenance rollover time", "default": "1 min"}
+      ]
+    },
+    {
+      "imports": ["org.apache.nifi.minifi.commons.schema.validators.SecurityPropertiesSchemaValidator"],
+      "name": "SecurityPropertiesSchema",
+      "key": "Security Properties",
+      "writable": true,
+      "concrete": false,
+      "fields": [
+        {"name": "keystore", "type": "String", "key": "keystore", "default": ""},
+        {"name": "keystoreType", "type": "String", "key": "keystore type", "default": ""},
+        {"name": "keystorePassword", "type": "String", "key": "keystore password", "default": ""},
+        {"name": "keyPassword", "type": "String", "key": "key password", "default": ""},
+        {"name": "truststore", "type": "String", "key": "truststore", "default": ""},
+        {"name": "truststoreType", "type": "String", "key": "truststore type", "default": ""},
+        {"name": "truststorePassword", "type": "String", "key": "truststore password", "default": ""},
+        {"name": "sslProtocol", "type": "String", "key": "ssl protocol", "default": ""},
+        {"name": "sensitiveProps", "type": "SensitivePropsSchema", "key": "Sensitive Props", "required": false}
       ]
     },
     {

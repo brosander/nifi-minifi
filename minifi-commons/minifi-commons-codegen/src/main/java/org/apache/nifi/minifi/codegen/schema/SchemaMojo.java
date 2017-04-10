@@ -64,32 +64,47 @@ public class SchemaMojo extends AbstractMojo {
             SchemaDefinition schemaDefinition;
             try {
                 schemaDefinition = objectMapper.readValue(file, SchemaDefinition.class);
+                for (EnumDefinition enumDefinition : schemaDefinition.getEnums()) {
+                    enumDefinition.setParent(schemaDefinition);
+                }
                 for (ClassDefinition c : schemaDefinition.getClasses()) {
                     c.setParent(schemaDefinition);
                 }
             } catch (IOException e) {
                 throw new MojoExecutionException("Unable to load json " + file, e);
             }
-            for (ClassDefinition classDefinition : schemaDefinition.getClasses()) {
-                Template template = velocityEngine.getTemplate("schema.vm");
+            for (EnumDefinition enumDefinition : schemaDefinition.getEnums()) {
                 Context context = new VelocityContext();
-                String packageName = schemaDefinition.getPackage();
-                context.put("package", packageName);
+                context.put("enum", enumDefinition);
+                context.put("util", new Util());
+                render("enum.vm", context, schemaDefinition.getPackage(), enumDefinition.getName());
+            }
+            for (ClassDefinition classDefinition : schemaDefinition.getClasses()) {
+                Context context = new VelocityContext();
                 context.put("class", classDefinition);
                 context.put("util", new Util());
-                File outputFile = outputDir;
-                for (String s : packageName.split("\\.")) {
-                    outputFile = new File(outputFile, s);
+                String name = classDefinition.getName();
+                if (!classDefinition.isConcrete()) {
+                    name = "Abstract" + name;
                 }
-                outputFile.mkdirs();
-                outputFile = new File(outputFile, classDefinition.getName() + ".java");
-                try (Writer writer = new FileWriter(outputFile)) {
-                    template.merge(context, writer);
-                } catch (IOException e) {
-                    throw new MojoExecutionException("Unable to create file " + outputFile, e);
-                }
+                render("schema.vm", context, classDefinition.getPackage(), name);
             }
         }
         project.addCompileSourceRoot(outputDir.getAbsolutePath());
+    }
+
+    private void render(String templateName, Context context, String packageName, String name) throws MojoExecutionException {
+        Template template = velocityEngine.getTemplate(templateName);
+        File outputFile = outputDir;
+        for (String s : packageName.split("\\.")) {
+            outputFile = new File(outputFile, s);
+        }
+        outputFile.mkdirs();
+        outputFile = new File(outputFile, name + ".java");
+        try (Writer writer = new FileWriter(outputFile)) {
+            template.merge(context, writer);
+        } catch (IOException e) {
+            throw new MojoExecutionException("Unable to create file " + outputFile, e);
+        }
     }
 }

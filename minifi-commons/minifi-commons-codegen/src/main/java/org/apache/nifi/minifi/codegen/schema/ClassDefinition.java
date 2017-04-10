@@ -32,8 +32,10 @@ public class ClassDefinition extends BaseDefinitionWithImports {
     private String name;
     private String extendsClass = "org.apache.nifi.minifi.commons.schema.common.BaseSchema";
     private boolean writable;
+    private boolean concrete = true;
     private Set<String> implementsClasses = Collections.emptySet();
     private List<FieldDefinition> fields = Collections.emptyList();
+    private String additionalValidator;
 
     public ClassDefinition() {
         setPackage(null);
@@ -136,6 +138,9 @@ public class ClassDefinition extends BaseDefinitionWithImports {
         for (FieldDefinition field : fields) {
             imports.add(getCanonicalName(field.getType()));
         }
+        if (additionalValidator != null) {
+            imports.add(getCanonicalName(additionalValidator));
+        }
         imports.add(new CanonicalName(Map.class.getCanonicalName()));
         List<String> result = new ArrayList<>(imports.size());
         for (CanonicalName anImport : imports) {
@@ -155,5 +160,21 @@ public class ClassDefinition extends BaseDefinitionWithImports {
             aPackage = parent.getPackage();
         }
         return aPackage;
+    }
+
+    public String getAdditionalValidator() {
+        return additionalValidator;
+    }
+
+    public void setAdditionalValidator(String additionalValidator) {
+        this.additionalValidator = additionalValidator;
+    }
+
+    public boolean isConcrete() {
+        return concrete;
+    }
+
+    public void setConcrete(boolean concrete) {
+        this.concrete = concrete;
     }
 }
