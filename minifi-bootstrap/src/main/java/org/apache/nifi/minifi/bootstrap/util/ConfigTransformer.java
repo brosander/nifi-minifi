@@ -215,7 +215,7 @@ public final class ConfigTransformer {
 
             orderedProperties.setProperty("nifi.provenance.repository.implementation", "org.apache.nifi.provenance.MiNiFiPersistentProvenanceRepository",
                     System.lineSeparator() + "# Provenance Repository Properties");
-            orderedProperties.setProperty("nifi.provenance.repository.rollover.time", provenanceRepositorySchema.getProvenanceRepoRolloverTimeKey());
+            orderedProperties.setProperty("nifi.provenance.repository.rollover.time", provenanceRepositorySchema.getProvenanceRepoRolloverTime());
 
             orderedProperties.setProperty("nifi.provenance.repository.buffer.size", "10000", System.lineSeparator() + "# Volatile Provenance Respository Properties");
 
@@ -498,7 +498,7 @@ public final class ConfigTransformer {
             addTextElement(taskElement, "class", DEFAULT_PROV_REPORTING_TASK_CLASS);
             addTextElement(taskElement, "schedulingPeriod", provenanceProperties.getSchedulingPeriod());
             addTextElement(taskElement, "scheduledState", "RUNNING");
-            addTextElement(taskElement, "schedulingStrategy", provenanceProperties.getSchedulingStrategy());
+            addTextElement(taskElement, "schedulingStrategy", provenanceProperties.getSchedulingStrategy().name());
 
             Map<String, Object> attributes = new HashMap<>();
             attributes.put("Destination URL", provenanceProperties.getDestinationUrl());

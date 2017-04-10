@@ -52,7 +52,7 @@ Security Properties:
   truststore password: ''
   ssl protocol: ''
   Sensitive Props:
-    key:
+    key: ''
     algorithm: PBEWITHMD5AND256BITAES-CBC-OPENSSL
     provider: BC
 Processors:

@@ -28,7 +28,6 @@ limitations under the License.
     <modules>
         <module>minifi-commons-codegen</module>
         <module>minifi-commons-schema</module>
-        <module>minifi-commons-schema-avro</module>
         <module>minifi-utils</module>
     </modules>
 </project>

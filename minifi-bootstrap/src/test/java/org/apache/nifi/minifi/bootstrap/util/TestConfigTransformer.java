@@ -214,7 +214,7 @@ public class TestConfigTransformer {
             fail("Invalid configuration file was not detected.");
         } catch (InvalidConfigurationException e){
             assertEquals("Failed to transform config file due to:['class' in section 'Processors' because it was not found and it is required], " +
-                    "['scheduling strategy' in section 'Provenance Reporting' because it is not a valid scheduling strategy], " +
+                    "['scheduling strategy' in section 'Provenance Reporting' because it is not a valid SchedulingStrategy], " +
                     "['source name' in section 'Connections' because it was not found and it is required]", e.getMessage());
         }
     }

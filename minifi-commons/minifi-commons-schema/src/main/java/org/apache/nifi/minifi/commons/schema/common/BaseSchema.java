@@ -107,7 +107,7 @@ public abstract class BaseSchema implements Schema {
                 addValidationIssue(key, wrapperName, "it is found but could not be parsed as a " + targetClass.getSimpleName());
             }
         }
-        return null;
+        return defaultValue;
     }
 
 
