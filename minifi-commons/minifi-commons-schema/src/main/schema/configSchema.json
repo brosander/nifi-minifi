@@ -1,0 +1,102 @@
+{
+  "classes": [
+    {
+      "name": "ComponentStatusRepositorySchema",
+      "key": "Component Status Repository",
+      "writable": true,
+      "fields": [
+        {"name": "bufferSize", "type": "int", "key": "buffer size", "default": 1440},
+        {"name": "snapshotFrequency", "type": "String", "key": "snapshot frequency", "default": "1 min"}
+      ]
+    },
+    {
+      "name": "ContentRepositorySchema",
+      "key": "Content Repository",
+      "writable": true,
+      "fields": [
+        {"name": "contentClaimMaxAppendableSize", "type": "String", "key": "content claim max appendable size", "default": "10 MB"},
+        {"name": "contentClaimMaxFlowFiles", "type": "int", "key": "content claim max flow files", "default": 100},
+        {"name": "alwaysSync", "type": "boolean", "key": "always sync", "default": false}
+      ]
+    },
+    {
+      "name": "CorePropertiesSchema",
+      "key": "Core Properties",
+      "writable": true,
+      "fields": [
+        {"name": "flowControllerGracefulShutdownPeriod", "type": "String", "key": "flow controller graceful shutdown period", "default": "10 sec"},
+        {"name": "flowServiceWriteDelayInterval", "type": "String", "key": "flow service write delay interval", "default": "500 ms"},
+        {"name": "administrativeYieldDuration", "type": "String", "key": "administrative yield duration", "default": "30 sec"},
+        {"name": "boredYieldDuration", "type": "String", "key": "bored yield duration", "default": "10 millis"},
+        {"name": "maxConcurrentThreads", "type": "int", "key": "max concurrent threads", "default": 1}
+      ]
+    },
+    {
+      "name": "FlowControllerSchema",
+      "key": "Flow Controller",
+      "writable": true,
+      "fields": [
+        {"name": "name", "type": "String", "key": "name"},
+        {"name": "comment", "type": "String", "key": "comment", "default": ""}
+      ]
+    },
+    {
+      "name": "FlowFileRepositorySchema",
+      "key": "FlowFile Repository",
+      "writable": true,
+      "fields": [
+        {"name": "partitions", "type": "int", "key": "partitions", "default": 256},
+        {"name": "checkpointInterval", "type": "String", "key": "checkpoint interval", "default": "2 mins"},
+        {"name": "alwaysSync", "type": "boolean", "key": "always sync", "default": false},
+        {"name": "swapProperties", "type": "SwapSchema", "key": "Swap", "required": false}
+      ]
+    },
+    {
+      "imports": ["org.apache.nifi.scheduling.SchedulingStrategy"],
+      "name": "ProvenanceReportingSchema",
+      "key": "Provenance Reporting",
+      "writable": true,
+      "fields": [
+        {"name": "schedulingStrategy", "type": "SchedulingStrategy", "key": "scheduling strategy", "required": true, "enum": true},
+        {"name": "schedulingPeriod", "type": "String", "key": "scheduling period", "required": true},
+        {"name": "destinationUrl", "type": "String", "key": "destination url", "required": true},
+        {"name": "portName", "type": "String", "key": "port name", "required": true},
+        {"name": "comment", "type": "String", "key": "comment", "default": ""},
+        {"name": "originatingUrl", "type": "String", "key": "originating url", "default": "http://${hostname(true)}:8080/nifi"},
+        {"name": "useCompression", "type": "boolean", "key": "use compression", "default": true},
+        {"name": "timeout", "type": "String", "key": "timeout", "default": "30 secs"},
+        {"name": "batchSize", "type": "int", "key": "batch size", "default": 1000}
+      ]
+    },
+    {
+      "name": "ProvenanceRepositorySchema",
+      "key": "Provenance Repository",
+      "writable": true,
+      "fields": [
+        {"name": "provenanceRepoRolloverTime", "type": "String", "key": "provenance rollover time", "default": "1 min"}
+      ]
+    },
+    {
+      "name": "SensitivePropsSchema",
+      "key": "Sensitive Props",
+      "writable": true,
+      "fields": [
+        {"name": "key", "type": "String", "key": "key", "default": ""},
+        {"name": "algorithm", "type": "String", "key": "algorithm", "default": "PBEWITHMD5AND256BITAES-CBC-OPENSSL"},
+        {"name": "provider", "type": "String", "key": "provider", "default": "BC"}
+      ]
+    },
+    {
+      "name": "SwapSchema",
+      "key": "Swap",
+      "writable": true,
+      "fields": [
+        {"name": "threshold", "type": "int", "key": "threshold", "default": 20000},
+        {"name": "inPeriod", "type": "String", "key": "in period", "default": "5 sec"},
+        {"name": "inThreads", "type": "int", "key": "in threads", "default": 1},
+        {"name": "outPeriod", "type": "String", "key": "out period", "default": "5 sec"},
+        {"name": "outThreads", "type": "int", "key": "out threads", "default": 4}
+      ]
+    }
+  ]
+}

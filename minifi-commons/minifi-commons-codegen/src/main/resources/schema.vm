@@ -1,0 +1,90 @@
+package $package;
+
+#foreach($import in $class.classImports)
+import $import;
+#end
+
+#set($underscoreNames = $util.newMap())
+#set($getterNames = $util.newMap())
+#set($underscoreNames[$class.key] = $util.calculateUnderscoreName($class.name))
+#foreach($field in $class.fields)
+#set($underscoreNames[$field.name] = $util.calculateUnderscoreName($field.name))
+#set($getterNames[$field.name] = $util.calculateGetterName($field.name))
+#end
+
+public class $class.name extends $class.extends #if($class.implementsString)implements $class.implementsString #end{
+    public static final String ${underscoreNames[$class.key]}_KEY = "$class.key";
+#foreach($field in $class.fields)
+    public static final String ${underscoreNames[$field.name]}_KEY = "$field.key";
+#end
+
+#foreach($field in $class.fields)
+#if ($field.hasDefault())
+    public static final $field.type ${underscoreNames[$field.name]}_DEFAULT = $field.defaultLiteral;
+#end
+#end
+
+#foreach($field in $class.fields)
+    private $field.type ${field.name}#if($field.hasDefault()) = ${underscoreNames[$field.name]}_DEFAULT#end;
+#end
+
+    public ${class.name}() {
+#foreach($field in $class.fields)
+#if ($class.isSchema($field.type))
+        $field.name = new ${field.type}();
+#end
+#end
+    }
+
+    public ${class.name}(Map map) {
+#foreach($field in $class.fields)
+#if ($field.type.equals("int"))
+#set($extraConvert = ".intValue()")
+#elseif ($field.type.equals("long"))
+#set($extraConvert = ".longValue()")
+#else
+#set($extraConvert = "")
+#end
+#if ($class.isSchema($field.type))
+        $field.name = getMapAsType(map, ${underscoreNames[$field.name]}_KEY, ${field.mapType}.class, ${underscoreNames[$class.key]}_KEY, $field.required);
+        addIssuesIfNotNull($field.name);
+#elseif ($field.enum)
+#if ($field.hasDefault())
+        String ${field.name}String = getOptionalKeyAsType(map, ${underscoreNames[$field.name]}_KEY, String.class, ${underscoreNames[$class.key]}_KEY, ${underscoreNames[$field.name]}_DEFAULT);
+#else
+        String ${field.name}String = getRequiredKeyAsType(map, ${underscoreNames[$field.name]}_KEY, String.class, ${underscoreNames[$class.key]}_KEY);
+#end
+        if (${field.name}String != null) {
+            try {
+                $field.name = ${field.type}.valueOf(${field.name}String);
+            } catch (IllegalArgumentException e) {
+                addValidationIssue(${underscoreNames[$field.name]}_KEY, ${underscoreNames[$class.key]}_KEY, "it is not a valid ${field.type}");
+            }
+        }
+#else
+#if ($field.hasDefault())
+        $field.name = getOptionalKeyAsType(map, ${underscoreNames[$field.name]}_KEY, ${field.mapType}.class, ${underscoreNames[$class.key]}_KEY, ${underscoreNames[$field.name]}_DEFAULT)$extraConvert;
+#else
+        $field.name = getRequiredKeyAsType(map, ${underscoreNames[$field.name]}_KEY, ${field.mapType}.class, ${underscoreNames[$class.key]}_KEY)$extraConvert;
+#end
+#end
+#end
+    }
+
+#if ($class.writable)
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = mapSupplier.get();
+#foreach($field in $class.fields)
+        result.put(${underscoreNames[$field.name]}_KEY, $field.name);
+#end
+        return result;
+    }
+#foreach($field in $class.fields)
+
+    public $field.type ${getterNames[$field.name]}() {
+        return $field.name;
+    }
+#end
+#end
+}
