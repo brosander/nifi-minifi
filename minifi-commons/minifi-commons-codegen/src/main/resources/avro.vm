@@ -1,0 +1,36 @@
+[
+#foreach($enum in $schema.enums)
+  {
+    "namespace": "${enum.package}.avro",
+    "type": "enum",
+    "name": "$enum.name",
+    "symbols": [
+#foreach($value in $enum.values)
+      "$value"#if($foreach.hasNext),#end
+
+#end
+    ]
+  },
+#end
+#foreach($class in $schema.classes)
+  {
+    "namespace": "${class.package}.avro",
+    "type": "record",
+    "name": "$class.name",
+    "fields": [
+#foreach($field in $class.fields)
+      {
+        "name": "$field.name",
+        "type": $avro.getAvroType($class, $field.type)#if ($field.default),
+        "default": $avro.getDefaultLiteral($field)
+#else
+
+#end
+      }#if ($foreach.hasNext),#end
+
+#end
+    ]
+  }#if ($foreach.hasNext),#end
+
+#end
+]

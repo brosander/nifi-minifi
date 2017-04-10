@@ -1,0 +1,387 @@
+{
+  "enums": [
+    {
+      "name": "TransportProtocolOptions",
+      "values": [
+        "RAW", "HTTP"
+      ]
+    }
+  ],
+  "classes": [
+    {
+      "name": "ComponentStatusRepositorySchema",
+      "wrapperName": "Component Status Repository",
+      "writable": true,
+      "fields": [
+        {"name": "bufferSize", "typeName": "int", "key": "buffer size", "default": 1440},
+        {"name": "snapshotFrequency", "typeName": "String", "key": "snapshot frequency", "default": "1 min"}
+      ]
+    },
+    {
+      "name": "ConfigSchema",
+      "wrapperName": "top level",
+      "writable": true,
+      "concrete": false,
+      "fields": [
+        {"name": "flowControllerProperties", "typeName": "FlowControllerSchema", "key": "Flow Controller", "required": false},
+        {"name": "coreProperties", "typeName": "CorePropertiesSchema", "key": "Core Properties", "required": false},
+        {"name": "flowfileRepositoryProperties", "typeName": "FlowFileRepositorySchema", "key": "FlowFile Repository", "required": false},
+        {"name": "contentRepositoryProperties", "typeName": "ContentRepositorySchema", "key": "Content Repository", "required": false},
+        {"name": "provenanceRepositorySchema", "typeName": "ProvenanceRepositorySchema", "key": "Provenance Repository", "required": false},
+        {"name": "componentStatusRepositoryProperties", "typeName": "ComponentStatusRepositorySchema", "key": "Component Status Repository", "required": false},
+        {"name": "securityProperties", "typeName": "SecurityPropertiesSchema", "key": "Security Properties", "required": false},
+        {"name": "processGroupSchema", "typeName": "ProcessGroupSchema", "required": false},
+        {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false},
+        {"name": "nifiPropertiesOverrides", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name":"String"}]}, "key": "NiFi Properties Overrides", "default": {}}
+      ]
+    },
+    {
+      "package": "org.apache.nifi.minifi.commons.schema.v1",
+      "implements": [{"name": "ConvertableSchema", "genericTypes": [{"name": "ConfigSchema"}]}],
+      "name": "ConfigSchemaV1",
+      "wrapperName": "top level",
+      "concrete": false,
+      "fields": [
+        {"name": "flowControllerProperties", "typeName": "FlowControllerSchema", "key": "Flow Controller", "required": false},
+        {"name": "coreProperties", "typeName": "CorePropertiesSchema", "key": "Core Properties", "required": false},
+        {"name": "flowfileRepositoryProperties", "typeName": "FlowFileRepositorySchema", "key": "FlowFile Repository", "required": false},
+        {"name": "contentRepositoryProperties", "typeName": "ContentRepositorySchema", "key": "Content Repository", "required": false},
+        {"name": "provenanceRepositorySchema", "typeName": "ProvenanceRepositorySchema", "key": "Provenance Repository", "required": false},
+        {"name": "componentStatusRepositoryProperties", "typeName": "ComponentStatusRepositorySchema", "key": "Component Status Repository", "required": false},
+        {"name": "securityProperties", "typeName": "SecurityPropertiesSchema", "key": "Security Properties", "required": false},
+        {"name": "processors", "type": {"name": "List", "genericTypes": [{"name":"ProcessorSchemaV1"}]}, "key": "Processors", "default": []},
+        {"name": "connections", "type": {"name": "List", "genericTypes": [{"name":"ConnectionSchemaV1"}]}, "key": "Connections", "default": []},
+        {"name": "remoteProcessingGroups", "type": {"name": "List", "genericTypes": [{"name":"RemoteProcessGroupSchemaV1"}]}, "key": "Remote Processing Groups", "default": []},
+        {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false}
+      ]
+    },
+    {
+      "package": "org.apache.nifi.minifi.commons.schema.v2",
+      "implements": [{"name": "ConvertableSchema", "genericTypes": [{"name": "ConfigSchema"}]}],
+      "name": "ConfigSchemaV2",
+      "wrapperName": "top level",
+      "concrete": false,
+      "fields": [
+        {"name": "flowControllerProperties", "typeName": "FlowControllerSchema", "key": "Flow Controller", "required": false},
+        {"name": "coreProperties", "typeName": "CorePropertiesSchema", "key": "Core Properties", "required": false},
+        {"name": "flowfileRepositoryProperties", "typeName": "FlowFileRepositorySchema", "key": "FlowFile Repository", "required": false},
+        {"name": "contentRepositoryProperties", "typeName": "ContentRepositorySchema", "key": "Content Repository", "required": false},
+        {"name": "provenanceRepositorySchema", "typeName": "ProvenanceRepositorySchema", "key": "Provenance Repository", "required": false},
+        {"name": "componentStatusRepositoryProperties", "typeName": "ComponentStatusRepositorySchema", "key": "Component Status Repository", "required": false},
+        {"name": "securityProperties", "typeName": "SecurityPropertiesSchema", "key": "Security Properties", "required": false},
+        {"name": "processGroupSchema", "typeName": "ProcessGroupSchemaV2", "required": false},
+        {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false}
+      ]
+    },
+    {
+      "name": "ConnectionSchema",
+      "wrapperName": "Connection(id: {id}, name: {name})",
+      "writable": true,
+      "concrete": false,
+      "fields": [
+        {"name": "id", "typeName": "String", "key": "id", "default": "", "required": true, "validator": "validateId"},
+        {"name": "name", "typeName": "String", "key": "name", "default": ""},
+        {"name": "sourceId", "typeName": "String", "key": "source id", "default": "", "required": true},
+        {"name": "sourceRelationshipNames", "type": {"name": "List", "genericTypes": [{"name": "String"}]}, "key": "source relationship names", "default": []},
+        {"name": "destinationId", "typeName": "String", "key": "destination id", "default": "", "required": true},
+        {"name": "maxWorkQueueSize", "typeName": "long", "key": "max work queue size", "default": 0},
+        {"name": "maxWorkQueueDataSize", "typeName": "String", "key": "max work queue data size", "default": "0 MB"},
+        {"name": "flowfileExpiration", "typeName": "String", "key": "flowfile expiration", "default": "0 sec"},
+        {"name": "queuePrioritizerClass", "typeName": "String", "key": "queue prioritizer class", "default": ""}
+      ]
+    },
+    {
+      "package": "org.apache.nifi.minifi.commons.schema.v1",
+      "implements": [{"name": "ConvertableSchema", "genericTypes": [{"name": "ConnectionSchema"}]}],
+      "name": "ConnectionSchemaV1",
+      "wrapperName": "Connections",
+      "concrete": false,
+      "fields": [
+        {"name": "name", "typeName": "String", "key": "name", "required": true},
+        {"name": "sourceName", "typeName": "String", "key": "source name", "required": true},
+        {"name": "sourceRelationshipName", "typeName": "String", "key": "source relationship name", "required": true},
+        {"name": "destinationName", "typeName": "String", "key": "destination name", "required": true},
+        {"name": "maxWorkQueueSize", "typeName": "long", "key": "max work queue size", "default": 0},
+        {"name": "maxWorkQueueDataSize", "typeName": "String", "key": "max work queue data size", "default": "0 MB"},
+        {"name": "flowfileExpiration", "typeName": "String", "key": "flowfile expiration", "default": "0 sec"},
+        {"name": "queuePrioritizerClass", "typeName": "String", "key": "queue prioritizer class", "default": ""}
+      ]
+    },
+    {
+      "name": "ContentRepositorySchema",
+      "wrapperName": "Content Repository",
+      "writable": true,
+      "fields": [
+        {"name": "contentClaimMaxAppendableSize", "typeName": "String", "key": "content claim max appendable size", "default": "10 MB"},
+        {"name": "contentClaimMaxFlowFiles", "typeName": "int", "key": "content claim max flow files", "default": 100},
+        {"name": "alwaysSync", "typeName": "boolean", "key": "always sync", "default": false}
+      ]
+    },
+    {
+      "name": "ControllerServiceSchema",
+      "wrapperName": "Controller Service(id: {id}, name: {name})",
+      "writable": true,
+      "fields": [
+        {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId"},
+        {"name": "name", "typeName": "String", "key": "name", "default": ""},
+        {"name": "serviceClass", "typeName": "String", "key": "type", "required": true},
+        {"name": "properties", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name": "String"}]}, "key": "Properties", "default": {}},
+        {"name": "annotationData", "typeName": "String", "key": "annotation data", "default": "", "omitIfEmpty": true}
+      ]
+    },
+    {
+      "name": "CorePropertiesSchema",
+      "wrapperName": "Core Properties",
+      "writable": true,
+      "fields": [
+        {"name": "flowControllerGracefulShutdownPeriod", "typeName": "String", "key": "flow controller graceful shutdown period", "default": "10 sec"},
+        {"name": "flowServiceWriteDelayInterval", "typeName": "String", "key": "flow service write delay interval", "default": "500 ms"},
+        {"name": "administrativeYieldDuration", "typeName": "String", "key": "administrative yield duration", "default": "30 sec"},
+        {"name": "boredYieldDuration", "typeName": "String", "key": "bored yield duration", "default": "10 millis"},
+        {"name": "maxConcurrentThreads", "typeName": "int", "key": "max concurrent threads", "default": 1}
+      ]
+    },
+    {
+      "name": "FlowControllerSchema",
+      "wrapperName": "Flow Controller",
+      "writable": true,
+      "fields": [
+        {"name": "name", "typeName": "String", "key": "name", "default": "", "required": true},
+        {"name": "comment", "typeName": "String", "key": "comment", "default": ""}
+      ]
+    },
+    {
+      "name": "FlowFileRepositorySchema",
+      "wrapperName": "FlowFile Repository",
+      "writable": true,
+      "fields": [
+        {"name": "partitions", "typeName": "int", "key": "partitions", "default": 256},
+        {"name": "checkpointInterval", "typeName": "String", "key": "checkpoint interval", "default": "2 mins"},
+        {"name": "alwaysSync", "typeName": "boolean", "key": "always sync", "default": false},
+        {"name": "swapProperties", "typeName": "SwapSchema", "key": "Swap", "required": false}
+      ]
+    },
+    {
+      "name": "FunnelSchema",
+      "wrapperName": "Funnel(id: {id})",
+      "writable": true,
+      "fields": [
+        {"name": "id", "typeName": "String", "key": "id", "required": true}
+      ]
+    },
+    {
+      "name": "PortSchema",
+      "writable": true,
+      "fields": [
+        {"name": "id", "typeName": "String", "key": "id", "default": "", "required": true, "validator": "validateId"},
+        {"name": "name", "typeName": "String", "key": "name", "default": ""}
+      ]
+    },
+    {
+      "name": "ProcessGroupSchema",
+      "writable": true,
+      "concrete": false,
+      "fields": [
+        {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId", "default": "Root-Group"},
+        {"name": "name", "typeName": "String", "key": "name", "default": ""},
+        {"name": "comment", "typeName": "String", "key": "comment", "default": "", "omitIfEmpty": true},
+        {"name": "processors", "type": {"name": "List", "genericTypes": [{"name":"ProcessorSchema"}]}, "key": "Processors", "default": []},
+        {"name": "controllerServices", "type": {"name": "List", "genericTypes": [{"name":"ControllerServiceSchema"}]}, "key": "Controller Services", "default": []},
+        {"name": "funnels", "type": {"name": "List", "genericTypes": [{"name":"FunnelSchema"}]}, "key": "Funnels", "default": []},
+        {"name": "connections", "type": {"name": "List", "genericTypes": [{"name":"ConnectionSchema"}]}, "key": "Connections", "default": []},
+        {"name": "remoteProcessGroups", "type": {"name": "List", "genericTypes": [{"name":"RemoteProcessGroupSchema"}]}, "key": "Remote Process Groups", "default": []},
+        {"name": "inputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Input Ports", "default": []},
+        {"name": "outputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Output Ports", "default": []},
+        {"name": "processGroupSchemas", "type": {"name": "List", "genericTypes": [{"name":"ProcessGroupSchema"}]}, "key": "Process Groups", "default": []}
+      ]
+    },
+    {
+      "package": "org.apache.nifi.minifi.commons.schema.v2",
+      "implements": [{"name": "ConvertableSchema", "genericTypes": [{"name": "ProcessGroupSchema"}]}],
+      "name": "ProcessGroupSchemaV2",
+      "concrete": false,
+      "writable": true,
+      "fields": [
+        {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId", "default": "Root-Group"},
+        {"name": "name", "typeName": "String", "key": "name", "default": ""},
+        {"name": "comment", "typeName": "String", "key": "comment", "default": "", "omitIfEmpty": true},
+        {"name": "processors", "type": {"name": "List", "genericTypes": [{"name":"ProcessorSchema"}]}, "key": "Processors", "default": []},
+        {"name": "funnels", "type": {"name": "List", "genericTypes": [{"name":"FunnelSchema"}]}, "key": "Funnels", "default": []},
+        {"name": "connections", "type": {"name": "List", "genericTypes": [{"name":"ConnectionSchema"}]}, "key": "Connections", "default": []},
+        {"name": "remoteProcessGroups", "type": {"name": "List", "genericTypes": [{"name":"RemoteProcessGroupSchema"}]}, "key": "Remote Process Groups", "default": []},
+        {"name": "processGroupSchemas", "type": {"name": "List", "genericTypes": [{"name":"ProcessGroupSchemaV2"}]}, "key": "Process Groups", "default": []},
+        {"name": "inputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Input Ports", "default": []},
+        {"name": "outputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Output Ports", "default": []}
+      ]
+    },
+    {
+      "imports": ["org.apache.nifi.scheduling.SchedulingStrategy"],
+      "name": "ProcessorSchema",
+      "wrapperName": "Processor(id: {id}, name: {name})",
+      "writable": true,
+      "fields": [
+        {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId"},
+        {"name": "name", "typeName": "String", "key": "name", "default": ""},
+        {"name": "processorClass", "typeName": "String", "key": "class", "default": "", "required": true},
+        {"name": "schedulingStrategy", "type": {"name": "SchedulingStrategy", "enum": true}, "key": "scheduling strategy", "required": true},
+        {"name": "schedulingPeriod", "typeName": "String", "key": "scheduling period", "default": "", "required": true},
+        {"name": "maxConcurrentTasks", "typeName": "int", "key": "max concurrent tasks", "default": 1},
+        {"name": "penalizationPeriod", "typeName": "String", "key": "penalization period", "default": "30 sec"},
+        {"name": "yieldPeriod", "typeName": "String", "key": "yield period", "default": "1 sec"},
+        {"name": "runDurationNanos", "typeName": "long", "key": "run duration nanos", "default": 0},
+        {"name": "autoTerminatedRelationshipsList", "type": {"name": "List", "genericTypes": [{"name": "String"}]}, "key": "auto-terminated relationships list", "default": []},
+        {"name": "properties", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name": "String"}]}, "key": "Properties", "default": {}},
+        {"name": "annotationData", "typeName": "String", "key": "annotation data", "default": "", "omitIfEmpty": true}
+      ]
+    },
+    {
+      "package": "org.apache.nifi.minifi.commons.schema.v1",
+      "implements": [{"name": "ConvertableSchema", "genericTypes": [{"name": "ProcessorSchema"}]}],
+      "name": "ProcessorSchemaV1",
+      "wrapperName": "Processors",
+      "concrete": false,
+      "fields": [
+        {"name": "name", "typeName": "String", "key": "name", "required": true},
+        {"name": "processorClass", "typeName": "String", "key": "class", "default": "", "required": true},
+        {"name": "schedulingStrategy", "typeName": "String", "key": "scheduling strategy", "required": true},
+        {"name": "schedulingPeriod", "typeName": "String", "key": "scheduling period", "default": "", "required": true},
+        {"name": "maxConcurrentTasks", "typeName": "int", "key": "max concurrent tasks", "default": 1},
+        {"name": "penalizationPeriod", "typeName": "String", "key": "penalization period", "default": "30 sec"},
+        {"name": "yieldPeriod", "typeName": "String", "key": "yield period", "default": "1 sec"},
+        {"name": "runDurationNanos", "typeName": "long", "key": "run duration nanos", "default": 0},
+        {"name": "autoTerminatedRelationshipsList", "type": {"name": "List", "genericTypes": [{"name": "String"}]}, "key": "auto-terminated relationships list", "default": []},
+        {"name": "properties", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name": "String"}]}, "key": "Properties", "default": {}}
+      ]
+    },
+    {
+      "imports": ["org.apache.nifi.scheduling.SchedulingStrategy"],
+      "name": "ProvenanceReportingSchema",
+      "wrapperName": "Provenance Reporting",
+      "writable": true,
+      "fields": [
+        {"name": "schedulingStrategy", "type": {"name": "SchedulingStrategy", "enum": true}, "key": "scheduling strategy", "required": true},
+        {"name": "schedulingPeriod", "typeName": "String", "key": "scheduling period", "required": true},
+        {"name": "destinationUrl", "typeName": "String", "key": "destination url", "required": true},
+        {"name": "portName", "typeName": "String", "key": "port name", "required": true},
+        {"name": "comment", "typeName": "String", "key": "comment", "default": ""},
+        {"name": "originatingUrl", "typeName": "String", "key": "originating url", "default": "http://${hostname(true)}:8080/nifi"},
+        {"name": "useCompression", "typeName": "boolean", "key": "use compression", "default": true},
+        {"name": "timeout", "typeName": "String", "key": "timeout", "default": "30 secs"},
+        {"name": "batchSize", "typeName": "int", "key": "batch size", "default": 1000}
+      ]
+    },
+    {
+      "name": "ProvenanceRepositorySchema",
+      "wrapperName": "Provenance Repository",
+      "writable": true,
+      "fields": [
+        {"name": "provenanceRepoRolloverTime", "typeName": "String", "key": "provenance rollover time", "default": "1 min"}
+      ]
+    },
+    {
+      "name": "RemotePortSchema",
+      "wrapperName": "RemoteInputPort(id: {id}, name: {name})",
+      "writable": true,
+      "fields": [
+        {"name": "id", "typeName": "String", "key": "id", "default": "", "required": true, "validator": "validateId"},
+        {"name": "name", "typeName": "String", "key": "name", "default": ""},
+        {"name": "comment", "typeName": "String", "key": "comment", "default": ""},
+        {"name": "maxConcurrentTasks", "typeName": "int", "key": "max concurrent tasks", "default": 1},
+        {"name": "useCompression", "typeName": "boolean", "key": "use compression", "default": true}
+      ]
+    },
+    {
+      "name": "RemoteProcessGroupSchema",
+      "wrapperName": "RemoteProcessGroup(id: {id}, name: {name})",
+      "writable": true,
+      "concrete": false,
+      "fields": [
+        {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId"},
+        {"name": "name", "typeName": "String", "key": "name", "default": ""},
+        {"name": "url", "typeName": "String", "key": "url", "default": "", "required": true},
+        {"name": "inputPorts", "type": {"name": "List", "genericTypes": [{"name":"RemotePortSchema"}]}, "key": "Input Ports", "default": []},
+        {"name": "outputPorts", "type": {"name": "List", "genericTypes": [{"name":"RemotePortSchema"}]}, "key": "Output Ports", "default": []},
+        {"name": "comment", "typeName": "String", "key": "comment", "default": ""},
+        {"name": "timeout", "typeName": "String", "key": "timeout", "default": "30 secs"},
+        {"name": "yieldPeriod", "typeName": "String", "key": "yield period", "default": "10 sec"},
+        {"name": "transportProtocol", "type": {"name": "TransportProtocolOptions", "enum": true}, "key": "transport protocol", "default": "RAW"},
+        {"name": "proxyHost", "typeName": "String", "key": "proxy host", "default": ""},
+        {"name": "proxyPort", "typeName": "Integer", "key": "proxy port", "default": null, "required": false},
+        {"name": "proxyUser", "typeName": "String", "key": "proxy user", "default": ""},
+        {"name": "proxyPassword", "typeName": "String", "key": "proxy password", "default": ""}
+      ]
+    },
+    {
+      "package": "org.apache.nifi.minifi.commons.schema.v1",
+      "implements": [{"name": "ConvertableSchema", "genericTypes": [{"name": "RemoteProcessGroupSchema"}]}],
+      "name": "RemoteProcessGroupSchemaV1",
+      "wrapperName": "RemoteProcessingGroup(name: {name})",
+      "concrete": false,
+      "fields": [
+        {"name": "name", "typeName": "String", "key": "name", "required": true},
+        {"name": "url", "typeName": "String", "key": "url", "required": true},
+        {"name": "inputPorts", "type": {"name": "List", "genericTypes": [{"name":"RemotePortSchema"}]}, "key": "Input Ports", "required": true},
+        {"name": "comment", "typeName": "String", "key": "comment", "default": ""},
+        {"name": "timeout", "typeName": "String", "key": "timeout", "default": "30 secs"},
+        {"name": "yieldPeriod", "typeName": "String", "key": "yield period", "default": "10 sec"}
+      ]
+    },
+    {
+      "package": "org.apache.nifi.minifi.commons.schema.v2",
+      "implements": [{"name": "ConvertableSchema", "genericTypes": [{"name": "RemoteProcessGroupSchema"}]}],
+      "name": "RemoteProcessGroupSchemaV2",
+      "wrapperName": "RemoteProcessGroup(id: {id}, name: {name})",
+      "concrete": false,
+      "fields": [
+        {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId"},
+        {"name": "name", "typeName": "String", "key": "name", "default": ""},
+        {"name": "url", "typeName": "String", "key": "url", "default": "", "required": true},
+        {"name": "inputPorts", "type": {"name": "List", "genericTypes": [{"name":"RemotePortSchema"}]}, "key": "Input Ports", "required": true},
+        {"name": "comment", "typeName": "String", "key": "comment", "default": ""},
+        {"name": "timeout", "typeName": "String", "key": "timeout", "default": "30 secs"},
+        {"name": "yieldPeriod", "typeName": "String", "key": "yield period", "default": "10 sec"},
+        {"name": "transportProtocol", "typeName": "String", "key": "transport protocol", "default": "RAW"}
+      ]
+    },
+    {
+      "imports": ["org.apache.nifi.minifi.commons.schema.validators.SecurityPropertiesSchemaValidator"],
+      "name": "SecurityPropertiesSchema",
+      "wrapperName": "Security Properties",
+      "writable": true,
+      "concrete": false,
+      "fields": [
+        {"name": "keystore", "typeName": "String", "key": "keystore", "default": ""},
+        {"name": "keystoreType", "typeName": "String", "key": "keystore type", "default": ""},
+        {"name": "keystorePassword", "typeName": "String", "key": "keystore password", "default": ""},
+        {"name": "keyPassword", "typeName": "String", "key": "key password", "default": ""},
+        {"name": "truststore", "typeName": "String", "key": "truststore", "default": ""},
+        {"name": "truststoreType", "typeName": "String", "key": "truststore type", "default": ""},
+        {"name": "truststorePassword", "typeName": "String", "key": "truststore password", "default": ""},
+        {"name": "sslProtocol", "typeName": "String", "key": "ssl protocol", "default": ""},
+        {"name": "sensitiveProps", "typeName": "SensitivePropsSchema", "key": "Sensitive Props", "required": false}
+      ]
+    },
+    {
+      "name": "SensitivePropsSchema",
+      "wrapperName": "Sensitive Props",
+      "writable": true,
+      "fields": [
+        {"name": "key", "typeName": "String", "key": "key", "default": ""},
+        {"name": "algorithm", "typeName": "String", "key": "algorithm", "default": "PBEWITHMD5AND256BITAES-CBC-OPENSSL"},
+        {"name": "provider", "typeName": "String", "key": "provider", "default": "BC"}
+      ]
+    },
+    {
+      "name": "SwapSchema",
+      "wrapperName": "Swap",
+      "writable": true,
+      "fields": [
+        {"name": "threshold", "typeName": "int", "key": "threshold", "default": 20000},
+        {"name": "inPeriod", "typeName": "String", "key": "in period", "default": "5 sec"},
+        {"name": "inThreads", "typeName": "int", "key": "in threads", "default": 1},
+        {"name": "outPeriod", "typeName": "String", "key": "out period", "default": "5 sec"},
+        {"name": "outThreads", "typeName": "int", "key": "out threads", "default": 4}
+      ]
+    }
+  ]
+}

@@ -20,8 +20,6 @@
 package org.apache.nifi.minifi.commons.schema.v1;
 
 import org.apache.nifi.minifi.commons.schema.ConnectionSchema;
-import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
-import org.apache.nifi.minifi.commons.schema.common.ConvertableSchema;
 import org.apache.nifi.minifi.commons.schema.common.StringUtil;
 
 import java.util.ArrayList;
@@ -29,72 +27,27 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.nifi.minifi.commons.schema.ConnectionSchema.DEFAULT_FLOWFILE_EXPIRATION;
-import static org.apache.nifi.minifi.commons.schema.ConnectionSchema.DEFAULT_MAX_QUEUE_DATA_SIZE;
-import static org.apache.nifi.minifi.commons.schema.ConnectionSchema.DEFAULT_MAX_WORK_QUEUE_SIZE;
-import static org.apache.nifi.minifi.commons.schema.ConnectionSchema.FLOWFILE_EXPIRATION__KEY;
-import static org.apache.nifi.minifi.commons.schema.ConnectionSchema.MAX_WORK_QUEUE_DATA_SIZE_KEY;
-import static org.apache.nifi.minifi.commons.schema.ConnectionSchema.MAX_WORK_QUEUE_SIZE_KEY;
-import static org.apache.nifi.minifi.commons.schema.ConnectionSchema.QUEUE_PRIORITIZER_CLASS_KEY;
 import static org.apache.nifi.minifi.commons.schema.ConnectionSchema.SOURCE_RELATIONSHIP_NAMES_KEY;
-import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.CONNECTIONS_KEY;
-import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.NAME_KEY;
 
-public class ConnectionSchemaV1 extends BaseSchema implements ConvertableSchema<ConnectionSchema> {
-    public static final String SOURCE_RELATIONSHIP_NAME_KEY = "source relationship name";
-    public static final String DESTINATION_NAME_KEY = "destination name";
-    public static final String SOURCE_NAME_KEY = "source name";
-
-    private String name;
-
-    private String sourceRelationshipName;
-    private String destinationName;
-
-    private String sourceName;
-
-    private Number maxWorkQueueSize = DEFAULT_MAX_WORK_QUEUE_SIZE;
-    private String maxWorkQueueDataSize = DEFAULT_MAX_QUEUE_DATA_SIZE;
-    private String flowfileExpiration = DEFAULT_FLOWFILE_EXPIRATION;
-    private String queuePrioritizerClass;
-
+public class ConnectionSchemaV1 extends AbstractConnectionSchemaV1 {
     public ConnectionSchemaV1(Map map) {
-        name = getRequiredKeyAsType(map, NAME_KEY, String.class, CONNECTIONS_KEY);
-        sourceName = getRequiredKeyAsType(map, SOURCE_NAME_KEY, String.class, CONNECTIONS_KEY);
-        sourceRelationshipName = getRequiredKeyAsType(map, SOURCE_RELATIONSHIP_NAME_KEY, String.class, CONNECTIONS_KEY);
-        destinationName = getRequiredKeyAsType(map, DESTINATION_NAME_KEY, String.class, CONNECTIONS_KEY);
-
-        maxWorkQueueSize = getOptionalKeyAsType(map, MAX_WORK_QUEUE_SIZE_KEY, Number.class, CONNECTIONS_KEY, DEFAULT_MAX_WORK_QUEUE_SIZE);
-        maxWorkQueueDataSize = getOptionalKeyAsType(map, MAX_WORK_QUEUE_DATA_SIZE_KEY, String.class, CONNECTIONS_KEY, DEFAULT_MAX_QUEUE_DATA_SIZE);
-        flowfileExpiration = getOptionalKeyAsType(map, FLOWFILE_EXPIRATION__KEY, String.class, CONNECTIONS_KEY, DEFAULT_FLOWFILE_EXPIRATION);
-        queuePrioritizerClass = getOptionalKeyAsType(map, QUEUE_PRIORITIZER_CLASS_KEY, String.class, CONNECTIONS_KEY, "");
+        super(map);
     }
 
     @Override
     public ConnectionSchema convert() {
         Map<String, Object> map = new HashMap<>();
-        map.put(NAME_KEY, name);
-        if (StringUtil.isNullOrEmpty(sourceRelationshipName)) {
+        map.put(NAME_KEY, getName());
+        if (StringUtil.isNullOrEmpty(getSourceRelationshipName())) {
             map.put(SOURCE_RELATIONSHIP_NAMES_KEY, new ArrayList<>());
         } else {
-            map.put(SOURCE_RELATIONSHIP_NAMES_KEY, new ArrayList<>(Arrays.asList(sourceRelationshipName)));
+            map.put(SOURCE_RELATIONSHIP_NAMES_KEY, new ArrayList<>(Arrays.asList(getSourceRelationshipName())));
         }
-        map.put(MAX_WORK_QUEUE_SIZE_KEY, maxWorkQueueSize);
-        map.put(MAX_WORK_QUEUE_DATA_SIZE_KEY, maxWorkQueueDataSize);
-        map.put(FLOWFILE_EXPIRATION__KEY, flowfileExpiration);
-        map.put(QUEUE_PRIORITIZER_CLASS_KEY, queuePrioritizerClass);
+        map.put(MAX_WORK_QUEUE_SIZE_KEY, getMaxWorkQueueSize());
+        map.put(MAX_WORK_QUEUE_DATA_SIZE_KEY, getMaxWorkQueueDataSize());
+        map.put(FLOWFILE_EXPIRATION_KEY, getFlowfileExpiration());
+        map.put(QUEUE_PRIORITIZER_CLASS_KEY, getQueuePrioritizerClass());
         return new ConnectionSchema(map);
-    }
-
-    public String getSourceName() {
-        return sourceName;
-    }
-
-    public String getDestinationName() {
-        return destinationName;
-    }
-
-    public String getName() {
-        return name;
     }
 
     @Override

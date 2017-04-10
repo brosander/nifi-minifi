@@ -23,10 +23,12 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -77,13 +79,27 @@ public abstract class BaseSchema implements Schema {
         }
     }
 
-    public void addIssuesIfNotNull(List<? extends BaseSchema> baseSchemas) {
+    public void addIssuesIfNotNull(Collection<? extends BaseSchema> baseSchemas) {
         if (baseSchemas != null) {
             baseSchemas.forEach(this::addIssuesIfNotNull);
         }
     }
 
     /******* Value Access/Interpretation helper methods *******/
+    public <T> T getOptionalKeyAsType(Map valueMap, String key, Class<T> targetClass, String wrapperName) {
+        T result = getKeyAsType(valueMap, key, targetClass, wrapperName, false, null);
+        if (result == null) {
+            if (List.class.equals(targetClass)) {
+                return (T) Collections.emptyList();
+            } else if (Map.class.equals(targetClass)) {
+                return (T) Collections.emptyMap();
+            } else if (String.class.equals(targetClass)) {
+                return (T) "";
+            }
+        }
+        return result;
+    }
+
     public <T> T getOptionalKeyAsType(Map valueMap, String key, Class<T> targetClass, String wrapperName, T defaultValue) {
         return getKeyAsType(valueMap, key, targetClass, wrapperName, false, defaultValue);
     }
@@ -107,7 +123,7 @@ public abstract class BaseSchema implements Schema {
                 addValidationIssue(key, wrapperName, "it is found but could not be parsed as a " + targetClass.getSimpleName());
             }
         }
-        return null;
+        return defaultValue;
     }
 
 
@@ -220,6 +236,22 @@ public abstract class BaseSchema implements Schema {
                 duplicateMessageConsumer.accept(errorMessagePrefix + collectionOverlap.getDuplicates().stream().collect(Collectors.joining(", ")));
             }
         }
+    }
+
+    protected boolean isValidId(String value) {
+        try {
+            UUID.fromString(value);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    protected String validateId(String id) {
+        if (isValidId(id)) {
+            return null;
+        }
+        return "Id value of " + id + " is not a valid UUID";
     }
 
     @Override

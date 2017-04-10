@@ -75,7 +75,7 @@ public class ConnectionSchemaV1Test {
         map.put(ConnectionSchemaV1.DESTINATION_NAME_KEY, testDestinationName);
         map.put(ConnectionSchema.MAX_WORK_QUEUE_SIZE_KEY, testMaxWorkQueueSize);
         map.put(ConnectionSchema.MAX_WORK_QUEUE_DATA_SIZE_KEY, testMaxWorkQueueDataSize);
-        map.put(ConnectionSchema.FLOWFILE_EXPIRATION__KEY, testFlowfileExpiration);
+        map.put(ConnectionSchema.FLOWFILE_EXPIRATION_KEY, testFlowfileExpiration);
         map.put(ConnectionSchema.QUEUE_PRIORITIZER_CLASS_KEY, testQueuePrioritizerClass);
         return map;
     }
@@ -134,7 +134,7 @@ public class ConnectionSchemaV1Test {
     public void testNoMaxWorkQueueSize() {
         Map<String, Object> map = createMap();
         map.remove(ConnectionSchema.MAX_WORK_QUEUE_SIZE_KEY);
-        assertEquals(ConnectionSchema.DEFAULT_MAX_WORK_QUEUE_SIZE, createSchema(map, 0).convert().getMaxWorkQueueSize());
+        assertEquals(ConnectionSchema.MAX_WORK_QUEUE_SIZE_DEFAULT, createSchema(map, 0).convert().getMaxWorkQueueSize());
     }
 
     @Test
@@ -146,7 +146,7 @@ public class ConnectionSchemaV1Test {
     public void testNoMaxWorkQueueDataSize() {
         Map<String, Object> map = createMap();
         map.remove(ConnectionSchema.MAX_WORK_QUEUE_DATA_SIZE_KEY);
-        assertEquals(ConnectionSchema.DEFAULT_MAX_QUEUE_DATA_SIZE, createSchema(map, 0).convert().getMaxWorkQueueDataSize());
+        assertEquals(ConnectionSchema.MAX_WORK_QUEUE_DATA_SIZE_DEFAULT, createSchema(map, 0).convert().getMaxWorkQueueDataSize());
     }
 
     @Test
@@ -157,8 +157,8 @@ public class ConnectionSchemaV1Test {
     @Test
     public void testNoFlowFileExpiration() {
         Map<String, Object> map = createMap();
-        map.remove(ConnectionSchema.FLOWFILE_EXPIRATION__KEY);
-        assertEquals(ConnectionSchema.DEFAULT_FLOWFILE_EXPIRATION, createSchema(map, 0).convert().getFlowfileExpiration());
+        map.remove(ConnectionSchema.FLOWFILE_EXPIRATION_KEY);
+        assertEquals(ConnectionSchema.FLOWFILE_EXPIRATION_DEFAULT, createSchema(map, 0).convert().getFlowfileExpiration());
     }
 
     @Test

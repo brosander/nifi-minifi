@@ -29,14 +29,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.AUTO_TERMINATED_RELATIONSHIPS_LIST_DEFAULT;
 import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.AUTO_TERMINATED_RELATIONSHIPS_LIST_KEY;
-import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.DEFAULT_AUTO_TERMINATED_RELATIONSHIPS_LIST;
-import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.DEFAULT_MAX_CONCURRENT_TASKS;
-import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.DEFAULT_PENALIZATION_PERIOD;
-import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.DEFAULT_RUN_DURATION_NANOS;
-import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.DEFAULT_YIELD_DURATION;
+import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.MAX_CONCURRENT_TASKS_DEFAULT;
+import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.PENALIZATION_PERIOD_DEFAULT;
 import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.PENALIZATION_PERIOD_KEY;
+import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.RUN_DURATION_NANOS_DEFAULT;
 import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.RUN_DURATION_NANOS_KEY;
+import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.YIELD_PERIOD_DEFAULT;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.CLASS_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.DEFAULT_PROPERTIES;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.MAX_CONCURRENT_TASKS_KEY;
@@ -134,12 +134,12 @@ public class ProcessorSchemaV1Test {
     public void testNoProcessorClass() {
         Map<String, Object> map = createMap();
         map.remove(CLASS_KEY);
-        assertNull(createSchema(map, 1).convert().getProcessorClass());
+        assertEquals("", createSchema(map, 1).convert().getProcessorClass());
     }
 
     @Test
     public void testSchedulingStrategy() {
-        assertEquals(testSchedulingStrategy, createSchema(0).convert().getSchedulingStrategy());
+        assertEquals(SchedulingStrategy.PRIMARY_NODE_ONLY, createSchema(0).convert().getSchedulingStrategy());
     }
 
     @Test
@@ -152,7 +152,7 @@ public class ProcessorSchemaV1Test {
     @Test
     public void testInvalidSchedulingStrategy() {
         testSchedulingStrategy = "fake strategy";
-        assertEquals(testSchedulingStrategy, createSchema(1).convert().getSchedulingStrategy());
+        assertNull(createSchema(1).convert().getSchedulingStrategy());
     }
 
     @Test
@@ -164,7 +164,7 @@ public class ProcessorSchemaV1Test {
     public void testNoSchedulingPeriod() {
         Map<String, Object> map = createMap();
         map.remove(SCHEDULING_PERIOD_KEY);
-        assertNull(createSchema(map, 1).convert().getSchedulingPeriod());
+        assertEquals("", createSchema(map, 1).convert().getSchedulingPeriod());
     }
 
     @Test
@@ -176,7 +176,7 @@ public class ProcessorSchemaV1Test {
     public void testNoMaxConcurrentTasks() {
         Map<String, Object> map = createMap();
         map.remove(MAX_CONCURRENT_TASKS_KEY);
-        assertEquals(DEFAULT_MAX_CONCURRENT_TASKS, createSchema(map, 0).convert().getMaxConcurrentTasks());
+        assertEquals(MAX_CONCURRENT_TASKS_DEFAULT, createSchema(map, 0).convert().getMaxConcurrentTasks());
     }
 
     @Test
@@ -188,7 +188,7 @@ public class ProcessorSchemaV1Test {
     public void testNoPenalizationPeriod() {
         Map<String, Object> map = createMap();
         map.remove(PENALIZATION_PERIOD_KEY);
-        assertEquals(DEFAULT_PENALIZATION_PERIOD, createSchema(map, 0).convert().getPenalizationPeriod());
+        assertEquals(PENALIZATION_PERIOD_DEFAULT, createSchema(map, 0).convert().getPenalizationPeriod());
     }
 
     @Test
@@ -200,7 +200,7 @@ public class ProcessorSchemaV1Test {
     public void testNoYieldPeriod() {
         Map<String, Object> map = createMap();
         map.remove(YIELD_PERIOD_KEY);
-        assertEquals(DEFAULT_YIELD_DURATION, createSchema(map, 0).convert().getYieldPeriod());
+        assertEquals(YIELD_PERIOD_DEFAULT, createSchema(map, 0).convert().getYieldPeriod());
     }
 
     @Test
@@ -212,7 +212,7 @@ public class ProcessorSchemaV1Test {
     public void testNoRunDurationNanos() {
         Map<String, Object> map = createMap();
         map.remove(RUN_DURATION_NANOS_KEY);
-        assertEquals(DEFAULT_RUN_DURATION_NANOS, createSchema(map, 0).convert().getRunDurationNanos());
+        assertEquals(RUN_DURATION_NANOS_DEFAULT, createSchema(map, 0).convert().getRunDurationNanos());
     }
 
     @Test
@@ -224,7 +224,7 @@ public class ProcessorSchemaV1Test {
     public void testNoAutoTerminatedRelationships() {
         Map<String, Object> map = createMap();
         map.remove(AUTO_TERMINATED_RELATIONSHIPS_LIST_KEY);
-        assertEquals(DEFAULT_AUTO_TERMINATED_RELATIONSHIPS_LIST, createSchema(map, 0).convert().getAutoTerminatedRelationshipsList());
+        assertEquals(AUTO_TERMINATED_RELATIONSHIPS_LIST_DEFAULT, createSchema(map, 0).convert().getAutoTerminatedRelationshipsList());
     }
 
     @Test

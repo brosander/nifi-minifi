@@ -215,7 +215,7 @@ public final class ConfigTransformer {
 
             orderedProperties.setProperty("nifi.provenance.repository.implementation", "org.apache.nifi.provenance.MiNiFiPersistentProvenanceRepository",
                     System.lineSeparator() + "# Provenance Repository Properties");
-            orderedProperties.setProperty("nifi.provenance.repository.rollover.time", provenanceRepositorySchema.getProvenanceRepoRolloverTimeKey());
+            orderedProperties.setProperty("nifi.provenance.repository.rollover.time", provenanceRepositorySchema.getProvenanceRepoRolloverTime());
 
             orderedProperties.setProperty("nifi.provenance.repository.buffer.size", "10000", System.lineSeparator() + "# Volatile Provenance Respository Properties");
 
@@ -359,7 +359,7 @@ public final class ConfigTransformer {
 
             addTextElement(serviceElement, "enabled", "true");
 
-            Map<String, Object> attributes = controllerServiceSchema.getProperties();
+            Map<String, String> attributes = controllerServiceSchema.getProperties();
 
             addConfiguration(serviceElement, attributes);
 
@@ -456,7 +456,7 @@ public final class ConfigTransformer {
             addTextElement(element, "bulletinLevel", "WARN");
             addTextElement(element, "lossTolerant", "false");
             addTextElement(element, "scheduledState", "RUNNING");
-            addTextElement(element, "schedulingStrategy", processorConfig.getSchedulingStrategy());
+            addTextElement(element, "schedulingStrategy", processorConfig.getSchedulingStrategy().name());
             addTextElement(element, "runDurationNanos", String.valueOf(processorConfig.getRunDurationNanos()));
 
             String annotationData = processorConfig.getAnnotationData();
@@ -498,7 +498,7 @@ public final class ConfigTransformer {
             addTextElement(taskElement, "class", DEFAULT_PROV_REPORTING_TASK_CLASS);
             addTextElement(taskElement, "schedulingPeriod", provenanceProperties.getSchedulingPeriod());
             addTextElement(taskElement, "scheduledState", "RUNNING");
-            addTextElement(taskElement, "schedulingStrategy", provenanceProperties.getSchedulingStrategy());
+            addTextElement(taskElement, "schedulingStrategy", provenanceProperties.getSchedulingStrategy().name());
 
             Map<String, Object> attributes = new HashMap<>();
             attributes.put("Destination URL", provenanceProperties.getDestinationUrl());
@@ -521,13 +521,12 @@ public final class ConfigTransformer {
         }
     }
 
-    protected static void addConfiguration(final Element element, Map<String, Object> elementConfig) {
+    protected static void addConfiguration(final Element element, Map<String, ?> elementConfig) {
         final Document doc = element.getOwnerDocument();
         if (elementConfig == null) {
             return;
         }
-        for (final Map.Entry<String, Object> entry : elementConfig.entrySet()) {
-
+        for (final Map.Entry<String, ?> entry : elementConfig.entrySet()) {
             final Element propElement = doc.createElement("property");
             addTextElement(propElement, "name", entry.getKey());
             if (entry.getValue() != null) {
@@ -556,7 +555,7 @@ public final class ConfigTransformer {
             addTextElement(element, "timeout", remoteProcessGroupProperties.getTimeout());
             addTextElement(element, "yieldPeriod", remoteProcessGroupProperties.getYieldPeriod());
             addTextElement(element, "transmitting", "true");
-            addTextElement(element, "transportProtocol", remoteProcessGroupProperties.getTransportProtocol());
+            addTextElement(element, "transportProtocol", remoteProcessGroupProperties.getTransportProtocol().name());
             addTextElement(element, "proxyHost", remoteProcessGroupProperties.getProxyHost());
             if (remoteProcessGroupProperties.getProxyPort() != null) {
                 addTextElement(element, "proxyPort", Integer.toString(remoteProcessGroupProperties.getProxyPort()));
@@ -592,7 +591,7 @@ public final class ConfigTransformer {
             addPosition(element);
             addTextElement(element, "comments", inputPort.getComment());
             addTextElement(element, "scheduledState", "RUNNING");
-            addTextElement(element, "maxConcurrentTasks", String.valueOf(inputPort.getMax_concurrent_tasks()));
+            addTextElement(element, "maxConcurrentTasks", String.valueOf(inputPort.getMaxConcurrentTasks()));
             addTextElement(element, "useCompression", String.valueOf(inputPort.getUseCompression()));
 
             parentElement.appendChild(element);

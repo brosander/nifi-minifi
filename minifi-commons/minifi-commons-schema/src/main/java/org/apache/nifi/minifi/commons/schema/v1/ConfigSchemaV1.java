@@ -19,22 +19,13 @@
 
 package org.apache.nifi.minifi.commons.schema.v1;
 
-import org.apache.nifi.minifi.commons.schema.ComponentStatusRepositorySchema;
 import org.apache.nifi.minifi.commons.schema.ConfigSchema;
 import org.apache.nifi.minifi.commons.schema.ConnectionSchema;
-import org.apache.nifi.minifi.commons.schema.ContentRepositorySchema;
-import org.apache.nifi.minifi.commons.schema.CorePropertiesSchema;
-import org.apache.nifi.minifi.commons.schema.FlowControllerSchema;
-import org.apache.nifi.minifi.commons.schema.FlowFileRepositorySchema;
 import org.apache.nifi.minifi.commons.schema.ProcessorSchema;
 import org.apache.nifi.minifi.commons.schema.ProvenanceReportingSchema;
-import org.apache.nifi.minifi.commons.schema.ProvenanceRepositorySchema;
 import org.apache.nifi.minifi.commons.schema.RemotePortSchema;
 import org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema;
-import org.apache.nifi.minifi.commons.schema.SecurityPropertiesSchema;
-import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
 import org.apache.nifi.minifi.commons.schema.common.CollectionOverlap;
-import org.apache.nifi.minifi.commons.schema.common.ConvertableSchema;
 import org.apache.nifi.minifi.commons.schema.common.StringUtil;
 
 import java.nio.charset.StandardCharsets;
@@ -47,24 +38,18 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.apache.nifi.minifi.commons.schema.ConfigSchema.TOP_LEVEL_NAME;
 import static org.apache.nifi.minifi.commons.schema.ConfigSchema.VERSION;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.COMPONENT_STATUS_REPO_KEY;
-import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.CONNECTIONS_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.CONTENT_REPO_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.CORE_PROPS_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.FLOWFILE_REPO_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.FLOW_CONTROLLER_PROPS_KEY;
-import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.PROCESSORS_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.PROVENANCE_REPORTING_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.PROVENANCE_REPO_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.REMOTE_PROCESS_GROUPS_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.SECURITY_PROPS_KEY;
 
-public class ConfigSchemaV1 extends BaseSchema implements ConvertableSchema<ConfigSchema> {
-
-    public static final String REMOTE_PROCESS_GROUPS_KEY_V1 = "Remote Processing Groups";
-
+public class ConfigSchemaV1 extends AbstractConfigSchemaV1 {
     public static final String FOUND_THE_FOLLOWING_DUPLICATE_PROCESSOR_NAMES = "Found the following duplicate processor names: ";
     public static final String FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_NAMES = "Found the following duplicate connection names: ";
     public static final String FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_PROCESSING_GROUP_NAMES = "Found the following duplicate remote processing group names: ";
@@ -73,60 +58,20 @@ public class ConfigSchemaV1 extends BaseSchema implements ConvertableSchema<Conf
     public static final String CONNECTION_WITH_NAME = "Connection with name ";
     public static final String HAS_INVALID_DESTINATION_NAME = " has invalid destination name ";
     public static final String HAS_INVALID_SOURCE_NAME = " has invalid source name ";
-    private FlowControllerSchema flowControllerProperties;
-    private CorePropertiesSchema coreProperties;
-    private FlowFileRepositorySchema flowfileRepositoryProperties;
-    private ContentRepositorySchema contentRepositoryProperties;
-    private ComponentStatusRepositorySchema componentStatusRepositoryProperties;
-    private SecurityPropertiesSchema securityProperties;
-    private List<ProcessorSchemaV1> processors;
-    private List<ConnectionSchemaV1> connections;
-    private List<RemoteProcessGroupSchemaV1> remoteProcessingGroups;
-    private ProvenanceReportingSchema provenanceReportingProperties;
-
-    private ProvenanceRepositorySchema provenanceRepositorySchema;
 
     public ConfigSchemaV1(Map map) {
-        flowControllerProperties = getMapAsType(map, FLOW_CONTROLLER_PROPS_KEY, FlowControllerSchema.class, TOP_LEVEL_NAME, true);
+        super(map);
 
-        coreProperties = getMapAsType(map, CORE_PROPS_KEY, CorePropertiesSchema.class, TOP_LEVEL_NAME, false);
-        flowfileRepositoryProperties = getMapAsType(map, FLOWFILE_REPO_KEY, FlowFileRepositorySchema.class, TOP_LEVEL_NAME, false);
-        contentRepositoryProperties = getMapAsType(map, CONTENT_REPO_KEY, ContentRepositorySchema.class, TOP_LEVEL_NAME, false);
-        provenanceRepositorySchema = getMapAsType(map, PROVENANCE_REPO_KEY, ProvenanceRepositorySchema.class, TOP_LEVEL_NAME, false);
-        componentStatusRepositoryProperties = getMapAsType(map, COMPONENT_STATUS_REPO_KEY, ComponentStatusRepositorySchema.class, TOP_LEVEL_NAME, false);
-        securityProperties = getMapAsType(map, SECURITY_PROPS_KEY, SecurityPropertiesSchema.class, TOP_LEVEL_NAME, false);
-
-        processors = convertListToType(getOptionalKeyAsType(map, PROCESSORS_KEY, List.class, TOP_LEVEL_NAME, new ArrayList<>()), PROCESSORS_KEY, ProcessorSchemaV1.class, TOP_LEVEL_NAME);
-
-        remoteProcessingGroups = convertListToType(getOptionalKeyAsType(map, REMOTE_PROCESS_GROUPS_KEY_V1, List.class, TOP_LEVEL_NAME, new ArrayList<>()), "remote processing group",
-                RemoteProcessGroupSchemaV1.class, REMOTE_PROCESS_GROUPS_KEY_V1);
-
-        connections = convertListToType(getOptionalKeyAsType(map, CONNECTIONS_KEY, List.class, TOP_LEVEL_NAME, new ArrayList<>()), CONNECTIONS_KEY, ConnectionSchemaV1.class, TOP_LEVEL_NAME);
-
-        provenanceReportingProperties = getMapAsType(map, PROVENANCE_REPORTING_KEY, ProvenanceReportingSchema.class, TOP_LEVEL_NAME, false, false);
-
-        addIssuesIfNotNull(flowControllerProperties);
-        addIssuesIfNotNull(coreProperties);
-        addIssuesIfNotNull(flowfileRepositoryProperties);
-        addIssuesIfNotNull(contentRepositoryProperties);
-        addIssuesIfNotNull(componentStatusRepositoryProperties);
-        addIssuesIfNotNull(securityProperties);
-        addIssuesIfNotNull(provenanceReportingProperties);
-        addIssuesIfNotNull(provenanceRepositorySchema);
-        addIssuesIfNotNull(processors);
-        addIssuesIfNotNull(connections);
-        addIssuesIfNotNull(remoteProcessingGroups);
-
-        List<String> processorNames = processors.stream().map(ProcessorSchemaV1::getName).collect(Collectors.toList());
+        List<String> processorNames = getProcessors().stream().map(ProcessorSchemaV1::getName).collect(Collectors.toList());
 
         checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_PROCESSOR_NAMES, processorNames);
-        checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_NAMES, connections.stream().map(ConnectionSchemaV1::getName).collect(Collectors.toList()));
-        checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_PROCESSING_GROUP_NAMES, remoteProcessingGroups.stream().map(RemoteProcessGroupSchemaV1::getName)
+        checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_CONNECTION_NAMES, getConnections().stream().map(ConnectionSchemaV1::getName).collect(Collectors.toList()));
+        checkForDuplicates(this::addValidationIssue, FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_PROCESSING_GROUP_NAMES, getRemoteProcessingGroups().stream().map(RemoteProcessGroupSchemaV1::getName)
                 .collect(Collectors.toList()));
 
         Set<String> connectableNames = new HashSet<>(processorNames);
-        connectableNames.addAll(remoteProcessingGroups.stream().flatMap(r -> r.getInputPorts().stream()).map(RemotePortSchema::getId).collect(Collectors.toList()));
-        connections.forEach(c -> {
+        connectableNames.addAll(getRemoteProcessingGroups().stream().flatMap(r -> r.getInputPorts().stream()).map(RemotePortSchema::getId).collect(Collectors.toList()));
+        getConnections().forEach(c -> {
             String destinationName = c.getDestinationName();
             if (!StringUtil.isNullOrEmpty(destinationName) && !connectableNames.contains(destinationName)) {
                 addValidationIssue(CONNECTION_WITH_NAME + c.getName() + HAS_INVALID_DESTINATION_NAME + destinationName);
@@ -140,9 +85,9 @@ public class ConfigSchemaV1 extends BaseSchema implements ConvertableSchema<Conf
 
     protected List<ProcessorSchema> getProcessorSchemas() {
         Set<UUID> ids = new HashSet<>();
-        List<ProcessorSchema> processorSchemas = new ArrayList<>(processors.size());
+        List<ProcessorSchema> processorSchemas = new ArrayList<>(getProcessors().size());
 
-        for (ProcessorSchemaV1 processor : processors) {
+        for (ProcessorSchemaV1 processor : getProcessors()) {
             ProcessorSchema processorSchema = processor.convert();
             processorSchema.setId(getUniqueId(ids, processorSchema.getName()));
             processorSchemas.add(processorSchema);
@@ -165,15 +110,15 @@ public class ConfigSchemaV1 extends BaseSchema implements ConvertableSchema<Conf
         }
 
         Set<String> remoteInputPortIds = new HashSet<>();
-        if (remoteProcessingGroups != null) {
-            remoteInputPortIds.addAll(remoteProcessingGroups.stream().filter(r -> r.getInputPorts() != null)
+        if (getRemoteProcessingGroups() != null) {
+            remoteInputPortIds.addAll(getRemoteProcessingGroups().stream().filter(r -> r.getInputPorts() != null)
                     .flatMap(r -> r.getInputPorts().stream()).map(RemotePortSchema::getId).collect(Collectors.toSet()));
         }
 
         Set<String> problematicDuplicateNames = new HashSet<>();
 
-        List<ConnectionSchema> connectionSchemas = new ArrayList<>(connections.size());
-        for (ConnectionSchemaV1 connection : connections) {
+        List<ConnectionSchema> connectionSchemas = new ArrayList<>(getConnections().size());
+        for (ConnectionSchemaV1 connection : getConnections()) {
             ConnectionSchema convert = connection.convert();
             convert.setId(getUniqueId(ids, convert.getName()));
 
@@ -214,9 +159,9 @@ public class ConfigSchemaV1 extends BaseSchema implements ConvertableSchema<Conf
 
     protected List<RemoteProcessGroupSchema> getRemoteProcessGroupSchemas() {
         Set<UUID> ids = new HashSet<>();
-        List<RemoteProcessGroupSchema> rpgSchemas= new ArrayList<>(remoteProcessingGroups.size());
+        List<RemoteProcessGroupSchema> rpgSchemas= new ArrayList<>(getRemoteProcessingGroups().size());
 
-        for (RemoteProcessGroupSchemaV1 rpg : remoteProcessingGroups) {
+        for (RemoteProcessGroupSchemaV1 rpg : getRemoteProcessingGroups()) {
             RemoteProcessGroupSchema rpgSchema = rpg.convert();
             rpgSchema.setId(getUniqueId(ids, rpgSchema.getName()));
             rpgSchemas.add(rpgSchema);
@@ -229,19 +174,19 @@ public class ConfigSchemaV1 extends BaseSchema implements ConvertableSchema<Conf
     public ConfigSchema convert() {
         Map<String, Object> map = new HashMap<>();
         map.put(VERSION, getVersion());
-        putIfNotNull(map, FLOW_CONTROLLER_PROPS_KEY, flowControllerProperties);
-        putIfNotNull(map, CORE_PROPS_KEY, coreProperties);
-        putIfNotNull(map, FLOWFILE_REPO_KEY, flowfileRepositoryProperties);
-        putIfNotNull(map, CONTENT_REPO_KEY, contentRepositoryProperties);
-        putIfNotNull(map, PROVENANCE_REPO_KEY, provenanceRepositorySchema);
-        putIfNotNull(map, COMPONENT_STATUS_REPO_KEY, componentStatusRepositoryProperties);
-        putIfNotNull(map, SECURITY_PROPS_KEY, securityProperties);
+        putIfNotNull(map, FLOW_CONTROLLER_PROPS_KEY, getFlowControllerProperties());
+        putIfNotNull(map, CORE_PROPS_KEY, getCoreProperties());
+        putIfNotNull(map, FLOWFILE_REPO_KEY, getFlowfileRepositoryProperties());
+        putIfNotNull(map, CONTENT_REPO_KEY, getContentRepositoryProperties());
+        putIfNotNull(map, PROVENANCE_REPO_KEY, getProvenanceRepositorySchema());
+        putIfNotNull(map, COMPONENT_STATUS_REPO_KEY, getComponentStatusRepositoryProperties());
+        putIfNotNull(map, SECURITY_PROPS_KEY, getSecurityProperties());
         List<ProcessorSchema> processorSchemas = getProcessorSchemas();
         putListIfNotNull(map, PROCESSORS_KEY, processorSchemas);
         List<String> validationIssues = getValidationIssues();
         putListIfNotNull(map, CONNECTIONS_KEY, getConnectionSchemas(processorSchemas, validationIssues));
         putListIfNotNull(map, REMOTE_PROCESS_GROUPS_KEY, getRemoteProcessGroupSchemas());
-        putIfNotNull(map, PROVENANCE_REPORTING_KEY, provenanceReportingProperties);
+        putIfNotNull(map, PROVENANCE_REPORTING_KEY, getProvenanceReportingProperties());
         return new ConfigSchema(map, validationIssues);
     }
 
@@ -264,5 +209,10 @@ public class ConfigSchemaV1 extends BaseSchema implements ConvertableSchema<Conf
     @Override
     public int getVersion() {
         return CONFIG_VERSION;
+    }
+
+    @Override
+    protected ProvenanceReportingSchema initializeProvenanceReportingProperties(Map map) {
+        return getMapAsType(map, PROVENANCE_REPORTING_PROPERTIES_KEY, ProvenanceReportingSchema.class, getWrapperName(), false, false);
     }
 }

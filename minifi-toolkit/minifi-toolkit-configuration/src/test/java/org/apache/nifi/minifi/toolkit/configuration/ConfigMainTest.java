@@ -24,9 +24,10 @@ import org.apache.nifi.minifi.commons.schema.ConnectionSchema;
 import org.apache.nifi.minifi.commons.schema.ProcessorSchema;
 import org.apache.nifi.minifi.commons.schema.RemotePortSchema;
 import org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema;
+import org.apache.nifi.minifi.commons.schema.TransportProtocolOptions;
 import org.apache.nifi.minifi.commons.schema.common.ConvertableSchema;
-import org.apache.nifi.minifi.commons.schema.serialization.SchemaLoader;
 import org.apache.nifi.minifi.commons.schema.exception.SchemaLoaderException;
+import org.apache.nifi.minifi.commons.schema.serialization.SchemaLoader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -314,10 +315,10 @@ public class ConfigMainTest {
     }
 
     private void clearProxyInfo(RemoteProcessGroupSchema remoteProcessGroupSchema) {
-        remoteProcessGroupSchema.setProxyHost(RemoteProcessGroupSchema.DEFAULT_PROXY_HOST);
-        remoteProcessGroupSchema.setProxyPort(RemoteProcessGroupSchema.DEFAULT_PROXY_PORT);
-        remoteProcessGroupSchema.setProxyUser(RemoteProcessGroupSchema.DEFAULT_PROXY_USER);
-        remoteProcessGroupSchema.setProxyPassword(RemoteProcessGroupSchema.DEFAULT_PROXY_PASSWORD);
+        remoteProcessGroupSchema.setProxyHost(RemoteProcessGroupSchema.PROXY_HOST_DEFAULT);
+        remoteProcessGroupSchema.setProxyPort(RemoteProcessGroupSchema.PROXY_PORT_DEFAULT);
+        remoteProcessGroupSchema.setProxyUser(RemoteProcessGroupSchema.PROXY_USER_DEFAULT);
+        remoteProcessGroupSchema.setProxyPassword(RemoteProcessGroupSchema.PROXY_PASSWORD_DEFAULT);
     }
 
     private void testV1YmlIfPresent(String name, Map<String, Object> yamlMap) throws IOException, SchemaLoaderException {
@@ -372,7 +373,7 @@ public class ConfigMainTest {
 
             ConfigSchema.getAllProcessGroups(configSchemaFromCurrent.getProcessGroupSchema()).stream().flatMap(p -> p.getRemoteProcessGroups().stream()).forEach(r -> {
                 clearProxyInfo(r);
-                r.setTransportProtocol(RemoteProcessGroupSchema.TransportProtocolOptions.RAW.name());
+                r.setTransportProtocol(TransportProtocolOptions.RAW);
             });
             Map<String, Object> v1YamlMap = configSchemaUpgradedFromV1.toMap();
             assertNoMapDifferences(v1YamlMap, configSchemaFromCurrent.toMap());
