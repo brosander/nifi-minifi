@@ -64,20 +64,11 @@ public class SchemaMojo extends AbstractMojo {
             SchemaDefinition schemaDefinition;
             try {
                 schemaDefinition = objectMapper.readValue(file, SchemaDefinition.class);
-                for (EnumDefinition enumDefinition : schemaDefinition.getEnums()) {
-                    enumDefinition.setParent(schemaDefinition);
-                }
                 for (ClassDefinition c : schemaDefinition.getClasses()) {
                     c.setParent(schemaDefinition);
                 }
             } catch (IOException e) {
                 throw new MojoExecutionException("Unable to load json " + file, e);
-            }
-            for (EnumDefinition enumDefinition : schemaDefinition.getEnums()) {
-                Context context = new VelocityContext();
-                context.put("enum", enumDefinition);
-                context.put("util", new Util());
-                render("enum.vm", context, schemaDefinition.getPackage(), enumDefinition.getName());
             }
             for (ClassDefinition classDefinition : schemaDefinition.getClasses()) {
                 Context context = new VelocityContext();

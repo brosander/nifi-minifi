@@ -21,7 +21,6 @@ package org.apache.nifi.minifi.commons.schema.common;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.ID_KEY;
 
@@ -66,14 +65,5 @@ public class BaseSchemaWithId extends BaseSchema implements WritableSchema {
             validationIssues.add(getIssueText(CommonPropertyKeys.ID_KEY, getWrapperName(), "Id value of " + id + " is not a valid UUID"));
         }
         return validationIssues;
-    }
-
-    protected boolean isValidId(String value) {
-        try {
-            UUID.fromString(value);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
     }
 }

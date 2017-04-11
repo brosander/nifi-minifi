@@ -28,14 +28,13 @@ import java.util.stream.Collectors;
 
 public class ClassDefinition extends BaseDefinitionWithImports {
     private SchemaDefinition parent;
-    private String key;
+    private String wrapperName;
     private String name;
-    private String extendsClass = "org.apache.nifi.minifi.commons.schema.common.BaseSchema";
+    private String extendsClass = "BaseSchema";
     private boolean writable;
     private boolean concrete = true;
     private Set<String> implementsClasses = Collections.emptySet();
     private List<FieldDefinition> fields = Collections.emptyList();
-    private String additionalValidator;
 
     public ClassDefinition() {
         setPackage(null);
@@ -103,12 +102,12 @@ public class ClassDefinition extends BaseDefinitionWithImports {
         this.parent = parent;
     }
 
-    public String getKey() {
-        return key;
+    public String getWrapperName() {
+        return wrapperName;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setWrapperName(String wrapperName) {
+        this.wrapperName = wrapperName;
     }
 
     public boolean isSchema(String name) {
@@ -136,11 +135,14 @@ public class ClassDefinition extends BaseDefinitionWithImports {
             imports.add(getCanonicalName(implementsClass));
         }
         for (FieldDefinition field : fields) {
-            imports.add(getCanonicalName(field.getType()));
+            imports.add(getCanonicalName(field.getMapType()));
+            if ("String".equals(field.getType()) && field.isRequired()) {
+                imports.add(getCanonicalName("org.apache.nifi.minifi.commons.schema.common.StringUtil"));
+            }
         }
-        if (additionalValidator != null) {
-            imports.add(getCanonicalName(additionalValidator));
-        }
+        imports.add(new CanonicalName(List.class.getCanonicalName()));
+        imports.add(new CanonicalName(ArrayList.class.getCanonicalName()));
+        imports.add(new CanonicalName(Collections.class.getCanonicalName()));
         imports.add(new CanonicalName(Map.class.getCanonicalName()));
         List<String> result = new ArrayList<>(imports.size());
         for (CanonicalName anImport : imports) {
@@ -160,14 +162,6 @@ public class ClassDefinition extends BaseDefinitionWithImports {
             aPackage = parent.getPackage();
         }
         return aPackage;
-    }
-
-    public String getAdditionalValidator() {
-        return additionalValidator;
-    }
-
-    public void setAdditionalValidator(String additionalValidator) {
-        this.additionalValidator = additionalValidator;
     }
 
     public boolean isConcrete() {

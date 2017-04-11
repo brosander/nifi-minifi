@@ -32,13 +32,13 @@ public class SchemaDefinition extends BaseDefinitionWithImports {
             String.class.getCanonicalName(),
             Boolean.class.getCanonicalName(),
             Map.class.getCanonicalName(),
-            "java.lang.int",
-            "java.lang.long",
-            "java.lang.boolean",
+            List.class.getCanonicalName(),
             "org.apache.nifi.minifi.commons.schema.common.BaseSchema",
+            "org.apache.nifi.minifi.commons.schema.common.BaseSchemaWithId",
+            "org.apache.nifi.minifi.commons.schema.common.BaseSchemaWithIdAndName",
+            "org.apache.nifi.minifi.commons.schema.common.StringUtil",
             "org.apache.nifi.minifi.commons.schema.common.WritableSchema"
     };
-    private Map<String, EnumDefinition> enums = Collections.emptyMap();
     private Map<String, ClassDefinition> classes;
 
     public SchemaDefinition() {
@@ -79,28 +79,6 @@ public class SchemaDefinition extends BaseDefinitionWithImports {
                 canonicalName = new CanonicalName(aClass.getPackage() + "." + aClass.getName());
             }
         }
-        if (canonicalName == null) {
-            EnumDefinition anEnum = getEnum(name);
-            if (anEnum != null) {
-                canonicalName = new CanonicalName(getPackage() + "." + anEnum.getName());
-            }
-        }
         return canonicalName;
-    }
-
-    public EnumDefinition getEnum(String name) {
-        return enums.get(name);
-    }
-
-    public List<EnumDefinition> getEnums() {
-        return new ArrayList<>(enums.values());
-    }
-
-    public void setEnums(List<EnumDefinition> enums) {
-        Map<String, EnumDefinition> enumDefinitionMap = new LinkedHashMap<>();
-        for (EnumDefinition anEnum : enums) {
-            enumDefinitionMap.put(anEnum.getName(), anEnum);
-        }
-        this.enums = enumDefinitionMap;
     }
 }

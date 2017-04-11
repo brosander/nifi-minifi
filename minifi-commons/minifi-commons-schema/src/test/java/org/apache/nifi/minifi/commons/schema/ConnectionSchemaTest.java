@@ -80,7 +80,7 @@ public class ConnectionSchemaTest {
         map.put(ConnectionSchema.DESTINATION_ID_KEY, testDestinationId);
         map.put(ConnectionSchema.MAX_WORK_QUEUE_SIZE_KEY, testMaxWorkQueueSize);
         map.put(ConnectionSchema.MAX_WORK_QUEUE_DATA_SIZE_KEY, testMaxWorkQueueDataSize);
-        map.put(ConnectionSchema.FLOWFILE_EXPIRATION__KEY, testFlowfileExpiration);
+        map.put(ConnectionSchema.FLOWFILE_EXPIRATION_KEY, testFlowfileExpiration);
         map.put(ConnectionSchema.QUEUE_PRIORITIZER_CLASS_KEY, testQueuePrioritizerClass);
         return map;
     }
@@ -177,7 +177,7 @@ public class ConnectionSchemaTest {
         Map<String, Object> map = createMap();
         map.remove(ConnectionSchema.MAX_WORK_QUEUE_SIZE_KEY);
         ConnectionSchema schema = createSchema(map, 0);
-        assertEquals(ConnectionSchema.DEFAULT_MAX_WORK_QUEUE_SIZE, schema.getMaxWorkQueueSize());
+        assertEquals(ConnectionSchema.MAX_WORK_QUEUE_SIZE_DEFAULT, schema.getMaxWorkQueueSize());
         assertEquals(schema.getMaxWorkQueueSize(), schema.toMap().get(ConnectionSchema.MAX_WORK_QUEUE_SIZE_KEY));
     }
 
@@ -193,7 +193,7 @@ public class ConnectionSchemaTest {
         Map<String, Object> map = createMap();
         map.remove(ConnectionSchema.MAX_WORK_QUEUE_DATA_SIZE_KEY);
         ConnectionSchema schema = createSchema(map, 0);
-        assertEquals(ConnectionSchema.DEFAULT_MAX_QUEUE_DATA_SIZE, schema.getMaxWorkQueueDataSize());
+        assertEquals(ConnectionSchema.MAX_WORK_QUEUE_DATA_SIZE_DEFAULT, schema.getMaxWorkQueueDataSize());
         assertEquals(schema.getMaxWorkQueueDataSize(), schema.toMap().get(ConnectionSchema.MAX_WORK_QUEUE_DATA_SIZE_KEY));
     }
 
@@ -201,16 +201,16 @@ public class ConnectionSchemaTest {
     public void testFlowFileExpiration() {
         ConnectionSchema schema = createSchema(0);
         assertEquals(testFlowfileExpiration, schema.getFlowfileExpiration());
-        assertEquals(schema.getFlowfileExpiration(), schema.toMap().get(ConnectionSchema.FLOWFILE_EXPIRATION__KEY));
+        assertEquals(schema.getFlowfileExpiration(), schema.toMap().get(ConnectionSchema.FLOWFILE_EXPIRATION_KEY));
     }
 
     @Test
     public void testNoFlowFileExpiration() {
         Map<String, Object> map = createMap();
-        map.remove(ConnectionSchema.FLOWFILE_EXPIRATION__KEY);
+        map.remove(ConnectionSchema.FLOWFILE_EXPIRATION_KEY);
         ConnectionSchema schema = createSchema(map, 0);
-        assertEquals(ConnectionSchema.DEFAULT_FLOWFILE_EXPIRATION, schema.getFlowfileExpiration());
-        assertEquals(schema.getFlowfileExpiration(), schema.toMap().get(ConnectionSchema.FLOWFILE_EXPIRATION__KEY));
+        assertEquals(ConnectionSchema.FLOWFILE_EXPIRATION_DEFAULT, schema.getFlowfileExpiration());
+        assertEquals(schema.getFlowfileExpiration(), schema.toMap().get(ConnectionSchema.FLOWFILE_EXPIRATION_KEY));
     }
 
     @Test

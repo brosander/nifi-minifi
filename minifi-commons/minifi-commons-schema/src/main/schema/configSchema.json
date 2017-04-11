@@ -1,23 +1,8 @@
 {
-  "enums": [
-    {
-      "name": "KeystoreType",
-      "values": [
-        "JKS", "PKCS12"
-      ]
-    },
-    {
-      "name": "SslProtocol",
-      "caseSensitive": true,
-      "values": [
-        "SSL", "SSLv2Hello", "SSLv3", "TLS", "TLSv1", "TLSv1.1", "TLSv1.2"
-      ]
-    }
-  ],
   "classes": [
     {
       "name": "ComponentStatusRepositorySchema",
-      "key": "Component Status Repository",
+      "wrapperName": "Component Status Repository",
       "writable": true,
       "fields": [
         {"name": "bufferSize", "type": "int", "key": "buffer size", "default": 1440},
@@ -25,8 +10,25 @@
       ]
     },
     {
+      "name": "ConnectionSchema",
+      "wrapperName": "Connection(id: {id}, name: {name})",
+      "writable": true,
+      "concrete": false,
+      "fields": [
+        {"name": "id", "type": "String", "key": "id", "required": true, "validator": "validateId"},
+        {"name": "name", "type": "String", "key": "name", "default": ""},
+        {"name": "sourceId", "type": "String", "key": "source id", "required": true},
+        {"name": "sourceRelationshipNames", "type": "List<String>", "key": "source relationship names", "default": "Collections.emptyList()"},
+        {"name": "destinationId", "type": "String", "key": "destination id", "required": true},
+        {"name": "maxWorkQueueSize", "type": "long", "key": "max work queue size", "default": 0},
+        {"name": "maxWorkQueueDataSize", "type": "String", "key": "max work queue data size", "default": "0 MB"},
+        {"name": "flowfileExpiration", "type": "String", "key": "flowfile expiration", "default": "0 sec"},
+        {"name": "queuePrioritizerClass", "type": "String", "key": "queue prioritizer class", "default": ""}
+      ]
+    },
+    {
       "name": "ContentRepositorySchema",
-      "key": "Content Repository",
+      "wrapperName": "Content Repository",
       "writable": true,
       "fields": [
         {"name": "contentClaimMaxAppendableSize", "type": "String", "key": "content claim max appendable size", "default": "10 MB"},
@@ -35,8 +37,20 @@
       ]
     },
     {
+      "name": "ControllerServiceSchema",
+      "wrapperName": "Controller Service(id: {id}, name: {name})",
+      "writable": true,
+      "fields": [
+        {"name": "id", "type": "String", "key": "id", "required": true, "validator": "validateId"},
+        {"name": "name", "type": "String", "key": "name", "default": ""},
+        {"name": "serviceClass", "type": "String", "key": "type", "required": true},
+        {"name": "properties", "type": "Map<String, Object>", "key": "Properties", "default": "Collections.emptyMap()"},
+        {"name": "annotationData", "type": "String", "key": "annotation data", "default": ""}
+      ]
+    },
+    {
       "name": "CorePropertiesSchema",
-      "key": "Core Properties",
+      "wrapperName": "Core Properties",
       "writable": true,
       "fields": [
         {"name": "flowControllerGracefulShutdownPeriod", "type": "String", "key": "flow controller graceful shutdown period", "default": "10 sec"},
@@ -48,7 +62,7 @@
     },
     {
       "name": "FlowControllerSchema",
-      "key": "Flow Controller",
+      "wrapperName": "Flow Controller",
       "writable": true,
       "fields": [
         {"name": "name", "type": "String", "key": "name"},
@@ -57,7 +71,7 @@
     },
     {
       "name": "FlowFileRepositorySchema",
-      "key": "FlowFile Repository",
+      "wrapperName": "FlowFile Repository",
       "writable": true,
       "fields": [
         {"name": "partitions", "type": "int", "key": "partitions", "default": 256},
@@ -67,9 +81,25 @@
       ]
     },
     {
+      "name": "FunnelSchema",
+      "wrapperName": "Funnel(id: {id})",
+      "writable": true,
+      "fields": [
+        {"name": "id", "type": "String", "key": "id", "required": true}
+      ]
+    },
+    {
+      "name": "PortSchema",
+      "writable": true,
+      "fields": [
+        {"name": "id", "type": "String", "key": "id", "required": true, "validator": "validateId"},
+        {"name": "name", "type": "String", "key": "name", "default": ""}
+      ]
+    },
+    {
       "imports": ["org.apache.nifi.scheduling.SchedulingStrategy"],
       "name": "ProvenanceReportingSchema",
-      "key": "Provenance Reporting",
+      "wrapperName": "Provenance Reporting",
       "writable": true,
       "fields": [
         {"name": "schedulingStrategy", "type": "SchedulingStrategy", "key": "scheduling strategy", "required": true, "enum": true},
@@ -85,7 +115,7 @@
     },
     {
       "name": "ProvenanceRepositorySchema",
-      "key": "Provenance Repository",
+      "wrapperName": "Provenance Repository",
       "writable": true,
       "fields": [
         {"name": "provenanceRepoRolloverTime", "type": "String", "key": "provenance rollover time", "default": "1 min"}
@@ -94,7 +124,7 @@
     {
       "imports": ["org.apache.nifi.minifi.commons.schema.validators.SecurityPropertiesSchemaValidator"],
       "name": "SecurityPropertiesSchema",
-      "key": "Security Properties",
+      "wrapperName": "Security Properties",
       "writable": true,
       "concrete": false,
       "fields": [
@@ -111,7 +141,7 @@
     },
     {
       "name": "SensitivePropsSchema",
-      "key": "Sensitive Props",
+      "wrapperName": "Sensitive Props",
       "writable": true,
       "fields": [
         {"name": "key", "type": "String", "key": "key", "default": ""},
@@ -121,7 +151,7 @@
     },
     {
       "name": "SwapSchema",
-      "key": "Swap",
+      "wrapperName": "Swap",
       "writable": true,
       "fields": [
         {"name": "threshold", "type": "int", "key": "threshold", "default": 20000},

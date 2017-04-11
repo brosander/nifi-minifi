@@ -25,6 +25,9 @@ public class FieldDefinition {
     private Object defaultValue;
     private boolean required;
     private boolean isEnum;
+    private boolean requiredSet;
+    private String validator;
+    private String defaultType;
 
     public void setParent(ClassDefinition parent) {
         this.parent = parent;
@@ -39,10 +42,10 @@ public class FieldDefinition {
     }
 
     public String getDefaultLiteral() {
-        if (type.toLowerCase().equals(type)) {
-            return String.valueOf(defaultValue);
+        if (String.class.getSimpleName().equals(type)) {
+            return "\"" + String.valueOf(defaultValue) + "\"";
         }
-        return "\"" + String.valueOf(defaultValue) + "\"";
+        return String.valueOf(defaultValue);
     }
 
     public String getType() {
@@ -60,7 +63,12 @@ public class FieldDefinition {
         if ("boolean".equals(type)) {
             return "Boolean";
         }
-        return type;
+
+        int i = type.indexOf('<');
+        if (i < 0) {
+            return type;
+        }
+        return type.substring(0, i);
     }
 
     public String getKey() {
@@ -84,10 +92,15 @@ public class FieldDefinition {
     }
 
     public boolean isRequired() {
-        return required;
+        if (requiredSet) {
+            return required;
+        } else {
+            return !hasDefault();
+        }
     }
 
     public void setRequired(boolean required) {
+        requiredSet = true;
         this.required = required;
     }
 
@@ -97,5 +110,13 @@ public class FieldDefinition {
 
     public void setEnum(boolean anEnum) {
         isEnum = anEnum;
+    }
+
+    public String getValidator() {
+        return validator;
+    }
+
+    public void setValidator(String validator) {
+        this.validator = validator;
     }
 }

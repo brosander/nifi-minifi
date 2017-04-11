@@ -29,10 +29,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.nifi.minifi.commons.schema.ConnectionSchema.DEFAULT_FLOWFILE_EXPIRATION;
-import static org.apache.nifi.minifi.commons.schema.ConnectionSchema.DEFAULT_MAX_QUEUE_DATA_SIZE;
-import static org.apache.nifi.minifi.commons.schema.ConnectionSchema.DEFAULT_MAX_WORK_QUEUE_SIZE;
-import static org.apache.nifi.minifi.commons.schema.ConnectionSchema.FLOWFILE_EXPIRATION__KEY;
+import static org.apache.nifi.minifi.commons.schema.AbstractConnectionSchema.FLOWFILE_EXPIRATION_DEFAULT;
+import static org.apache.nifi.minifi.commons.schema.AbstractConnectionSchema.FLOWFILE_EXPIRATION_KEY;
+import static org.apache.nifi.minifi.commons.schema.AbstractConnectionSchema.MAX_WORK_QUEUE_DATA_SIZE_DEFAULT;
+import static org.apache.nifi.minifi.commons.schema.AbstractConnectionSchema.MAX_WORK_QUEUE_SIZE_DEFAULT;
 import static org.apache.nifi.minifi.commons.schema.ConnectionSchema.MAX_WORK_QUEUE_DATA_SIZE_KEY;
 import static org.apache.nifi.minifi.commons.schema.ConnectionSchema.MAX_WORK_QUEUE_SIZE_KEY;
 import static org.apache.nifi.minifi.commons.schema.ConnectionSchema.QUEUE_PRIORITIZER_CLASS_KEY;
@@ -52,9 +52,9 @@ public class ConnectionSchemaV1 extends BaseSchema implements ConvertableSchema<
 
     private String sourceName;
 
-    private Number maxWorkQueueSize = DEFAULT_MAX_WORK_QUEUE_SIZE;
-    private String maxWorkQueueDataSize = DEFAULT_MAX_QUEUE_DATA_SIZE;
-    private String flowfileExpiration = DEFAULT_FLOWFILE_EXPIRATION;
+    private Number maxWorkQueueSize = MAX_WORK_QUEUE_SIZE_DEFAULT;
+    private String maxWorkQueueDataSize = MAX_WORK_QUEUE_DATA_SIZE_DEFAULT;
+    private String flowfileExpiration = FLOWFILE_EXPIRATION_DEFAULT;
     private String queuePrioritizerClass;
 
     public ConnectionSchemaV1(Map map) {
@@ -63,9 +63,9 @@ public class ConnectionSchemaV1 extends BaseSchema implements ConvertableSchema<
         sourceRelationshipName = getRequiredKeyAsType(map, SOURCE_RELATIONSHIP_NAME_KEY, String.class, CONNECTIONS_KEY);
         destinationName = getRequiredKeyAsType(map, DESTINATION_NAME_KEY, String.class, CONNECTIONS_KEY);
 
-        maxWorkQueueSize = getOptionalKeyAsType(map, MAX_WORK_QUEUE_SIZE_KEY, Number.class, CONNECTIONS_KEY, DEFAULT_MAX_WORK_QUEUE_SIZE);
-        maxWorkQueueDataSize = getOptionalKeyAsType(map, MAX_WORK_QUEUE_DATA_SIZE_KEY, String.class, CONNECTIONS_KEY, DEFAULT_MAX_QUEUE_DATA_SIZE);
-        flowfileExpiration = getOptionalKeyAsType(map, FLOWFILE_EXPIRATION__KEY, String.class, CONNECTIONS_KEY, DEFAULT_FLOWFILE_EXPIRATION);
+        maxWorkQueueSize = getOptionalKeyAsType(map, MAX_WORK_QUEUE_SIZE_KEY, Number.class, CONNECTIONS_KEY, MAX_WORK_QUEUE_SIZE_DEFAULT);
+        maxWorkQueueDataSize = getOptionalKeyAsType(map, MAX_WORK_QUEUE_DATA_SIZE_KEY, String.class, CONNECTIONS_KEY, MAX_WORK_QUEUE_DATA_SIZE_DEFAULT);
+        flowfileExpiration = getOptionalKeyAsType(map, FLOWFILE_EXPIRATION_KEY, String.class, CONNECTIONS_KEY, FLOWFILE_EXPIRATION_DEFAULT);
         queuePrioritizerClass = getOptionalKeyAsType(map, QUEUE_PRIORITIZER_CLASS_KEY, String.class, CONNECTIONS_KEY, "");
     }
 
@@ -80,7 +80,7 @@ public class ConnectionSchemaV1 extends BaseSchema implements ConvertableSchema<
         }
         map.put(MAX_WORK_QUEUE_SIZE_KEY, maxWorkQueueSize);
         map.put(MAX_WORK_QUEUE_DATA_SIZE_KEY, maxWorkQueueDataSize);
-        map.put(FLOWFILE_EXPIRATION__KEY, flowfileExpiration);
+        map.put(FLOWFILE_EXPIRATION_KEY, flowfileExpiration);
         map.put(QUEUE_PRIORITIZER_CLASS_KEY, queuePrioritizerClass);
         return new ConnectionSchema(map);
     }
