@@ -34,8 +34,8 @@ public class SchemaDefinition extends BaseDefinitionWithImports {
             Long.class.getCanonicalName(),
             String.class.getCanonicalName(),
             Boolean.class.getCanonicalName(),
-            Map.class.getCanonicalName(),
             List.class.getCanonicalName(),
+            Map.class.getCanonicalName(),
             "org.apache.nifi.minifi.commons.schema.common.BaseSchema",
             "org.apache.nifi.minifi.commons.schema.common.BaseSchemaWithId",
             "org.apache.nifi.minifi.commons.schema.common.BaseSchemaWithIdAndName",
@@ -44,7 +44,7 @@ public class SchemaDefinition extends BaseDefinitionWithImports {
             "org.apache.nifi.minifi.commons.schema.common.WritableSchema"
     };
     private Map<String, EnumDefinition> enums = Collections.emptyMap();
-    private Map<String, ClassDefinition> classes;
+    private Map<String, ClassDefinition> classes = Collections.emptyMap();
 
     public SchemaDefinition() {
         setImports(Collections.emptyList());

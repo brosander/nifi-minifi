@@ -17,29 +17,23 @@
 
 package $class.package;
 
-#foreach($import in $class.classImports)
-import $import;
-#end
+## Imports
+#foreach($import in $class.classImports)import $import;#end
 ##
-##  Add "Abstract"
-#if ($class.concrete)
-    #set($actualClassname = $class.name)
-#else
+## Add abstract to classname if necessary
+#set($actualClassname = $class.name)
+#if (!$class.concrete)
     #set($actualClassname = "Abstract" + $class.name)
 #end
 ##
-##
-## Calculate underscore and getter names for each field
+## Calculate underscore and camel case names for each field
 #set($underscoreNames = $util.newMap())
-#set($getterNames = $util.newMap())
-#set($setterNames = $util.newMap())
+#set($camelCase = $util.newMap())
 #set($underscoreNames[$class.wrapperName] = $util.calculateUnderscoreName($class.name))
-##
 #set($hasWrapperName = !$class.extends.equals("BaseSchema"))
 #foreach($field in $class.fields)
     #set($underscoreNames[$field.name] = $util.calculateUnderscoreName($field.name))
-    #set($getterNames[$field.name] = $util.calculateGetterName($field.name))
-    #set($setterNames[$field.name] = $util.calculateSetterName($field.name))
+    #set($camelCase[$field.name] = $util.camelCase($field.name))
 #end
 
 //CHECKSTYLE:LineLength:OFF
@@ -184,11 +178,11 @@ public#if(!$class.concrete) abstract#end class $actualClassname extends $class.e
 #if ($field.name.equals("id") && $field.type.declaration.equals("String"))
     @Override
 #end
-    public $field.type.declaration ${getterNames[$field.name]}() {
+    public $field.type.declaration get${camelCase[$field.name]}() {
         return $field.name;
     }
 
-    public void ${setterNames[$field.name]}($field.type.declaration $field.name) {
+    public void set${camelCase[$field.name]}($field.type.declaration $field.name) {
         this.$field.name = $field.name;
     }
 #end

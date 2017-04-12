@@ -18,7 +18,6 @@
 package org.apache.nifi.minifi.codegen.schema;
 
 public class FieldDefinition {
-    private ClassDefinition parent;
     private String name;
     private String key;
     private TypeDefinition type;
@@ -30,10 +29,6 @@ public class FieldDefinition {
     private String instantiator;
     private String toMap;
     private boolean omitIfEmpty;
-
-    public void setParent(ClassDefinition parent) {
-        this.parent = parent;
-    }
 
     public String getName() {
         return name;
@@ -84,9 +79,8 @@ public class FieldDefinition {
     public boolean isRequired() {
         if (requiredSet) {
             return required;
-        } else {
-            return !hasDefault();
         }
+        return !hasDefault();
     }
 
     public void setRequired(boolean required) {

@@ -32,11 +32,6 @@ public class CanonicalName {
         }
     }
 
-    public CanonicalName(String packageName, String name) {
-        this.packageName = packageName;
-        this.name = name;
-    }
-
     public String getPackage() {
         return packageName;
     }

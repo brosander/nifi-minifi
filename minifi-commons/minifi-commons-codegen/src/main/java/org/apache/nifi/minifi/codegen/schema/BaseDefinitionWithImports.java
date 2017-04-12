@@ -18,32 +18,22 @@
 package org.apache.nifi.minifi.codegen.schema;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public abstract class BaseDefinitionWithImports {
     private Map<String, CanonicalName> imports = new HashMap<>();
-    private Set<CanonicalName> canonicalNames;
     private String packageName = "org.apache.nifi.minifi.commons.schema";
 
     public CanonicalName getCanonicalName(String name) {
         return imports.get(name);
     }
 
-    public Map<String, CanonicalName> getImports() {
-        return Collections.unmodifiableMap(imports);
-    }
-
     public void setImports(Collection<CanonicalName> imports) {
-        Map<String, CanonicalName> map = new HashMap<>(imports.size());
+        this.imports = new HashMap<>(imports.size());
         for (CanonicalName canonicalName : imports) {
-            map.put(canonicalName.getName(), canonicalName);
+            this.imports.put(canonicalName.getName(), canonicalName);
         }
-        this.imports = map;
-        this.canonicalNames = Collections.unmodifiableSet(new HashSet<>(imports));
     }
 
     public String getPackage() {
