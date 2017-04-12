@@ -178,6 +178,25 @@
       ]
     },
     {
+      "package": "org.apache.nifi.minifi.commons.schema.v2",
+      "implements": [{"name": "ConvertableSchema", "genericTypes": [{"name": "ProcessGroupSchema"}]}],
+      "name": "ProcessGroupSchemaV2",
+      "concrete": false,
+      "writable": true,
+      "fields": [
+        {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId", "default": "Root-Group"},
+        {"name": "name", "typeName": "String", "key": "name", "default": ""},
+        {"name": "comment", "typeName": "String", "key": "comment", "default": "", "omitIfEmpty": true},
+        {"name": "processors", "type": {"name": "List", "genericTypes": [{"name":"ProcessorSchema"}]}, "key": "Processors", "default": "Collections.emptyList()"},
+        {"name": "funnels", "type": {"name": "List", "genericTypes": [{"name":"FunnelSchema"}]}, "key": "Funnels", "default": "Collections.emptyList()"},
+        {"name": "connections", "type": {"name": "List", "genericTypes": [{"name":"ConnectionSchema"}]}, "key": "Connections", "default": "Collections.emptyList()"},
+        {"name": "remoteProcessGroups", "type": {"name": "List", "genericTypes": [{"name":"RemoteProcessGroupSchema"}]}, "key": "Remote Process Groups", "default": "Collections.emptyList()"},
+        {"name": "processGroupSchemas", "type": {"name": "List", "genericTypes": [{"name":"ProcessGroupSchemaV2"}]}, "key": "Process Groups", "default": "Collections.emptyList()", "instantiator": "getOptionalKeyAsList(map, PROCESS_GROUP_SCHEMAS_KEY, m -> new ProcessGroupSchemaV2(m, \"ProcessGroup(id: {id}, name: {name})\"), getWrapperName())"},
+        {"name": "inputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Input Ports", "default": "Collections.emptyList()", "instantiator": "getOptionalKeyAsList(map, INPUT_PORT_SCHEMAS_KEY, m -> new PortSchema(m, \"InputPort(id: {id}, name: {name})\"), getWrapperName())"},
+        {"name": "outputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Output Ports", "default": "Collections.emptyList()", "instantiator": "getOptionalKeyAsList(map, OUTPUT_PORT_SCHEMAS_KEY, m -> new PortSchema(m, \"OutputPort(id: {id}, name: {name})\"), getWrapperName())"}
+      ]
+    },
+    {
       "imports": ["org.apache.nifi.scheduling.SchedulingStrategy"],
       "name": "ProcessorSchema",
       "wrapperName": "Processor(id: {id}, name: {name})",
