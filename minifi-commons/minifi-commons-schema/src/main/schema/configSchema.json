@@ -41,11 +41,11 @@
       "writable": true,
       "concrete": false,
       "fields": [
-        {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId"},
+        {"name": "id", "typeName": "String", "key": "id", "default": "", "required": true, "validator": "validateId"},
         {"name": "name", "typeName": "String", "key": "name", "default": ""},
-        {"name": "sourceId", "typeName": "String", "key": "source id", "required": true},
+        {"name": "sourceId", "typeName": "String", "key": "source id", "default": "", "required": true},
         {"name": "sourceRelationshipNames", "type": {"name": "List", "genericTypes": [{"name": "String"}]}, "key": "source relationship names", "default": "Collections.emptyList()"},
-        {"name": "destinationId", "typeName": "String", "key": "destination id", "required": true},
+        {"name": "destinationId", "typeName": "String", "key": "destination id", "default": "", "required": true},
         {"name": "maxWorkQueueSize", "typeName": "long", "key": "max work queue size", "default": 0},
         {"name": "maxWorkQueueDataSize", "typeName": "String", "key": "max work queue data size", "default": "0 MB"},
         {"name": "flowfileExpiration", "typeName": "String", "key": "flowfile expiration", "default": "0 sec"},
@@ -91,7 +91,7 @@
       "wrapperName": "Flow Controller",
       "writable": true,
       "fields": [
-        {"name": "name", "typeName": "String", "key": "name"},
+        {"name": "name", "typeName": "String", "key": "name", "default": "", "required": true},
         {"name": "comment", "typeName": "String", "key": "comment", "default": ""}
       ]
     },
@@ -118,7 +118,7 @@
       "name": "PortSchema",
       "writable": true,
       "fields": [
-        {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId"},
+        {"name": "id", "typeName": "String", "key": "id", "default": "", "required": true, "validator": "validateId"},
         {"name": "name", "typeName": "String", "key": "name", "default": ""}
       ]
     },
@@ -141,6 +141,25 @@
       ]
     },
     {
+      "package": "org.apache.nifi.minifi.commons.schema.v1",
+      "implements": [{"name": "ConvertableSchema", "genericTypes": [{"name": "ProcessorSchema"}]}],
+      "name": "ProcessorSchemaV1",
+      "wrapperName": "Processors",
+      "concrete": false,
+      "fields": [
+        {"name": "name", "typeName": "String", "key": "name", "required": true},
+        {"name": "processorClass", "typeName": "String", "key": "class", "default": "", "required": true},
+        {"name": "schedulingStrategy", "typeName": "String", "key": "scheduling strategy", "required": true},
+        {"name": "schedulingPeriod", "typeName": "String", "key": "scheduling period", "default": "", "required": true},
+        {"name": "maxConcurrentTasks", "typeName": "Number", "key": "max concurrent tasks", "default": 1},
+        {"name": "penalizationPeriod", "typeName": "String", "key": "penalization period", "default": "30 sec"},
+        {"name": "yieldPeriod", "typeName": "String", "key": "yield period", "default": "1 sec"},
+        {"name": "runDurationNanos", "typeName": "Number", "key": "run duration nanos", "default": 0},
+        {"name": "autoTerminatedRelationshipsList", "type": {"name": "List", "genericTypes": [{"name": "String"}]}, "key": "auto-terminated relationships list", "default": "Collections.emptyList()"},
+        {"name": "properties", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name": "Object"}]}, "key": "Properties", "default": "Collections.emptyMap()"}
+      ]
+    },
+    {
       "imports": ["org.apache.nifi.scheduling.SchedulingStrategy"],
       "name": "ProcessorSchema",
       "wrapperName": "Processor(id: {id}, name: {name})",
@@ -148,9 +167,9 @@
       "fields": [
         {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId"},
         {"name": "name", "typeName": "String", "key": "name", "default": ""},
-        {"name": "processorClass", "typeName": "String", "key": "class", "required": true},
+        {"name": "processorClass", "typeName": "String", "key": "class", "default": "", "required": true},
         {"name": "schedulingStrategy", "type": {"name": "SchedulingStrategy", "enum": true}, "key": "scheduling strategy", "required": true},
-        {"name": "schedulingPeriod", "typeName": "String", "key": "scheduling period", "required": true},
+        {"name": "schedulingPeriod", "typeName": "String", "key": "scheduling period", "default": "", "required": true},
         {"name": "maxConcurrentTasks", "typeName": "int", "key": "max concurrent tasks", "default": 1},
         {"name": "penalizationPeriod", "typeName": "String", "key": "penalization period", "default": "30 sec"},
         {"name": "yieldPeriod", "typeName": "String", "key": "yield period", "default": "1 sec"},
@@ -190,7 +209,7 @@
       "wrapperName": "RemoteInputPort(id: {id}, name: {name})",
       "writable": true,
       "fields": [
-        {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId"},
+        {"name": "id", "typeName": "String", "key": "id", "default": "", "required": true, "validator": "validateId"},
         {"name": "name", "typeName": "String", "key": "name", "default": ""},
         {"name": "comment", "typeName": "String", "key": "comment", "default": ""},
         {"name": "maxConcurrentTasks", "typeName": "int", "key": "max concurrent tasks", "default": 1},
@@ -205,7 +224,7 @@
       "fields": [
         {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId"},
         {"name": "name", "typeName": "String", "key": "name", "default": ""},
-        {"name": "url", "typeName": "String", "key": "url", "required": true},
+        {"name": "url", "typeName": "String", "key": "url", "default": "", "required": true},
         {"name": "inputPorts", "type": {"name": "List", "genericTypes": [{"name":"RemotePortSchema"}]}, "key": "Input Ports", "default": "Collections.emptyList()"},
         {"name": "outputPorts", "type": {"name": "List", "genericTypes": [{"name":"RemotePortSchema"}]}, "key": "Output Ports", "default": "Collections.emptyList()"},
         {"name": "comment", "typeName": "String", "key": "comment", "default": ""},
@@ -213,7 +232,7 @@
         {"name": "yieldPeriod", "typeName": "String", "key": "yield period", "default": "10 sec"},
         {"name": "transportProtocol", "type": {"name": "TransportProtocolOptions", "enum": true}, "key": "transport protocol", "default": "RAW"},
         {"name": "proxyHost", "typeName": "String", "key": "proxy host", "default": ""},
-        {"name": "proxyPort", "typeName": "Integer", "key": "proxy port", "required": false, "default": null},
+        {"name": "proxyPort", "typeName": "Integer", "key": "proxy port", "default": null, "required": false},
         {"name": "proxyUser", "typeName": "String", "key": "proxy user", "default": ""},
         {"name": "proxyPassword", "typeName": "String", "key": "proxy password", "default": ""}
       ]

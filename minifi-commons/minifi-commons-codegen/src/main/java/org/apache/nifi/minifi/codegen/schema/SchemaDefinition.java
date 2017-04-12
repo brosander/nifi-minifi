@@ -39,6 +39,7 @@ public class SchemaDefinition extends BaseDefinitionWithImports {
             "org.apache.nifi.minifi.commons.schema.common.BaseSchema",
             "org.apache.nifi.minifi.commons.schema.common.BaseSchemaWithId",
             "org.apache.nifi.minifi.commons.schema.common.BaseSchemaWithIdAndName",
+            "org.apache.nifi.minifi.commons.schema.common.ConvertableSchema",
             "org.apache.nifi.minifi.commons.schema.common.HasId",
             "org.apache.nifi.minifi.commons.schema.common.StringUtil",
             "org.apache.nifi.minifi.commons.schema.common.WritableSchema"

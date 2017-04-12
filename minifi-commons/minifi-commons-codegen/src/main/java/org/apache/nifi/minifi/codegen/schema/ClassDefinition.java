@@ -33,7 +33,7 @@ public class ClassDefinition extends BaseDefinitionWithImports {
     private String extendsClass = "BaseSchema";
     private boolean writable;
     private boolean concrete = true;
-    private Set<String> implementsClasses = Collections.emptySet();
+    private Set<TypeDefinition> implementsClasses = Collections.emptySet();
     private List<FieldDefinition> fields = Collections.emptyList();
 
     public String getName() {
@@ -48,29 +48,24 @@ public class ClassDefinition extends BaseDefinitionWithImports {
         return fields;
     }
 
-    public void setImplements(Collection<String> implementsClasses) {
+    public void setImplements(Collection<TypeDefinition> implementsClasses) {
         this.implementsClasses = new HashSet<>(implementsClasses);
     }
 
     public String getImplementsString() {
         List<String> result = new ArrayList<>();
-        for (String implementsClass : getImplementsClasses()) {
-            result.add(getCanonicalName(implementsClass).getName());
-        }
-        return result.stream().sorted().collect(Collectors.joining(", "));
-    }
-
-    public Set<String> getImplementsClasses() {
-        Set<String> implementsClasses = new HashSet<>(this.implementsClasses);
         if (writable) {
-            implementsClasses.add("org.apache.nifi.minifi.commons.schema.common.WritableSchema");
+            result.add("WritableSchema");
         }
         for (FieldDefinition field : fields) {
-            if ("id".equals(field.getName()) && "String".equals(field.getType().getDeclaration())) {
-                implementsClasses.add("org.apache.nifi.minifi.commons.schema.common.HasId");
+            if ("String".equals(field.getType().getName()) && "id".equals(field.getName())) {
+                    result.add("HasId");
             }
         }
-        return implementsClasses;
+        for (TypeDefinition implementsClass : implementsClasses) {
+            result.add(implementsClass.getDeclaration());
+        }
+        return result.stream().sorted().collect(Collectors.joining(", "));
     }
 
     public void setExtends(String extendsClass) {
@@ -126,13 +121,19 @@ public class ClassDefinition extends BaseDefinitionWithImports {
         if (extendsClass != null) {
             imports.add(getCanonicalName(extendsClass));
         }
-        for (String implementsClass : getImplementsClasses()) {
-            imports.add(getCanonicalName(implementsClass));
+        if (writable) {
+            imports.add(getCanonicalName("org.apache.nifi.minifi.commons.schema.common.WritableSchema"));
+        }
+        for (TypeDefinition type : implementsClasses) {
+            addType(imports, type);
         }
         for (FieldDefinition field : fields) {
             addType(imports, field.getType());
             if ("String".equals(field.getType().getName())) {
                 imports.add(getCanonicalName("org.apache.nifi.minifi.commons.schema.common.StringUtil"));
+                if ("id".equals(field.getName())) {
+                    imports.add(getCanonicalName("org.apache.nifi.minifi.commons.schema.common.HasId"));
+                }
             }
         }
         imports.add(new CanonicalName(List.class.getCanonicalName()));

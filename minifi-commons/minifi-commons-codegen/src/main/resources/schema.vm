@@ -18,7 +18,8 @@
 package $class.package;
 
 ## Imports
-#foreach($import in $class.classImports)import $import;#end
+#foreach($import in $class.classImports)import $import;
+#end
 ##
 ## Add abstract to classname if necessary
 #set($actualClassname = $class.name)
@@ -49,8 +50,8 @@ public#if(!$class.concrete) abstract#end class $actualClassname extends $class.e
 #end
 
 #foreach($field in $class.fields)
-#if ($field.hasDefault())
-    public static final $field.type.declaration ${underscoreNames[$field.name]}_DEFAULT = #if($field.type.enum)${field.type.name}.#end${field.defaultLiteral};
+#if ($field.hasDefault() || $field.required)
+    public static final $field.type.declaration ${underscoreNames[$field.name]}_DEFAULT = #if($field.type.enum && $field.default)${field.type.name}.#end${field.defaultLiteral};
 #end
 #end
 
@@ -106,16 +107,10 @@ public#if(!$class.concrete) abstract#end class $actualClassname extends $class.e
             }
         }
 #else
-#if ($field.hasDefault())
+#if ($field.hasDefault() || $field.required)
         $field.name = getOptionalKeyAsType(map, ${underscoreNames[$field.name]}_KEY, ${field.type.mapType}.class, getWrapperName(), ${underscoreNames[$field.name]}_DEFAULT)$extraConvert;
-#elseif (!$field.required)
+#else
         $field.name = getOptionalKeyAsType(map, ${underscoreNames[$field.name]}_KEY, ${field.type.mapType}.class, getWrapperName())$extraConvert;
-#else
-#if ($field.type.name.equals("String"))
-        $field.name = getOptionalKeyAsType(map, ${underscoreNames[$field.name]}_KEY, ${field.type.mapType}.class, getWrapperName(), "");
-#else
-        $field.name = getOptionalKeyAsType(map, ${underscoreNames[$field.name]}_KEY, ${field.type.mapType}.class, getWrapperName(), null)$extraConvert;
-#end
 #end
 #end
 #end
@@ -173,6 +168,7 @@ public#if(!$class.concrete) abstract#end class $actualClassname extends $class.e
 #end
         return result;
     }
+#end
 #foreach($field in $class.fields)
 
 #if ($field.name.equals("id") && $field.type.declaration.equals("String"))
@@ -185,7 +181,6 @@ public#if(!$class.concrete) abstract#end class $actualClassname extends $class.e
     public void set${camelCase[$field.name]}($field.type.declaration $field.name) {
         this.$field.name = $field.name;
     }
-#end
 #end
 
     @Override
