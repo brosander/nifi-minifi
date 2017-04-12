@@ -46,7 +46,7 @@ public class ConnectionSchemaFunction implements Function<ConnectionDTO, Connect
 
         map.put(ConnectionSchema.MAX_WORK_QUEUE_SIZE_KEY, connectionDTO.getBackPressureObjectThreshold());
         map.put(ConnectionSchema.MAX_WORK_QUEUE_DATA_SIZE_KEY, connectionDTO.getBackPressureDataSizeThreshold());
-        map.put(ConnectionSchema.FLOWFILE_EXPIRATION__KEY, connectionDTO.getFlowFileExpiration());
+        map.put(ConnectionSchema.FLOWFILE_EXPIRATION_KEY, connectionDTO.getFlowFileExpiration());
         List<String> queuePrioritizers = nullToEmpty(connectionDTO.getPrioritizers());
         if (queuePrioritizers.size() > 0) {
             map.put(ConnectionSchema.QUEUE_PRIORITIZER_CLASS_KEY, queuePrioritizers.get(0));

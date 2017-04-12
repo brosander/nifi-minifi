@@ -78,7 +78,7 @@ public class ConnectionSchemaTest extends BaseSchemaTester<ConnectionSchema, Con
         map.put(ConnectionSchema.DESTINATION_ID_KEY, testDestinationId);
         map.put(ConnectionSchema.MAX_WORK_QUEUE_SIZE_KEY, testMaxWorkQueueSize);
         map.put(ConnectionSchema.MAX_WORK_QUEUE_DATA_SIZE_KEY, testMaxWorkQueueDataSize);
-        map.put(ConnectionSchema.FLOWFILE_EXPIRATION__KEY, testFlowfileExpiration);
+        map.put(ConnectionSchema.FLOWFILE_EXPIRATION_KEY, testFlowfileExpiration);
         map.put(ConnectionSchema.QUEUE_PRIORITIZER_CLASS_KEY, testQueuePrioritizerClass);
     }
 
@@ -145,7 +145,7 @@ public class ConnectionSchemaTest extends BaseSchemaTester<ConnectionSchema, Con
     @Test
     public void testNoFlowFileExpiration() {
         dto.setFlowFileExpiration(null);
-        map.remove(ConnectionSchema.FLOWFILE_EXPIRATION__KEY);
+        map.remove(ConnectionSchema.FLOWFILE_EXPIRATION_KEY);
         assertDtoAndMapConstructorAreSame(0);
     }
 

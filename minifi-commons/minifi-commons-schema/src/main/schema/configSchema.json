@@ -27,8 +27,8 @@
         {"name": "coreProperties", "typeName": "CorePropertiesSchema", "key": "Core Properties", "required": false},
         {"name": "flowfileRepositoryProperties", "typeName": "FlowFileRepositorySchema", "key": "FlowFile Repository", "required": false},
         {"name": "contentRepositoryProperties", "typeName": "ContentRepositorySchema", "key": "Content Repository", "required": false},
-        {"name": "provenanceRepositorySchema", "typeName": "ProvenanceRepositorySchema", "key": "Content Repository", "required": false},
-        {"name": "componentStatusRepositoryProperties", "typeName": "ComponentStatusRepositorySchema", "key": "Provenance Repository", "required": false},
+        {"name": "provenanceRepositorySchema", "typeName": "ProvenanceRepositorySchema", "key": "Provenance Repository", "required": false},
+        {"name": "componentStatusRepositoryProperties", "typeName": "ComponentStatusRepositorySchema", "key": "Component Status Repository", "required": false},
         {"name": "securityProperties", "typeName": "SecurityPropertiesSchema", "key": "Security Properties", "required": false},
         {"name": "processGroupSchema", "typeName": "ProcessGroupSchema", "required": false, "instantiator": "new ProcessGroupSchema(map, WRAPPER_NAME)", "toMap":"result.putAll(processGroupSchema.toMap());"},
         {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false, "instantiator": "getMapAsType(map, PROVENANCE_REPORTING_PROPERTIES_KEY, ProvenanceReportingSchema.class, WRAPPER_NAME, false, false)"},
@@ -71,7 +71,7 @@
         {"name": "name", "typeName": "String", "key": "name", "default": ""},
         {"name": "serviceClass", "typeName": "String", "key": "type", "required": true},
         {"name": "properties", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name": "Object"}]}, "key": "Properties", "default": "Collections.emptyMap()"},
-        {"name": "annotationData", "typeName": "String", "key": "annotation data", "default": ""}
+        {"name": "annotationData", "typeName": "String", "key": "annotation data", "default": "", "omitIfEmpty": true}
       ]
     },
     {
@@ -129,7 +129,7 @@
       "fields": [
         {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId", "default": "Root-Group"},
         {"name": "name", "typeName": "String", "key": "name", "default": ""},
-        {"name": "comment", "typeName": "String", "key": "comment", "default": ""},
+        {"name": "comment", "typeName": "String", "key": "comment", "default": "", "omitIfEmpty": true},
         {"name": "processors", "type": {"name": "List", "genericTypes": [{"name":"ProcessorSchema"}]}, "key": "Processors", "default": "Collections.emptyList()"},
         {"name": "controllerServices", "type": {"name": "List", "genericTypes": [{"name":"ControllerServiceSchema"}]}, "key": "Controller Services", "default": "Collections.emptyList()"},
         {"name": "funnels", "type": {"name": "List", "genericTypes": [{"name":"FunnelSchema"}]}, "key": "Funnels", "default": "Collections.emptyList()"},
@@ -157,7 +157,7 @@
         {"name": "runDurationNanos", "typeName": "long", "key": "run duration nanos", "default": 0},
         {"name": "autoTerminatedRelationshipsList", "type": {"name": "List", "genericTypes": [{"name": "String"}]}, "key": "auto-terminated relationships list", "default": "Collections.emptyList()"},
         {"name": "properties", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name": "Object"}]}, "key": "Properties", "default": "Collections.emptyMap()"},
-        {"name": "annotationData", "typeName": "String", "key": "annotation data", "default": ""}
+        {"name": "annotationData", "typeName": "String", "key": "annotation data", "default": "", "omitIfEmpty": true}
       ]
     },
     {
@@ -213,7 +213,7 @@
         {"name": "yieldPeriod", "typeName": "String", "key": "yield period", "default": "10 sec"},
         {"name": "transportProtocol", "type": {"name": "TransportProtocolOptions", "enum": true}, "key": "transport protocol", "default": "RAW"},
         {"name": "proxyHost", "typeName": "String", "key": "proxy host", "default": ""},
-        {"name": "proxyPort", "typeName": "int", "key": "proxy port", "default": "80"},
+        {"name": "proxyPort", "typeName": "Integer", "key": "proxy port", "required": false, "default": null},
         {"name": "proxyUser", "typeName": "String", "key": "proxy user", "default": ""},
         {"name": "proxyPassword", "typeName": "String", "key": "proxy password", "default": ""}
       ]

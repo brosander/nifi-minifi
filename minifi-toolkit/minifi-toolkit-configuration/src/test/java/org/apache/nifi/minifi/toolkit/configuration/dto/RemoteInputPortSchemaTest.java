@@ -98,7 +98,7 @@ public class RemoteInputPortSchemaTest extends BaseSchemaTester<RemotePortSchema
         assertEquals(one.getId(), two.getId());
         assertEquals(one.getName(), two.getName());
         assertEquals(one.getComment(), two.getComment());
-        assertEquals(one.getMax_concurrent_tasks(), two.getMax_concurrent_tasks());
+        assertEquals(one.getMaxConcurrentTasks(), two.getMaxConcurrentTasks());
         assertEquals(one.getUseCompression(), two.getUseCompression());
     }
 }

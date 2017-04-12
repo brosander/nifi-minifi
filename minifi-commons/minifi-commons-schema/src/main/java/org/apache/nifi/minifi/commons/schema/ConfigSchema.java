@@ -110,6 +110,14 @@ public class ConfigSchema extends AbstractConfigSchema implements ConvertableSch
     }
 
     @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = mapSupplier.get();
+        result.put(VERSION, getVersion());
+        result.putAll(super.toMap());
+        return result;
+    }
+
+    @Override
     public int getVersion() {
         return CONFIG_VERSION;
     }

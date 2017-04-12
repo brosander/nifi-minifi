@@ -22,7 +22,7 @@ package org.apache.nifi.minifi.bootstrap.util;
 import org.apache.nifi.minifi.commons.schema.ProcessGroupSchema;
 import org.apache.nifi.minifi.commons.schema.RemotePortSchema;
 import org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema;
-import org.apache.nifi.minifi.commons.schema.common.BaseSchemaWithId;
+import org.apache.nifi.minifi.commons.schema.common.HasId;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -47,14 +47,14 @@ public class ParentGroupIdResolver {
         this.remoteOutputPortIdToParentIdMap = getRemotePortParentIdMap(processGroupSchema, RemoteProcessGroupSchema::getOutputPorts);
     }
 
-    protected static Map<String, String> getParentIdMap(ProcessGroupSchema processGroupSchema, Function<ProcessGroupSchema, Collection<? extends BaseSchemaWithId>> schemaAccessor) {
+    protected static Map<String, String> getParentIdMap(ProcessGroupSchema processGroupSchema, Function<ProcessGroupSchema, Collection<? extends HasId>> schemaAccessor) {
         Map<String, String> map = new HashMap<>();
         getParentIdMap(processGroupSchema, map, schemaAccessor);
         return map;
     }
 
     protected static void getParentIdMap(ProcessGroupSchema processGroupSchema, Map<String, String> output, Function<ProcessGroupSchema,
-            Collection<? extends BaseSchemaWithId>> schemaAccessor) {
+            Collection<? extends HasId>> schemaAccessor) {
         schemaAccessor.apply(processGroupSchema).forEach(p -> output.put(p.getId(), processGroupSchema.getId()));
         processGroupSchema.getProcessGroupSchemas().forEach(p -> getParentIdMap(p, output, schemaAccessor));
     }

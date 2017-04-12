@@ -109,7 +109,7 @@ public class RemoteProcessGroupSchemaTest {
                 RemoteProcessGroupSchema.S2S_PROXY_REQUIRES_HTTP)));
 
         assertEquals("host", remoteProcessGroupSchema.getProxyHost());
-        assertEquals(1234, remoteProcessGroupSchema.getProxyPort());
+        assertEquals(Integer.valueOf(1234), remoteProcessGroupSchema.getProxyPort());
         assertEquals("user", remoteProcessGroupSchema.getProxyUser());
         assertEquals("password", remoteProcessGroupSchema.getProxyPassword());
     }

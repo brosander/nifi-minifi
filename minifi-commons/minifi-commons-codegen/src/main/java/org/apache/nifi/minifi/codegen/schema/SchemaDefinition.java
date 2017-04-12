@@ -30,6 +30,8 @@ public class SchemaDefinition extends BaseDefinitionWithImports {
     private static final String[] defaultImports = new String[] {
             Object.class.getCanonicalName(),
             Number.class.getCanonicalName(),
+            Integer.class.getCanonicalName(),
+            Long.class.getCanonicalName(),
             String.class.getCanonicalName(),
             Boolean.class.getCanonicalName(),
             Map.class.getCanonicalName(),
@@ -37,6 +39,7 @@ public class SchemaDefinition extends BaseDefinitionWithImports {
             "org.apache.nifi.minifi.commons.schema.common.BaseSchema",
             "org.apache.nifi.minifi.commons.schema.common.BaseSchemaWithId",
             "org.apache.nifi.minifi.commons.schema.common.BaseSchemaWithIdAndName",
+            "org.apache.nifi.minifi.commons.schema.common.HasId",
             "org.apache.nifi.minifi.commons.schema.common.StringUtil",
             "org.apache.nifi.minifi.commons.schema.common.WritableSchema"
     };

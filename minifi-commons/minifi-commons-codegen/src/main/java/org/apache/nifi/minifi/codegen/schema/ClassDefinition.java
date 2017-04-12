@@ -72,6 +72,11 @@ public class ClassDefinition extends BaseDefinitionWithImports {
         if (writable) {
             implementsClasses.add("org.apache.nifi.minifi.commons.schema.common.WritableSchema");
         }
+        for (FieldDefinition field : fields) {
+            if ("id".equals(field.getName()) && "String".equals(field.getType().getDeclaration())) {
+                implementsClasses.add("org.apache.nifi.minifi.commons.schema.common.HasId");
+            }
+        }
         if (implementsClasses.size() == 0) {
             return null;
         }
@@ -136,7 +141,7 @@ public class ClassDefinition extends BaseDefinitionWithImports {
         }
         for (FieldDefinition field : fields) {
             addType(imports, field.getType());
-            if ("String".equals(field.getType().getName()) && field.isRequired()) {
+            if ("String".equals(field.getType().getName())) {
                 imports.add(getCanonicalName("org.apache.nifi.minifi.commons.schema.common.StringUtil"));
             }
         }

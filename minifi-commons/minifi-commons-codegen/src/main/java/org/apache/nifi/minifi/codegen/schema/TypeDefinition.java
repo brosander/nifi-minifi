@@ -49,6 +49,9 @@ public class TypeDefinition {
         this.genericTypes = genericTypes;
     }
 
+    public boolean isPrimitive() {
+        return name.equals(name.toLowerCase());
+    }
 
     public String getMapType() {
         if ("int".equals(name) || "long".equals(name)) {

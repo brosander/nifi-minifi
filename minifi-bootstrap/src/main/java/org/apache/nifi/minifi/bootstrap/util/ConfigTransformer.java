@@ -456,7 +456,7 @@ public final class ConfigTransformer {
             addTextElement(element, "bulletinLevel", "WARN");
             addTextElement(element, "lossTolerant", "false");
             addTextElement(element, "scheduledState", "RUNNING");
-            addTextElement(element, "schedulingStrategy", processorConfig.getSchedulingStrategy());
+            addTextElement(element, "schedulingStrategy", processorConfig.getSchedulingStrategy().name());
             addTextElement(element, "runDurationNanos", String.valueOf(processorConfig.getRunDurationNanos()));
 
             String annotationData = processorConfig.getAnnotationData();
@@ -556,7 +556,7 @@ public final class ConfigTransformer {
             addTextElement(element, "timeout", remoteProcessGroupProperties.getTimeout());
             addTextElement(element, "yieldPeriod", remoteProcessGroupProperties.getYieldPeriod());
             addTextElement(element, "transmitting", "true");
-            addTextElement(element, "transportProtocol", remoteProcessGroupProperties.getTransportProtocol());
+            addTextElement(element, "transportProtocol", remoteProcessGroupProperties.getTransportProtocol().name());
             addTextElement(element, "proxyHost", remoteProcessGroupProperties.getProxyHost());
             if (remoteProcessGroupProperties.getProxyPort() != null) {
                 addTextElement(element, "proxyPort", Integer.toString(remoteProcessGroupProperties.getProxyPort()));
@@ -592,7 +592,7 @@ public final class ConfigTransformer {
             addPosition(element);
             addTextElement(element, "comments", inputPort.getComment());
             addTextElement(element, "scheduledState", "RUNNING");
-            addTextElement(element, "maxConcurrentTasks", String.valueOf(inputPort.getMax_concurrent_tasks()));
+            addTextElement(element, "maxConcurrentTasks", String.valueOf(inputPort.getMaxConcurrentTasks()));
             addTextElement(element, "useCompression", String.valueOf(inputPort.getUseCompression()));
 
             parentElement.appendChild(element);

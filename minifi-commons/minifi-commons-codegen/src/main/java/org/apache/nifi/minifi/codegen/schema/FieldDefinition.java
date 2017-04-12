@@ -29,6 +29,7 @@ public class FieldDefinition {
     private String validator;
     private String instantiator;
     private String toMap;
+    private boolean omitIfEmpty;
 
     public void setParent(ClassDefinition parent) {
         this.parent = parent;
@@ -77,7 +78,7 @@ public class FieldDefinition {
     }
 
     public boolean hasDefault() {
-        return defaultValue != null;
+        return defaultValue != null || defaultSet;
     }
 
     public boolean isRequired() {
@@ -119,5 +120,13 @@ public class FieldDefinition {
 
     public void setToMap(String toMap) {
         this.toMap = toMap;
+    }
+
+    public boolean isOmitIfEmpty() {
+        return omitIfEmpty;
+    }
+
+    public void setOmitIfEmpty(boolean omitIfEmpty) {
+        this.omitIfEmpty = omitIfEmpty;
     }
 }

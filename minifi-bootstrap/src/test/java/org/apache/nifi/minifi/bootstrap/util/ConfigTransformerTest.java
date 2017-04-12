@@ -81,7 +81,7 @@ public class ConfigTransformerTest {
 
     @Test
     public void testNullQueuePrioritizerNotWritten() throws ConfigurationChangeException, XPathExpressionException {
-        ConfigTransformer.addConnection(config, new ConnectionSchema(Collections.emptyMap()), new ParentGroupIdResolver(new ProcessGroupSchema(Collections.emptyMap(), ConfigSchema.TOP_LEVEL_NAME)));
+        ConfigTransformer.addConnection(config, new ConnectionSchema(Collections.emptyMap()), new ParentGroupIdResolver(new ProcessGroupSchema(Collections.emptyMap(), ConfigSchema.WRAPPER_NAME)));
         XPath xpath = xPathFactory.newXPath();
         String expression = "connection/queuePrioritizerClass";
         assertNull(xpath.evaluate(expression, config, XPathConstants.NODE));
@@ -92,7 +92,7 @@ public class ConfigTransformerTest {
         Map<String, Object> map = new HashMap<>();
         map.put(ConnectionSchema.QUEUE_PRIORITIZER_CLASS_KEY, "");
 
-        ConfigTransformer.addConnection(config, new ConnectionSchema(map), new ParentGroupIdResolver(new ProcessGroupSchema(Collections.emptyMap(), ConfigSchema.TOP_LEVEL_NAME)));
+        ConfigTransformer.addConnection(config, new ConnectionSchema(map), new ParentGroupIdResolver(new ProcessGroupSchema(Collections.emptyMap(), ConfigSchema.WRAPPER_NAME)));
         XPath xpath = xPathFactory.newXPath();
         String expression = "connection/queuePrioritizerClass";
         assertNull(xpath.evaluate(expression, config, XPathConstants.NODE));
@@ -103,7 +103,7 @@ public class ConfigTransformerTest {
         Map<String, Object> map = new HashMap<>();
         map.put(ConnectionSchema.QUEUE_PRIORITIZER_CLASS_KEY, "org.apache.nifi.prioritizer.FirstInFirstOutPrioritizer");
 
-        ConfigTransformer.addConnection(config, new ConnectionSchema(map), new ParentGroupIdResolver(new ProcessGroupSchema(Collections.emptyMap(), ConfigSchema.TOP_LEVEL_NAME)));
+        ConfigTransformer.addConnection(config, new ConnectionSchema(map), new ParentGroupIdResolver(new ProcessGroupSchema(Collections.emptyMap(), ConfigSchema.WRAPPER_NAME)));
         XPath xpath = xPathFactory.newXPath();
         String expression = "connection/queuePrioritizerClass/text()";
         assertEquals("org.apache.nifi.prioritizer.FirstInFirstOutPrioritizer", xpath.evaluate(expression, config, XPathConstants.STRING));
@@ -258,12 +258,12 @@ public class ConfigTransformerTest {
         assertEquals(processorSchema.getId(), getText(element, "id"));
         assertEquals(processorSchema.getName(), getText(element, "name"));
         assertEquals(processorSchema.getProcessorClass(), getText(element, "class"));
-        assertEquals(processorSchema.getMaxConcurrentTasks().toString(), getText(element, "maxConcurrentTasks"));
+        assertEquals(Integer.toString(processorSchema.getMaxConcurrentTasks()), getText(element, "maxConcurrentTasks"));
         assertEquals(processorSchema.getSchedulingPeriod(), getText(element, "schedulingPeriod"));
         assertEquals(processorSchema.getPenalizationPeriod(), getText(element, "penalizationPeriod"));
         assertEquals(processorSchema.getYieldPeriod(), getText(element, "yieldPeriod"));
-        assertEquals(processorSchema.getSchedulingStrategy(), getText(element, "schedulingStrategy"));
-        assertEquals(processorSchema.getRunDurationNanos().toString(), getText(element, "runDurationNanos"));
+        assertEquals(processorSchema.getSchedulingStrategy().name(), getText(element, "schedulingStrategy"));
+        assertEquals(Long.toString(processorSchema.getRunDurationNanos()), getText(element, "runDurationNanos"));
         assertEquals(processorSchema.getAnnotationData(), getText(element, "annotationData"));
 
         testProperties(element, processorSchema.getProperties());
@@ -285,7 +285,7 @@ public class ConfigTransformerTest {
         assertEquals(remoteProcessingGroupSchema.getUrl(), getText(element, "url"));
         assertEquals(remoteProcessingGroupSchema.getTimeout(), getText(element, "timeout"));
         assertEquals(remoteProcessingGroupSchema.getYieldPeriod(), getText(element, "yieldPeriod"));
-        assertEquals(remoteProcessingGroupSchema.getTransportProtocol(), getText(element, "transportProtocol"));
+        assertEquals(remoteProcessingGroupSchema.getTransportProtocol().name(), getText(element, "transportProtocol"));
         assertEquals(remoteProcessingGroupSchema.getProxyHost(), getText(element, "proxyHost"));
         String proxyPortText = getText(element, "proxyPort");
         assertEquals(remoteProcessingGroupSchema.getProxyPort(), StringUtil.isNullOrEmpty(proxyPortText) ? null : Integer.parseInt(proxyPortText));
@@ -309,7 +309,7 @@ public class ConfigTransformerTest {
         assertEquals(remoteInputPortSchema.getId(), getText(element, "id"));
         assertEquals(remoteInputPortSchema.getName(), getText(element, "name"));
         assertEquals(remoteInputPortSchema.getComment(), getText(element, "comment"));
-        assertEquals(remoteInputPortSchema.getMax_concurrent_tasks().toString(), getText(element, "maxConcurrentTasks"));
+        assertEquals(Integer.toString(remoteInputPortSchema.getMaxConcurrentTasks()), getText(element, "maxConcurrentTasks"));
         assertEquals(remoteInputPortSchema.getUseCompression(), Boolean.parseBoolean(getText(element, "useCompression")));
     }
 
@@ -341,7 +341,7 @@ public class ConfigTransformerTest {
 
         assertEquals(new HashSet<>(connectionSchema.getSourceRelationshipNames()), sourceRelationships);
 
-        assertEquals(connectionSchema.getMaxWorkQueueSize().toString(), getText(element, "maxWorkQueueSize"));
+        assertEquals(Long.toString(connectionSchema.getMaxWorkQueueSize()), getText(element, "maxWorkQueueSize"));
         assertEquals(connectionSchema.getMaxWorkQueueDataSize(), getText(element, "maxWorkQueueDataSize"));
         assertEquals(connectionSchema.getFlowfileExpiration(), getText(element, "flowFileExpiration"));
         assertEquals(connectionSchema.getQueuePrioritizerClass(), getText(element, "queuePrioritizerClass"));
