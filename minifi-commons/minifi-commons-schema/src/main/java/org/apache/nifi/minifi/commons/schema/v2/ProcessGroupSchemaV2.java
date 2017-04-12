@@ -23,6 +23,7 @@ import org.apache.nifi.minifi.commons.schema.PortSchema;
 import org.apache.nifi.minifi.commons.schema.ProcessGroupSchema;
 import org.apache.nifi.minifi.commons.schema.common.StringUtil;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +35,10 @@ import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.IN
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.OUTPUT_PORTS_KEY;
 
 public class ProcessGroupSchemaV2 extends AbstractProcessGroupSchemaV2 {
+    public ProcessGroupSchemaV2() {
+        this(Collections.emptyMap(), ConfigSchemaV2.WRAPPER_NAME);
+    }
+
 
     public ProcessGroupSchemaV2(Map map, String wrapperName) {
         super(map, wrapperName);
