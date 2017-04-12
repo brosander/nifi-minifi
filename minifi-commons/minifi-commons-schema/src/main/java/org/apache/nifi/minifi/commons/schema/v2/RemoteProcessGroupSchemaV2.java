@@ -19,7 +19,7 @@ package org.apache.nifi.minifi.commons.schema.v2;
 
 import org.apache.nifi.minifi.commons.schema.RemotePortSchema;
 import org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema;
-import org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema.TransportProtocolOptions;
+import org.apache.nifi.minifi.commons.schema.TransportProtocolOptions;
 import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
 import org.apache.nifi.minifi.commons.schema.common.BaseSchemaWithIdAndName;
 import org.apache.nifi.minifi.commons.schema.common.ConvertableSchema;
@@ -28,10 +28,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema.DEFAULT_COMMENT;
-import static org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema.DEFAULT_TIMEOUT;
-import static org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema.DEFAULT_TRANSPORT_PROTOCOL;
-import static org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema.DEFAULT_YIELD_PERIOD;
+import static org.apache.nifi.minifi.commons.schema.AbstractRemoteProcessGroupSchema.COMMENT_DEFAULT;
+import static org.apache.nifi.minifi.commons.schema.AbstractRemoteProcessGroupSchema.TIMEOUT_DEFAULT;
+import static org.apache.nifi.minifi.commons.schema.AbstractRemoteProcessGroupSchema.TRANSPORT_PROTOCOL_DEFAULT;
+import static org.apache.nifi.minifi.commons.schema.AbstractRemoteProcessGroupSchema.YIELD_PERIOD_DEFAULT;
 import static org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema.TIMEOUT_KEY;
 import static org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema.TRANSPORT_PROTOCOL_KEY;
 import static org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema.URL_KEY;
@@ -44,10 +44,10 @@ public class RemoteProcessGroupSchemaV2 extends BaseSchema implements Convertabl
     private String url;
     private List<RemotePortSchema> inputPorts;
 
-    private String comment = DEFAULT_COMMENT;
-    private String timeout = DEFAULT_TIMEOUT;
-    private String yieldPeriod = DEFAULT_YIELD_PERIOD;
-    private String transportProtocol = DEFAULT_TRANSPORT_PROTOCOL;
+    private String comment = COMMENT_DEFAULT;
+    private String timeout = TIMEOUT_DEFAULT;
+    private String yieldPeriod = YIELD_PERIOD_DEFAULT;
+    private String transportProtocol = TRANSPORT_PROTOCOL_DEFAULT.name();
 
     public RemoteProcessGroupSchemaV2(Map map) {
         idAndName = new BaseSchemaWithIdAndName(map, "RemoteProcessGroup(id: {id}, name: {name})");
@@ -61,12 +61,14 @@ public class RemoteProcessGroupSchemaV2 extends BaseSchema implements Convertabl
             }
         }
 
-        comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, wrapperName, DEFAULT_COMMENT);
-        timeout = getOptionalKeyAsType(map, TIMEOUT_KEY, String.class, wrapperName, DEFAULT_TIMEOUT);
-        yieldPeriod = getOptionalKeyAsType(map, YIELD_PERIOD_KEY, String.class, wrapperName, DEFAULT_YIELD_PERIOD);
-        transportProtocol = getOptionalKeyAsType(map, TRANSPORT_PROTOCOL_KEY, String.class, wrapperName, DEFAULT_TRANSPORT_PROTOCOL);
+        comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, wrapperName, COMMENT_DEFAULT);
+        timeout = getOptionalKeyAsType(map, TIMEOUT_KEY, String.class, wrapperName, TIMEOUT_DEFAULT);
+        yieldPeriod = getOptionalKeyAsType(map, YIELD_PERIOD_KEY, String.class, wrapperName, YIELD_PERIOD_DEFAULT);
+        transportProtocol = getOptionalKeyAsType(map, TRANSPORT_PROTOCOL_KEY, String.class, wrapperName, TRANSPORT_PROTOCOL_DEFAULT.name());
 
-        if (!TransportProtocolOptions.valid(transportProtocol)){
+        try {
+            TransportProtocolOptions.valueOf(transportProtocol);
+        } catch (IllegalArgumentException e) {
             addValidationIssue(TRANSPORT_PROTOCOL_KEY, wrapperName, "it must be either 'RAW' or 'HTTP' but is '" + transportProtocol + "'");
         }
     }

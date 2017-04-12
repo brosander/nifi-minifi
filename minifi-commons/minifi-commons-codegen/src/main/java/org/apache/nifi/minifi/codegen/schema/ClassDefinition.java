@@ -135,8 +135,8 @@ public class ClassDefinition extends BaseDefinitionWithImports {
             imports.add(getCanonicalName(implementsClass));
         }
         for (FieldDefinition field : fields) {
-            imports.add(getCanonicalName(field.getMapType()));
-            if ("String".equals(field.getType()) && field.isRequired()) {
+            addType(imports, field.getType());
+            if ("String".equals(field.getType().getName()) && field.isRequired()) {
                 imports.add(getCanonicalName("org.apache.nifi.minifi.commons.schema.common.StringUtil"));
             }
         }
@@ -153,6 +153,13 @@ public class ClassDefinition extends BaseDefinitionWithImports {
         }
         Collections.sort(result);
         return result;
+    }
+
+    private void addType(Set<CanonicalName> imports, TypeDefinition typeDefinition) {
+        imports.add(getCanonicalName(typeDefinition.getMapType()));
+        for (TypeDefinition definition : typeDefinition.getGenericTypes()) {
+            addType(imports, definition);
+        }
     }
 
     @Override

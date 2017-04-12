@@ -79,7 +79,7 @@ public abstract class BaseSchema implements Schema {
         }
     }
 
-    public void addIssuesIfNotNull(List<? extends BaseSchema> baseSchemas) {
+    public void addIssuesIfNotNull(Collection<? extends BaseSchema> baseSchemas) {
         if (baseSchemas != null) {
             baseSchemas.forEach(this::addIssuesIfNotNull);
         }

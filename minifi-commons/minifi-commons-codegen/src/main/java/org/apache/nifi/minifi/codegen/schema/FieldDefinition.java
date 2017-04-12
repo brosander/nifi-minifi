@@ -21,13 +21,14 @@ public class FieldDefinition {
     private ClassDefinition parent;
     private String name;
     private String key;
-    private String type;
+    private TypeDefinition type;
     private Object defaultValue;
+    private boolean defaultSet;
     private boolean required;
-    private boolean isEnum;
     private boolean requiredSet;
     private String validator;
-    private String defaultType;
+    private String instantiator;
+    private String toMap;
 
     public void setParent(ClassDefinition parent) {
         this.parent = parent;
@@ -42,33 +43,20 @@ public class FieldDefinition {
     }
 
     public String getDefaultLiteral() {
-        if (String.class.getSimpleName().equals(type)) {
+        if (String.class.getSimpleName().equals(type.getDeclaration())) {
             return "\"" + String.valueOf(defaultValue) + "\"";
         }
         return String.valueOf(defaultValue);
     }
 
-    public String getType() {
+    public TypeDefinition getType() {
         return type;
     }
 
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getMapType() {
-        if ("int".equals(type) || "long".equals(type)) {
-            return "Number";
-        }
-        if ("boolean".equals(type)) {
-            return "Boolean";
-        }
-
-        int i = type.indexOf('<');
-        if (i < 0) {
-            return type;
-        }
-        return type.substring(0, i);
+    public void setTypeName(String type) {
+        TypeDefinition typeDefinition = new TypeDefinition();
+        typeDefinition.setName(type);
+        this.type = typeDefinition;
     }
 
     public String getKey() {
@@ -84,6 +72,7 @@ public class FieldDefinition {
     }
 
     public void setDefault(Object defaultValue) {
+        this.defaultSet = true;
         this.defaultValue = defaultValue;
     }
 
@@ -104,19 +93,31 @@ public class FieldDefinition {
         this.required = required;
     }
 
-    public boolean isEnum() {
-        return isEnum;
-    }
-
-    public void setEnum(boolean anEnum) {
-        isEnum = anEnum;
-    }
-
     public String getValidator() {
         return validator;
     }
 
     public void setValidator(String validator) {
         this.validator = validator;
+    }
+
+    public void setType(TypeDefinition type) {
+        this.type = type;
+    }
+
+    public String getInstantiator() {
+        return instantiator;
+    }
+
+    public void setInstantiator(String instantiator) {
+        this.instantiator = instantiator;
+    }
+
+    public String getToMap() {
+        return toMap;
+    }
+
+    public void setToMap(String toMap) {
+        this.toMap = toMap;
     }
 }

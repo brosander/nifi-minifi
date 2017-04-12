@@ -1,12 +1,38 @@
 {
+  "enums": [
+    {
+      "name": "TransportProtocolOptions",
+      "values": [
+        "RAW", "HTTP"
+      ]
+    }
+  ],
   "classes": [
     {
       "name": "ComponentStatusRepositorySchema",
       "wrapperName": "Component Status Repository",
       "writable": true,
       "fields": [
-        {"name": "bufferSize", "type": "int", "key": "buffer size", "default": 1440},
-        {"name": "snapshotFrequency", "type": "String", "key": "snapshot frequency", "default": "1 min"}
+        {"name": "bufferSize", "typeName": "int", "key": "buffer size", "default": 1440},
+        {"name": "snapshotFrequency", "typeName": "String", "key": "snapshot frequency", "default": "1 min"}
+      ]
+    },
+    {
+      "name": "ConfigSchema",
+      "wrapperName": "top level",
+      "writable": true,
+      "concrete": false,
+      "fields": [
+        {"name": "flowControllerProperties", "typeName": "FlowControllerSchema", "key": "Flow Controller", "required": false},
+        {"name": "coreProperties", "typeName": "CorePropertiesSchema", "key": "Core Properties", "required": false},
+        {"name": "flowfileRepositoryProperties", "typeName": "FlowFileRepositorySchema", "key": "FlowFile Repository", "required": false},
+        {"name": "contentRepositoryProperties", "typeName": "ContentRepositorySchema", "key": "Content Repository", "required": false},
+        {"name": "provenanceRepositorySchema", "typeName": "ProvenanceRepositorySchema", "key": "Content Repository", "required": false},
+        {"name": "componentStatusRepositoryProperties", "typeName": "ComponentStatusRepositorySchema", "key": "Provenance Repository", "required": false},
+        {"name": "securityProperties", "typeName": "SecurityPropertiesSchema", "key": "Security Properties", "required": false},
+        {"name": "processGroupSchema", "typeName": "ProcessGroupSchema", "required": false, "instantiator": "new ProcessGroupSchema(map, WRAPPER_NAME)", "toMap":"result.putAll(processGroupSchema.toMap());"},
+        {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false, "instantiator": "getMapAsType(map, PROVENANCE_REPORTING_PROPERTIES_KEY, ProvenanceReportingSchema.class, WRAPPER_NAME, false, false)"},
+        {"name": "nifiPropertiesOverrides", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name":"String"}]}, "key": "NiFi Properties Overrides", "default": "Collections.emptyMap()"}
       ]
     },
     {
@@ -15,15 +41,15 @@
       "writable": true,
       "concrete": false,
       "fields": [
-        {"name": "id", "type": "String", "key": "id", "required": true, "validator": "validateId"},
-        {"name": "name", "type": "String", "key": "name", "default": ""},
-        {"name": "sourceId", "type": "String", "key": "source id", "required": true},
-        {"name": "sourceRelationshipNames", "type": "List<String>", "key": "source relationship names", "default": "Collections.emptyList()"},
-        {"name": "destinationId", "type": "String", "key": "destination id", "required": true},
-        {"name": "maxWorkQueueSize", "type": "long", "key": "max work queue size", "default": 0},
-        {"name": "maxWorkQueueDataSize", "type": "String", "key": "max work queue data size", "default": "0 MB"},
-        {"name": "flowfileExpiration", "type": "String", "key": "flowfile expiration", "default": "0 sec"},
-        {"name": "queuePrioritizerClass", "type": "String", "key": "queue prioritizer class", "default": ""}
+        {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId"},
+        {"name": "name", "typeName": "String", "key": "name", "default": ""},
+        {"name": "sourceId", "typeName": "String", "key": "source id", "required": true},
+        {"name": "sourceRelationshipNames", "type": {"name": "List", "genericTypes": [{"name": "String"}]}, "key": "source relationship names", "default": "Collections.emptyList()"},
+        {"name": "destinationId", "typeName": "String", "key": "destination id", "required": true},
+        {"name": "maxWorkQueueSize", "typeName": "long", "key": "max work queue size", "default": 0},
+        {"name": "maxWorkQueueDataSize", "typeName": "String", "key": "max work queue data size", "default": "0 MB"},
+        {"name": "flowfileExpiration", "typeName": "String", "key": "flowfile expiration", "default": "0 sec"},
+        {"name": "queuePrioritizerClass", "typeName": "String", "key": "queue prioritizer class", "default": ""}
       ]
     },
     {
@@ -31,9 +57,9 @@
       "wrapperName": "Content Repository",
       "writable": true,
       "fields": [
-        {"name": "contentClaimMaxAppendableSize", "type": "String", "key": "content claim max appendable size", "default": "10 MB"},
-        {"name": "contentClaimMaxFlowFiles", "type": "int", "key": "content claim max flow files", "default": 100},
-        {"name": "alwaysSync", "type": "boolean", "key": "always sync", "default": false}
+        {"name": "contentClaimMaxAppendableSize", "typeName": "String", "key": "content claim max appendable size", "default": "10 MB"},
+        {"name": "contentClaimMaxFlowFiles", "typeName": "int", "key": "content claim max flow files", "default": 100},
+        {"name": "alwaysSync", "typeName": "boolean", "key": "always sync", "default": false}
       ]
     },
     {
@@ -41,11 +67,11 @@
       "wrapperName": "Controller Service(id: {id}, name: {name})",
       "writable": true,
       "fields": [
-        {"name": "id", "type": "String", "key": "id", "required": true, "validator": "validateId"},
-        {"name": "name", "type": "String", "key": "name", "default": ""},
-        {"name": "serviceClass", "type": "String", "key": "type", "required": true},
-        {"name": "properties", "type": "Map<String, Object>", "key": "Properties", "default": "Collections.emptyMap()"},
-        {"name": "annotationData", "type": "String", "key": "annotation data", "default": ""}
+        {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId"},
+        {"name": "name", "typeName": "String", "key": "name", "default": ""},
+        {"name": "serviceClass", "typeName": "String", "key": "type", "required": true},
+        {"name": "properties", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name": "Object"}]}, "key": "Properties", "default": "Collections.emptyMap()"},
+        {"name": "annotationData", "typeName": "String", "key": "annotation data", "default": ""}
       ]
     },
     {
@@ -53,11 +79,11 @@
       "wrapperName": "Core Properties",
       "writable": true,
       "fields": [
-        {"name": "flowControllerGracefulShutdownPeriod", "type": "String", "key": "flow controller graceful shutdown period", "default": "10 sec"},
-        {"name": "flowServiceWriteDelayInterval", "type": "String", "key": "flow service write delay interval", "default": "500 ms"},
-        {"name": "administrativeYieldDuration", "type": "String", "key": "administrative yield duration", "default": "30 sec"},
-        {"name": "boredYieldDuration", "type": "String", "key": "bored yield duration", "default": "10 millis"},
-        {"name": "maxConcurrentThreads", "type": "int", "key": "max concurrent threads", "default": 1}
+        {"name": "flowControllerGracefulShutdownPeriod", "typeName": "String", "key": "flow controller graceful shutdown period", "default": "10 sec"},
+        {"name": "flowServiceWriteDelayInterval", "typeName": "String", "key": "flow service write delay interval", "default": "500 ms"},
+        {"name": "administrativeYieldDuration", "typeName": "String", "key": "administrative yield duration", "default": "30 sec"},
+        {"name": "boredYieldDuration", "typeName": "String", "key": "bored yield duration", "default": "10 millis"},
+        {"name": "maxConcurrentThreads", "typeName": "int", "key": "max concurrent threads", "default": 1}
       ]
     },
     {
@@ -65,8 +91,8 @@
       "wrapperName": "Flow Controller",
       "writable": true,
       "fields": [
-        {"name": "name", "type": "String", "key": "name"},
-        {"name": "comment", "type": "String", "key": "comment", "default": ""}
+        {"name": "name", "typeName": "String", "key": "name"},
+        {"name": "comment", "typeName": "String", "key": "comment", "default": ""}
       ]
     },
     {
@@ -74,10 +100,10 @@
       "wrapperName": "FlowFile Repository",
       "writable": true,
       "fields": [
-        {"name": "partitions", "type": "int", "key": "partitions", "default": 256},
-        {"name": "checkpointInterval", "type": "String", "key": "checkpoint interval", "default": "2 mins"},
-        {"name": "alwaysSync", "type": "boolean", "key": "always sync", "default": false},
-        {"name": "swapProperties", "type": "SwapSchema", "key": "Swap", "required": false}
+        {"name": "partitions", "typeName": "int", "key": "partitions", "default": 256},
+        {"name": "checkpointInterval", "typeName": "String", "key": "checkpoint interval", "default": "2 mins"},
+        {"name": "alwaysSync", "typeName": "boolean", "key": "always sync", "default": false},
+        {"name": "swapProperties", "typeName": "SwapSchema", "key": "Swap", "required": false}
       ]
     },
     {
@@ -85,15 +111,53 @@
       "wrapperName": "Funnel(id: {id})",
       "writable": true,
       "fields": [
-        {"name": "id", "type": "String", "key": "id", "required": true}
+        {"name": "id", "typeName": "String", "key": "id", "required": true}
       ]
     },
     {
       "name": "PortSchema",
       "writable": true,
       "fields": [
-        {"name": "id", "type": "String", "key": "id", "required": true, "validator": "validateId"},
-        {"name": "name", "type": "String", "key": "name", "default": ""}
+        {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId"},
+        {"name": "name", "typeName": "String", "key": "name", "default": ""}
+      ]
+    },
+    {
+      "name": "ProcessGroupSchema",
+      "writable": true,
+      "concrete": false,
+      "fields": [
+        {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId", "default": "Root-Group"},
+        {"name": "name", "typeName": "String", "key": "name", "default": ""},
+        {"name": "comment", "typeName": "String", "key": "comment", "default": ""},
+        {"name": "processors", "type": {"name": "List", "genericTypes": [{"name":"ProcessorSchema"}]}, "key": "Processors", "default": "Collections.emptyList()"},
+        {"name": "controllerServices", "type": {"name": "List", "genericTypes": [{"name":"ControllerServiceSchema"}]}, "key": "Controller Services", "default": "Collections.emptyList()"},
+        {"name": "funnels", "type": {"name": "List", "genericTypes": [{"name":"FunnelSchema"}]}, "key": "Funnels", "default": "Collections.emptyList()"},
+        {"name": "connections", "type": {"name": "List", "genericTypes": [{"name":"ConnectionSchema"}]}, "key": "Connections", "default": "Collections.emptyList()"},
+        {"name": "remoteProcessGroups", "type": {"name": "List", "genericTypes": [{"name":"RemoteProcessGroupSchema"}]}, "key": "Remote Process Groups", "default": "Collections.emptyList()"},
+        {"name": "inputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Input Ports", "default": "Collections.emptyList()", "instantiator": "getOptionalKeyAsList(map, INPUT_PORT_SCHEMAS_KEY, m -> new PortSchema(m, \"InputPort(id: {id}, name: {name})\"), getWrapperName())"},
+        {"name": "outputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Output Ports", "default": "Collections.emptyList()", "instantiator": "getOptionalKeyAsList(map, OUTPUT_PORT_SCHEMAS_KEY, m -> new PortSchema(m, \"OutputPort(id: {id}, name: {name})\"), getWrapperName())"},
+        {"name": "processGroupSchemas", "type": {"name": "List", "genericTypes": [{"name":"ProcessGroupSchema"}]}, "key": "Process Groups", "default": "Collections.emptyList()", "instantiator": "getOptionalKeyAsList(map, PROCESS_GROUP_SCHEMAS_KEY, m -> new ProcessGroupSchema(m, \"ProcessGroup(id: {id}, name: {name})\"), getWrapperName())"}
+      ]
+    },
+    {
+      "imports": ["org.apache.nifi.scheduling.SchedulingStrategy"],
+      "name": "ProcessorSchema",
+      "wrapperName": "Processor(id: {id}, name: {name})",
+      "writable": true,
+      "fields": [
+        {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId"},
+        {"name": "name", "typeName": "String", "key": "name", "default": ""},
+        {"name": "processorClass", "typeName": "String", "key": "class", "required": true},
+        {"name": "schedulingStrategy", "type": {"name": "SchedulingStrategy", "enum": true}, "key": "scheduling strategy", "required": true},
+        {"name": "schedulingPeriod", "typeName": "String", "key": "scheduling period", "required": true},
+        {"name": "maxConcurrentTasks", "typeName": "int", "key": "max concurrent tasks", "default": 1},
+        {"name": "penalizationPeriod", "typeName": "String", "key": "penalization period", "default": "30 sec"},
+        {"name": "yieldPeriod", "typeName": "String", "key": "yield period", "default": "1 sec"},
+        {"name": "runDurationNanos", "typeName": "long", "key": "run duration nanos", "default": 0},
+        {"name": "autoTerminatedRelationshipsList", "type": {"name": "List", "genericTypes": [{"name": "String"}]}, "key": "auto-terminated relationships list", "default": "Collections.emptyList()"},
+        {"name": "properties", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name": "Object"}]}, "key": "Properties", "default": "Collections.emptyMap()"},
+        {"name": "annotationData", "typeName": "String", "key": "annotation data", "default": ""}
       ]
     },
     {
@@ -102,15 +166,15 @@
       "wrapperName": "Provenance Reporting",
       "writable": true,
       "fields": [
-        {"name": "schedulingStrategy", "type": "SchedulingStrategy", "key": "scheduling strategy", "required": true, "enum": true},
-        {"name": "schedulingPeriod", "type": "String", "key": "scheduling period", "required": true},
-        {"name": "destinationUrl", "type": "String", "key": "destination url", "required": true},
-        {"name": "portName", "type": "String", "key": "port name", "required": true},
-        {"name": "comment", "type": "String", "key": "comment", "default": ""},
-        {"name": "originatingUrl", "type": "String", "key": "originating url", "default": "http://${hostname(true)}:8080/nifi"},
-        {"name": "useCompression", "type": "boolean", "key": "use compression", "default": true},
-        {"name": "timeout", "type": "String", "key": "timeout", "default": "30 secs"},
-        {"name": "batchSize", "type": "int", "key": "batch size", "default": 1000}
+        {"name": "schedulingStrategy", "type": {"name": "SchedulingStrategy", "enum": true}, "key": "scheduling strategy", "required": true},
+        {"name": "schedulingPeriod", "typeName": "String", "key": "scheduling period", "required": true},
+        {"name": "destinationUrl", "typeName": "String", "key": "destination url", "required": true},
+        {"name": "portName", "typeName": "String", "key": "port name", "required": true},
+        {"name": "comment", "typeName": "String", "key": "comment", "default": ""},
+        {"name": "originatingUrl", "typeName": "String", "key": "originating url", "default": "http://${hostname(true)}:8080/nifi"},
+        {"name": "useCompression", "typeName": "boolean", "key": "use compression", "default": true},
+        {"name": "timeout", "typeName": "String", "key": "timeout", "default": "30 secs"},
+        {"name": "batchSize", "typeName": "int", "key": "batch size", "default": 1000}
       ]
     },
     {
@@ -118,7 +182,40 @@
       "wrapperName": "Provenance Repository",
       "writable": true,
       "fields": [
-        {"name": "provenanceRepoRolloverTime", "type": "String", "key": "provenance rollover time", "default": "1 min"}
+        {"name": "provenanceRepoRolloverTime", "typeName": "String", "key": "provenance rollover time", "default": "1 min"}
+      ]
+    },
+    {
+      "name": "RemotePortSchema",
+      "wrapperName": "RemoteInputPort(id: {id}, name: {name})",
+      "writable": true,
+      "fields": [
+        {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId"},
+        {"name": "name", "typeName": "String", "key": "name", "default": ""},
+        {"name": "comment", "typeName": "String", "key": "comment", "default": ""},
+        {"name": "maxConcurrentTasks", "typeName": "int", "key": "max concurrent tasks", "default": 1},
+        {"name": "useCompression", "typeName": "boolean", "key": "use compression", "default": true}
+      ]
+    },
+    {
+      "name": "RemoteProcessGroupSchema",
+      "wrapperName": "RemoteProcessGroup(id: {id}, name: {name})",
+      "writable": true,
+      "concrete": false,
+      "fields": [
+        {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId"},
+        {"name": "name", "typeName": "String", "key": "name", "default": ""},
+        {"name": "url", "typeName": "String", "key": "url", "required": true},
+        {"name": "inputPorts", "type": {"name": "List", "genericTypes": [{"name":"RemotePortSchema"}]}, "key": "Input Ports", "default": "Collections.emptyList()"},
+        {"name": "outputPorts", "type": {"name": "List", "genericTypes": [{"name":"RemotePortSchema"}]}, "key": "Output Ports", "default": "Collections.emptyList()"},
+        {"name": "comment", "typeName": "String", "key": "comment", "default": ""},
+        {"name": "timeout", "typeName": "String", "key": "timeout", "default": "30 secs"},
+        {"name": "yieldPeriod", "typeName": "String", "key": "yield period", "default": "10 sec"},
+        {"name": "transportProtocol", "type": {"name": "TransportProtocolOptions", "enum": true}, "key": "transport protocol", "default": "RAW"},
+        {"name": "proxyHost", "typeName": "String", "key": "proxy host", "default": ""},
+        {"name": "proxyPort", "typeName": "int", "key": "proxy port", "default": "80"},
+        {"name": "proxyUser", "typeName": "String", "key": "proxy user", "default": ""},
+        {"name": "proxyPassword", "typeName": "String", "key": "proxy password", "default": ""}
       ]
     },
     {
@@ -128,15 +225,15 @@
       "writable": true,
       "concrete": false,
       "fields": [
-        {"name": "keystore", "type": "String", "key": "keystore", "default": ""},
-        {"name": "keystoreType", "type": "String", "key": "keystore type", "default": ""},
-        {"name": "keystorePassword", "type": "String", "key": "keystore password", "default": ""},
-        {"name": "keyPassword", "type": "String", "key": "key password", "default": ""},
-        {"name": "truststore", "type": "String", "key": "truststore", "default": ""},
-        {"name": "truststoreType", "type": "String", "key": "truststore type", "default": ""},
-        {"name": "truststorePassword", "type": "String", "key": "truststore password", "default": ""},
-        {"name": "sslProtocol", "type": "String", "key": "ssl protocol", "default": ""},
-        {"name": "sensitiveProps", "type": "SensitivePropsSchema", "key": "Sensitive Props", "required": false}
+        {"name": "keystore", "typeName": "String", "key": "keystore", "default": ""},
+        {"name": "keystoreType", "typeName": "String", "key": "keystore type", "default": ""},
+        {"name": "keystorePassword", "typeName": "String", "key": "keystore password", "default": ""},
+        {"name": "keyPassword", "typeName": "String", "key": "key password", "default": ""},
+        {"name": "truststore", "typeName": "String", "key": "truststore", "default": ""},
+        {"name": "truststoreType", "typeName": "String", "key": "truststore type", "default": ""},
+        {"name": "truststorePassword", "typeName": "String", "key": "truststore password", "default": ""},
+        {"name": "sslProtocol", "typeName": "String", "key": "ssl protocol", "default": ""},
+        {"name": "sensitiveProps", "typeName": "SensitivePropsSchema", "key": "Sensitive Props", "required": false}
       ]
     },
     {
@@ -144,9 +241,9 @@
       "wrapperName": "Sensitive Props",
       "writable": true,
       "fields": [
-        {"name": "key", "type": "String", "key": "key", "default": ""},
-        {"name": "algorithm", "type": "String", "key": "algorithm", "default": "PBEWITHMD5AND256BITAES-CBC-OPENSSL"},
-        {"name": "provider", "type": "String", "key": "provider", "default": "BC"}
+        {"name": "key", "typeName": "String", "key": "key", "default": ""},
+        {"name": "algorithm", "typeName": "String", "key": "algorithm", "default": "PBEWITHMD5AND256BITAES-CBC-OPENSSL"},
+        {"name": "provider", "typeName": "String", "key": "provider", "default": "BC"}
       ]
     },
     {
@@ -154,11 +251,11 @@
       "wrapperName": "Swap",
       "writable": true,
       "fields": [
-        {"name": "threshold", "type": "int", "key": "threshold", "default": 20000},
-        {"name": "inPeriod", "type": "String", "key": "in period", "default": "5 sec"},
-        {"name": "inThreads", "type": "int", "key": "in threads", "default": 1},
-        {"name": "outPeriod", "type": "String", "key": "out period", "default": "5 sec"},
-        {"name": "outThreads", "type": "int", "key": "out threads", "default": 4}
+        {"name": "threshold", "typeName": "int", "key": "threshold", "default": 20000},
+        {"name": "inPeriod", "typeName": "String", "key": "in period", "default": "5 sec"},
+        {"name": "inThreads", "typeName": "int", "key": "in threads", "default": 1},
+        {"name": "outPeriod", "typeName": "String", "key": "out period", "default": "5 sec"},
+        {"name": "outThreads", "typeName": "int", "key": "out threads", "default": 4}
       ]
     }
   ]

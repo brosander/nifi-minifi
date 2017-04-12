@@ -22,21 +22,20 @@ package org.apache.nifi.minifi.commons.schema.v1;
 import org.apache.nifi.minifi.commons.schema.ProcessorSchema;
 import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
 import org.apache.nifi.minifi.commons.schema.common.ConvertableSchema;
+import org.apache.nifi.scheduling.SchedulingStrategy;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.AUTO_TERMINATED_RELATIONSHIPS_LIST_DEFAULT;
 import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.AUTO_TERMINATED_RELATIONSHIPS_LIST_KEY;
-import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.DEFAULT_AUTO_TERMINATED_RELATIONSHIPS_LIST;
-import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.DEFAULT_MAX_CONCURRENT_TASKS;
-import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.DEFAULT_PENALIZATION_PERIOD;
-import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.DEFAULT_RUN_DURATION_NANOS;
-import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.DEFAULT_YIELD_DURATION;
-import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.IT_IS_NOT_A_VALID_SCHEDULING_STRATEGY;
+import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.MAX_CONCURRENT_TASKS_DEFAULT;
+import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.PENALIZATION_PERIOD_DEFAULT;
 import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.PENALIZATION_PERIOD_KEY;
+import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.RUN_DURATION_NANOS_DEFAULT;
 import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.RUN_DURATION_NANOS_KEY;
-import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.isSchedulingStrategy;
+import static org.apache.nifi.minifi.commons.schema.ProcessorSchema.YIELD_PERIOD_DEFAULT;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.CLASS_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.DEFAULT_PROPERTIES;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.MAX_CONCURRENT_TASKS_KEY;
@@ -48,15 +47,17 @@ import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.SC
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.YIELD_PERIOD_KEY;
 
 public class ProcessorSchemaV1 extends BaseSchema implements ConvertableSchema<ProcessorSchema> {
+    public static final String IT_IS_NOT_A_VALID_SCHEDULING_STRATEGY = "it is not a valid scheduling strategy";
+
     private String name;
     private String processorClass;
     private String schedulingStrategy;
     private String schedulingPeriod;
-    private Number maxConcurrentTasks = DEFAULT_MAX_CONCURRENT_TASKS;
-    private String penalizationPeriod = DEFAULT_PENALIZATION_PERIOD;
-    private String yieldPeriod = DEFAULT_YIELD_DURATION;
-    private Number runDurationNanos = DEFAULT_RUN_DURATION_NANOS;
-    private List<String> autoTerminatedRelationshipsList = DEFAULT_AUTO_TERMINATED_RELATIONSHIPS_LIST;
+    private Number maxConcurrentTasks = MAX_CONCURRENT_TASKS_DEFAULT;
+    private String penalizationPeriod = PENALIZATION_PERIOD_DEFAULT;
+    private String yieldPeriod = YIELD_PERIOD_DEFAULT;
+    private Number runDurationNanos = RUN_DURATION_NANOS_DEFAULT;
+    private List<String> autoTerminatedRelationshipsList = AUTO_TERMINATED_RELATIONSHIPS_LIST_DEFAULT;
     private Map<String, Object> properties = DEFAULT_PROPERTIES;
 
     public ProcessorSchemaV1(Map map) {
@@ -68,11 +69,11 @@ public class ProcessorSchemaV1 extends BaseSchema implements ConvertableSchema<P
         }
         schedulingPeriod = getRequiredKeyAsType(map, SCHEDULING_PERIOD_KEY, String.class, PROCESSORS_KEY);
 
-        maxConcurrentTasks = getOptionalKeyAsType(map, MAX_CONCURRENT_TASKS_KEY, Number.class, PROCESSORS_KEY, DEFAULT_MAX_CONCURRENT_TASKS);
-        penalizationPeriod = getOptionalKeyAsType(map, PENALIZATION_PERIOD_KEY, String.class, PROCESSORS_KEY, DEFAULT_PENALIZATION_PERIOD);
-        yieldPeriod = getOptionalKeyAsType(map, YIELD_PERIOD_KEY, String.class, PROCESSORS_KEY, DEFAULT_YIELD_DURATION);
-        runDurationNanos = getOptionalKeyAsType(map, RUN_DURATION_NANOS_KEY, Number.class, PROCESSORS_KEY, DEFAULT_RUN_DURATION_NANOS);
-        autoTerminatedRelationshipsList = getOptionalKeyAsType(map, AUTO_TERMINATED_RELATIONSHIPS_LIST_KEY, List.class, PROCESSORS_KEY, DEFAULT_AUTO_TERMINATED_RELATIONSHIPS_LIST);
+        maxConcurrentTasks = getOptionalKeyAsType(map, MAX_CONCURRENT_TASKS_KEY, Number.class, PROCESSORS_KEY, MAX_CONCURRENT_TASKS_DEFAULT);
+        penalizationPeriod = getOptionalKeyAsType(map, PENALIZATION_PERIOD_KEY, String.class, PROCESSORS_KEY, PENALIZATION_PERIOD_DEFAULT);
+        yieldPeriod = getOptionalKeyAsType(map, YIELD_PERIOD_KEY, String.class, PROCESSORS_KEY, YIELD_PERIOD_DEFAULT);
+        runDurationNanos = getOptionalKeyAsType(map, RUN_DURATION_NANOS_KEY, Number.class, PROCESSORS_KEY, RUN_DURATION_NANOS_DEFAULT);
+        autoTerminatedRelationshipsList = getOptionalKeyAsType(map, AUTO_TERMINATED_RELATIONSHIPS_LIST_KEY, List.class, PROCESSORS_KEY, AUTO_TERMINATED_RELATIONSHIPS_LIST_DEFAULT);
         properties = getOptionalKeyAsType(map, PROPERTIES_KEY, Map.class, PROCESSORS_KEY, DEFAULT_PROPERTIES);
     }
 
@@ -99,5 +100,14 @@ public class ProcessorSchemaV1 extends BaseSchema implements ConvertableSchema<P
     @Override
     public int getVersion() {
         return ConfigSchemaV1.CONFIG_VERSION;
+    }
+
+    public static boolean isSchedulingStrategy(String string) {
+        try {
+            SchedulingStrategy.valueOf(string);
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
     }
 }

@@ -71,7 +71,7 @@ public class ProcessGroupSchemaV2 extends BaseSchemaWithIdAndName implements Wri
         outputPortSchemas = getOptionalKeyAsList(map, OUTPUT_PORTS_KEY, m -> new PortSchema(m, "OutputPort(id: {id}, name: {name})"), wrapperName);
         processGroupSchemas = getOptionalKeyAsList(map, PROCESS_GROUPS_KEY, m -> new ProcessGroupSchemaV2(m, "ProcessGroup(id: {id}, name: {name})"), wrapperName);
 
-        if (ConfigSchema.TOP_LEVEL_NAME.equals(wrapperName)) {
+        if (ConfigSchema.WRAPPER_NAME.equals(wrapperName)) {
             if (inputPortSchemas.size() > 0) {
                 addValidationIssue(INPUT_PORTS_KEY, wrapperName, "must be empty in root group as external input/output ports are currently unsupported");
             }

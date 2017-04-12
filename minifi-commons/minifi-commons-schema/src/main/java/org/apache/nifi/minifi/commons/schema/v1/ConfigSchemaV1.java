@@ -47,7 +47,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.apache.nifi.minifi.commons.schema.ConfigSchema.TOP_LEVEL_NAME;
+import static org.apache.nifi.minifi.commons.schema.AbstractConfigSchema.WRAPPER_NAME;
 import static org.apache.nifi.minifi.commons.schema.ConfigSchema.VERSION;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.COMPONENT_STATUS_REPO_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.CONNECTIONS_KEY;
@@ -87,23 +87,23 @@ public class ConfigSchemaV1 extends BaseSchema implements ConvertableSchema<Conf
     private ProvenanceRepositorySchema provenanceRepositorySchema;
 
     public ConfigSchemaV1(Map map) {
-        flowControllerProperties = getMapAsType(map, FLOW_CONTROLLER_PROPS_KEY, FlowControllerSchema.class, TOP_LEVEL_NAME, true);
+        flowControllerProperties = getMapAsType(map, FLOW_CONTROLLER_PROPS_KEY, FlowControllerSchema.class, WRAPPER_NAME, true);
 
-        coreProperties = getMapAsType(map, CORE_PROPS_KEY, CorePropertiesSchema.class, TOP_LEVEL_NAME, false);
-        flowfileRepositoryProperties = getMapAsType(map, FLOWFILE_REPO_KEY, FlowFileRepositorySchema.class, TOP_LEVEL_NAME, false);
-        contentRepositoryProperties = getMapAsType(map, CONTENT_REPO_KEY, ContentRepositorySchema.class, TOP_LEVEL_NAME, false);
-        provenanceRepositorySchema = getMapAsType(map, PROVENANCE_REPO_KEY, ProvenanceRepositorySchema.class, TOP_LEVEL_NAME, false);
-        componentStatusRepositoryProperties = getMapAsType(map, COMPONENT_STATUS_REPO_KEY, ComponentStatusRepositorySchema.class, TOP_LEVEL_NAME, false);
-        securityProperties = getMapAsType(map, SECURITY_PROPS_KEY, SecurityPropertiesSchema.class, TOP_LEVEL_NAME, false);
+        coreProperties = getMapAsType(map, CORE_PROPS_KEY, CorePropertiesSchema.class, WRAPPER_NAME, false);
+        flowfileRepositoryProperties = getMapAsType(map, FLOWFILE_REPO_KEY, FlowFileRepositorySchema.class, WRAPPER_NAME, false);
+        contentRepositoryProperties = getMapAsType(map, CONTENT_REPO_KEY, ContentRepositorySchema.class, WRAPPER_NAME, false);
+        provenanceRepositorySchema = getMapAsType(map, PROVENANCE_REPO_KEY, ProvenanceRepositorySchema.class, WRAPPER_NAME, false);
+        componentStatusRepositoryProperties = getMapAsType(map, COMPONENT_STATUS_REPO_KEY, ComponentStatusRepositorySchema.class, WRAPPER_NAME, false);
+        securityProperties = getMapAsType(map, SECURITY_PROPS_KEY, SecurityPropertiesSchema.class, WRAPPER_NAME, false);
 
-        processors = convertListToType(getOptionalKeyAsType(map, PROCESSORS_KEY, List.class, TOP_LEVEL_NAME, new ArrayList<>()), PROCESSORS_KEY, ProcessorSchemaV1.class, TOP_LEVEL_NAME);
+        processors = convertListToType(getOptionalKeyAsType(map, PROCESSORS_KEY, List.class, WRAPPER_NAME, new ArrayList<>()), PROCESSORS_KEY, ProcessorSchemaV1.class, WRAPPER_NAME);
 
-        remoteProcessingGroups = convertListToType(getOptionalKeyAsType(map, REMOTE_PROCESS_GROUPS_KEY_V1, List.class, TOP_LEVEL_NAME, new ArrayList<>()), "remote processing group",
+        remoteProcessingGroups = convertListToType(getOptionalKeyAsType(map, REMOTE_PROCESS_GROUPS_KEY_V1, List.class, WRAPPER_NAME, new ArrayList<>()), "remote processing group",
                 RemoteProcessGroupSchemaV1.class, REMOTE_PROCESS_GROUPS_KEY_V1);
 
-        connections = convertListToType(getOptionalKeyAsType(map, CONNECTIONS_KEY, List.class, TOP_LEVEL_NAME, new ArrayList<>()), CONNECTIONS_KEY, ConnectionSchemaV1.class, TOP_LEVEL_NAME);
+        connections = convertListToType(getOptionalKeyAsType(map, CONNECTIONS_KEY, List.class, WRAPPER_NAME, new ArrayList<>()), CONNECTIONS_KEY, ConnectionSchemaV1.class, WRAPPER_NAME);
 
-        provenanceReportingProperties = getMapAsType(map, PROVENANCE_REPORTING_KEY, ProvenanceReportingSchema.class, TOP_LEVEL_NAME, false, false);
+        provenanceReportingProperties = getMapAsType(map, PROVENANCE_REPORTING_KEY, ProvenanceReportingSchema.class, WRAPPER_NAME, false, false);
 
         addIssuesIfNotNull(flowControllerProperties);
         addIssuesIfNotNull(coreProperties);
