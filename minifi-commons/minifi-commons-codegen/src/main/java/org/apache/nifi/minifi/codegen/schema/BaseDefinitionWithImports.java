@@ -23,7 +23,7 @@ import java.util.Map;
 
 public abstract class BaseDefinitionWithImports {
     private Map<String, CanonicalName> imports = new HashMap<>();
-    private String packageName = "org.apache.nifi.minifi.commons.schema";
+    private String packageName;
 
     public CanonicalName getCanonicalName(String name) {
         return imports.get(name);

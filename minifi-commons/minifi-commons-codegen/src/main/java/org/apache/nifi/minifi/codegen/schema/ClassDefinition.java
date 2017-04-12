@@ -36,10 +36,6 @@ public class ClassDefinition extends BaseDefinitionWithImports {
     private Set<String> implementsClasses = Collections.emptySet();
     private List<FieldDefinition> fields = Collections.emptyList();
 
-    public ClassDefinition() {
-        setPackage(null);
-    }
-
     public String getName() {
         return name;
     }
@@ -57,14 +53,11 @@ public class ClassDefinition extends BaseDefinitionWithImports {
     }
 
     public String getImplementsString() {
-        Set<String> implementsClasses = getImplementsClasses();
-        if (implementsClasses == null) return null;
-        List<String> result = new ArrayList<>(implementsClasses.size());
-        for (String implementsClass : implementsClasses) {
+        List<String> result = new ArrayList<>();
+        for (String implementsClass : getImplementsClasses()) {
             result.add(getCanonicalName(implementsClass).getName());
         }
-        Collections.sort(result);
-        return result.stream().collect(Collectors.joining(", "));
+        return result.stream().sorted().collect(Collectors.joining(", "));
     }
 
     public Set<String> getImplementsClasses() {
@@ -76,9 +69,6 @@ public class ClassDefinition extends BaseDefinitionWithImports {
             if ("id".equals(field.getName()) && "String".equals(field.getType().getDeclaration())) {
                 implementsClasses.add("org.apache.nifi.minifi.commons.schema.common.HasId");
             }
-        }
-        if (implementsClasses.size() == 0) {
-            return null;
         }
         return implementsClasses;
     }
@@ -170,10 +160,7 @@ public class ClassDefinition extends BaseDefinitionWithImports {
     @Override
     public String getPackage() {
         String aPackage = super.getPackage();
-        if (aPackage == null) {
-            aPackage = parent.getPackage();
-        }
-        return aPackage;
+        return aPackage == null ? parent.getPackage() : aPackage;
     }
 
     public boolean isConcrete() {

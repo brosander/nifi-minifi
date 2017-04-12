@@ -47,6 +47,7 @@ public class SchemaDefinition extends BaseDefinitionWithImports {
     private Map<String, ClassDefinition> classes = Collections.emptyMap();
 
     public SchemaDefinition() {
+        setPackage("org.apache.nifi.minifi.commons.schema");
         setImports(Collections.emptyList());
     }
 
@@ -81,13 +82,11 @@ public class SchemaDefinition extends BaseDefinitionWithImports {
         if (canonicalName == null) {
             ClassDefinition aClass = getClass(name);
             if (aClass != null) {
-                canonicalName = new CanonicalName(aClass.getPackage() + "." + aClass.getName());
+                return new CanonicalName(aClass.getPackage() + "." + aClass.getName());
             }
-        }
-        if (canonicalName == null) {
             EnumDefinition anEnum = getEnum(name);
             if (anEnum != null) {
-                canonicalName = new CanonicalName(getPackage() + "." + anEnum.getName());
+                return new CanonicalName(getPackage() + "." + anEnum.getName());
             }
         }
         return canonicalName;
