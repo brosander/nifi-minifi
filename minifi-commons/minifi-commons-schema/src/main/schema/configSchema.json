@@ -158,25 +158,6 @@
       ]
     },
     {
-      "package": "org.apache.nifi.minifi.commons.schema.v1",
-      "implements": [{"name": "ConvertableSchema", "genericTypes": [{"name": "ProcessorSchema"}]}],
-      "name": "ProcessorSchemaV1",
-      "wrapperName": "Processors",
-      "concrete": false,
-      "fields": [
-        {"name": "name", "typeName": "String", "key": "name", "required": true},
-        {"name": "processorClass", "typeName": "String", "key": "class", "default": "", "required": true},
-        {"name": "schedulingStrategy", "typeName": "String", "key": "scheduling strategy", "required": true},
-        {"name": "schedulingPeriod", "typeName": "String", "key": "scheduling period", "default": "", "required": true},
-        {"name": "maxConcurrentTasks", "typeName": "Number", "key": "max concurrent tasks", "default": 1},
-        {"name": "penalizationPeriod", "typeName": "String", "key": "penalization period", "default": "30 sec"},
-        {"name": "yieldPeriod", "typeName": "String", "key": "yield period", "default": "1 sec"},
-        {"name": "runDurationNanos", "typeName": "Number", "key": "run duration nanos", "default": 0},
-        {"name": "autoTerminatedRelationshipsList", "type": {"name": "List", "genericTypes": [{"name": "String"}]}, "key": "auto-terminated relationships list", "default": "Collections.emptyList()"},
-        {"name": "properties", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name": "Object"}]}, "key": "Properties", "default": "Collections.emptyMap()"}
-      ]
-    },
-    {
       "imports": ["org.apache.nifi.scheduling.SchedulingStrategy"],
       "name": "ProcessorSchema",
       "wrapperName": "Processor(id: {id}, name: {name})",
@@ -194,6 +175,25 @@
         {"name": "autoTerminatedRelationshipsList", "type": {"name": "List", "genericTypes": [{"name": "String"}]}, "key": "auto-terminated relationships list", "default": "Collections.emptyList()"},
         {"name": "properties", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name": "Object"}]}, "key": "Properties", "default": "Collections.emptyMap()"},
         {"name": "annotationData", "typeName": "String", "key": "annotation data", "default": "", "omitIfEmpty": true}
+      ]
+    },
+    {
+      "package": "org.apache.nifi.minifi.commons.schema.v1",
+      "implements": [{"name": "ConvertableSchema", "genericTypes": [{"name": "ProcessorSchema"}]}],
+      "name": "ProcessorSchemaV1",
+      "wrapperName": "Processors",
+      "concrete": false,
+      "fields": [
+        {"name": "name", "typeName": "String", "key": "name", "required": true},
+        {"name": "processorClass", "typeName": "String", "key": "class", "default": "", "required": true},
+        {"name": "schedulingStrategy", "typeName": "String", "key": "scheduling strategy", "required": true},
+        {"name": "schedulingPeriod", "typeName": "String", "key": "scheduling period", "default": "", "required": true},
+        {"name": "maxConcurrentTasks", "typeName": "Number", "key": "max concurrent tasks", "default": 1},
+        {"name": "penalizationPeriod", "typeName": "String", "key": "penalization period", "default": "30 sec"},
+        {"name": "yieldPeriod", "typeName": "String", "key": "yield period", "default": "1 sec"},
+        {"name": "runDurationNanos", "typeName": "Number", "key": "run duration nanos", "default": 0},
+        {"name": "autoTerminatedRelationshipsList", "type": {"name": "List", "genericTypes": [{"name": "String"}]}, "key": "auto-terminated relationships list", "default": "Collections.emptyList()"},
+        {"name": "properties", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name": "Object"}]}, "key": "Properties", "default": "Collections.emptyMap()"}
       ]
     },
     {
@@ -252,6 +252,21 @@
         {"name": "proxyPort", "typeName": "Integer", "key": "proxy port", "default": null, "required": false},
         {"name": "proxyUser", "typeName": "String", "key": "proxy user", "default": ""},
         {"name": "proxyPassword", "typeName": "String", "key": "proxy password", "default": ""}
+      ]
+    },
+    {
+      "package": "org.apache.nifi.minifi.commons.schema.v1",
+      "implements": [{"name": "ConvertableSchema", "genericTypes": [{"name": "RemoteProcessGroupSchema"}]}],
+      "name": "RemoteProcessGroupSchemaV1",
+      "wrapperName": "RemoteProcessingGroup(name: {name})",
+      "concrete": false,
+      "fields": [
+        {"name": "name", "typeName": "String", "key": "name", "required": true},
+        {"name": "url", "typeName": "String", "key": "url", "required": true},
+        {"name": "inputPorts", "type": {"name": "List", "genericTypes": [{"name":"RemotePortSchema"}]}, "key": "Input Ports", "required": true},
+        {"name": "comment", "typeName": "String", "key": "comment", "default": ""},
+        {"name": "timeout", "typeName": "String", "key": "timeout", "default": "30 secs"},
+        {"name": "yieldPeriod", "typeName": "String", "key": "yield period", "default": "10 sec"}
       ]
     },
     {
