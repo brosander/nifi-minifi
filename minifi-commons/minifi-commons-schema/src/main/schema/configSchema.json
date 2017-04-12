@@ -36,6 +36,26 @@
       ]
     },
     {
+      "package": "org.apache.nifi.minifi.commons.schema.v1",
+      "implements": [{"name": "ConvertableSchema", "genericTypes": [{"name": "ConfigSchema"}]}],
+      "name": "ConfigSchemaV1",
+      "wrapperName": "top level",
+      "concrete": false,
+      "fields": [
+        {"name": "flowControllerProperties", "typeName": "FlowControllerSchema", "key": "Flow Controller", "required": false},
+        {"name": "coreProperties", "typeName": "CorePropertiesSchema", "key": "Core Properties", "required": false},
+        {"name": "flowfileRepositoryProperties", "typeName": "FlowFileRepositorySchema", "key": "FlowFile Repository", "required": false},
+        {"name": "contentRepositoryProperties", "typeName": "ContentRepositorySchema", "key": "Content Repository", "required": false},
+        {"name": "provenanceRepositorySchema", "typeName": "ProvenanceRepositorySchema", "key": "Provenance Repository", "required": false},
+        {"name": "componentStatusRepositoryProperties", "typeName": "ComponentStatusRepositorySchema", "key": "Component Status Repository", "required": false},
+        {"name": "securityProperties", "typeName": "SecurityPropertiesSchema", "key": "Security Properties", "required": false},
+        {"name": "processors", "type": {"name": "List", "genericTypes": [{"name":"ProcessorSchemaV1"}]}, "key": "Processors", "default": "Collections.emptyList()"},
+        {"name": "connections", "type": {"name": "List", "genericTypes": [{"name":"ConnectionSchemaV1"}]}, "key": "Connections", "default": "Collections.emptyList()"},
+        {"name": "remoteProcessingGroups", "type": {"name": "List", "genericTypes": [{"name":"RemoteProcessGroupSchemaV1"}]}, "key": "Remote Processing Groups", "default": "Collections.emptyList()"},
+        {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false, "instantiator": "getMapAsType(map, PROVENANCE_REPORTING_PROPERTIES_KEY, ProvenanceReportingSchema.class, WRAPPER_NAME, false, false)"}
+      ]
+    },
+    {
       "name": "ConnectionSchema",
       "wrapperName": "Connection(id: {id}, name: {name})",
       "writable": true,
