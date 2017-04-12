@@ -290,6 +290,23 @@
       ]
     },
     {
+      "package": "org.apache.nifi.minifi.commons.schema.v2",
+      "implements": [{"name": "ConvertableSchema", "genericTypes": [{"name": "RemoteProcessGroupSchema"}]}],
+      "name": "RemoteProcessGroupSchemaV2",
+      "wrapperName": "RemoteProcessGroup(id: {id}, name: {name})",
+      "concrete": false,
+      "fields": [
+        {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId"},
+        {"name": "name", "typeName": "String", "key": "name", "default": ""},
+        {"name": "url", "typeName": "String", "key": "url", "default": "", "required": true},
+        {"name": "inputPorts", "type": {"name": "List", "genericTypes": [{"name":"RemotePortSchema"}]}, "key": "Input Ports", "required": true},
+        {"name": "comment", "typeName": "String", "key": "comment", "default": ""},
+        {"name": "timeout", "typeName": "String", "key": "timeout", "default": "30 secs"},
+        {"name": "yieldPeriod", "typeName": "String", "key": "yield period", "default": "10 sec"},
+        {"name": "transportProtocol", "typeName": "String", "key": "transport protocol", "default": "RAW"}
+      ]
+    },
+    {
       "imports": ["org.apache.nifi.minifi.commons.schema.validators.SecurityPropertiesSchemaValidator"],
       "name": "SecurityPropertiesSchema",
       "wrapperName": "Security Properties",

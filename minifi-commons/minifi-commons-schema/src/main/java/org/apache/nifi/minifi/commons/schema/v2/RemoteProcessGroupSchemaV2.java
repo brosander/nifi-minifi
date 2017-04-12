@@ -17,87 +17,42 @@
 
 package org.apache.nifi.minifi.commons.schema.v2;
 
-import org.apache.nifi.minifi.commons.schema.RemotePortSchema;
 import org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema;
 import org.apache.nifi.minifi.commons.schema.TransportProtocolOptions;
-import org.apache.nifi.minifi.commons.schema.common.BaseSchema;
-import org.apache.nifi.minifi.commons.schema.common.BaseSchemaWithIdAndName;
-import org.apache.nifi.minifi.commons.schema.common.ConvertableSchema;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
-import static org.apache.nifi.minifi.commons.schema.AbstractRemoteProcessGroupSchema.COMMENT_DEFAULT;
-import static org.apache.nifi.minifi.commons.schema.AbstractRemoteProcessGroupSchema.TIMEOUT_DEFAULT;
-import static org.apache.nifi.minifi.commons.schema.AbstractRemoteProcessGroupSchema.TRANSPORT_PROTOCOL_DEFAULT;
-import static org.apache.nifi.minifi.commons.schema.AbstractRemoteProcessGroupSchema.YIELD_PERIOD_DEFAULT;
-import static org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema.TIMEOUT_KEY;
-import static org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema.TRANSPORT_PROTOCOL_KEY;
-import static org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema.URL_KEY;
-import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.COMMENT_KEY;
-import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.INPUT_PORTS_KEY;
-import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.YIELD_PERIOD_KEY;
-
-public class RemoteProcessGroupSchemaV2 extends BaseSchema implements ConvertableSchema<RemoteProcessGroupSchema> {
-    private BaseSchemaWithIdAndName idAndName;
-    private String url;
-    private List<RemotePortSchema> inputPorts;
-
-    private String comment = COMMENT_DEFAULT;
-    private String timeout = TIMEOUT_DEFAULT;
-    private String yieldPeriod = YIELD_PERIOD_DEFAULT;
-    private String transportProtocol = TRANSPORT_PROTOCOL_DEFAULT.name();
+public class RemoteProcessGroupSchemaV2 extends AbstractRemoteProcessGroupSchemaV2 {
 
     public RemoteProcessGroupSchemaV2(Map map) {
-        idAndName = new BaseSchemaWithIdAndName(map, "RemoteProcessGroup(id: {id}, name: {name})");
-
-        String wrapperName = idAndName.getWrapperName();
-        url = getRequiredKeyAsType(map, URL_KEY, String.class, wrapperName);
-        inputPorts = convertListToType(getRequiredKeyAsType(map, INPUT_PORTS_KEY, List.class, wrapperName), "input port", RemotePortSchema.class, INPUT_PORTS_KEY);
-        if (inputPorts != null) {
-            for (RemotePortSchema remoteInputPortSchema: inputPorts) {
-                addIssuesIfNotNull(remoteInputPortSchema);
-            }
+        super(map);
+        if (!map.containsKey(INPUT_PORTS_KEY)) {
+            addValidationIssue(INPUT_PORTS_KEY, getWrapperName(), IT_WAS_NOT_FOUND_AND_IT_IS_REQUIRED);
         }
 
-        comment = getOptionalKeyAsType(map, COMMENT_KEY, String.class, wrapperName, COMMENT_DEFAULT);
-        timeout = getOptionalKeyAsType(map, TIMEOUT_KEY, String.class, wrapperName, TIMEOUT_DEFAULT);
-        yieldPeriod = getOptionalKeyAsType(map, YIELD_PERIOD_KEY, String.class, wrapperName, YIELD_PERIOD_DEFAULT);
-        transportProtocol = getOptionalKeyAsType(map, TRANSPORT_PROTOCOL_KEY, String.class, wrapperName, TRANSPORT_PROTOCOL_DEFAULT.name());
-
         try {
-            TransportProtocolOptions.valueOf(transportProtocol);
+            TransportProtocolOptions.valueOf(getTransportProtocol());
         } catch (IllegalArgumentException e) {
-            addValidationIssue(TRANSPORT_PROTOCOL_KEY, wrapperName, "it must be either 'RAW' or 'HTTP' but is '" + transportProtocol + "'");
+            addValidationIssue(TRANSPORT_PROTOCOL_KEY, getWrapperName(), "it must be either 'RAW' or 'HTTP' but is '" + getTransportProtocol() + "'");
         }
     }
 
     @Override
     public RemoteProcessGroupSchema convert() {
-        Map<String, Object> result = idAndName.toMap();
-        result.put(URL_KEY, url);
-        result.put(COMMENT_KEY, comment);
-        result.put(TIMEOUT_KEY, timeout);
-        result.put(YIELD_PERIOD_KEY, yieldPeriod);
-        result.put(TRANSPORT_PROTOCOL_KEY, transportProtocol);
-        putListIfNotNull(result, INPUT_PORTS_KEY, inputPorts);
+        Map<String, Object> result = mapSupplier.get();
+        result.put(ID_KEY, getId());
+        result.put(NAME_KEY, getName());
+        result.put(URL_KEY, getUrl());
+        result.put(COMMENT_KEY, getComment());
+        result.put(TIMEOUT_KEY, getTimeout());
+        result.put(YIELD_PERIOD_KEY, getYieldPeriod());
+        result.put(TRANSPORT_PROTOCOL_KEY, getTransportProtocol());
+        putListIfNotNull(result, INPUT_PORTS_KEY, getInputPorts());
         return new RemoteProcessGroupSchema(result);
-    }
-
-    @Override
-    public List<String> getValidationIssues() {
-        List<String> validationIssues = new ArrayList<>(idAndName.getValidationIssues());
-        validationIssues.addAll(super.getValidationIssues());
-        return validationIssues;
     }
 
     @Override
     public int getVersion() {
         return ConfigSchemaV2.CONFIG_VERSION;
-    }
-
-    public String getTransportProtocol() {
-        return transportProtocol;
     }
 }
