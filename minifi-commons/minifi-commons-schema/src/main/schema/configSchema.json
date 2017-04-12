@@ -53,6 +53,23 @@
       ]
     },
     {
+      "package": "org.apache.nifi.minifi.commons.schema.v1",
+      "implements": [{"name": "ConvertableSchema", "genericTypes": [{"name": "ConnectionSchema"}]}],
+      "name": "ConnectionSchemaV1",
+      "wrapperName": "Connections",
+      "concrete": false,
+      "fields": [
+        {"name": "name", "typeName": "String", "key": "name", "required": true},
+        {"name": "sourceName", "typeName": "String", "key": "source name", "required": true},
+        {"name": "sourceRelationshipName", "typeName": "String", "key": "source relationship name", "required": true},
+        {"name": "destinationName", "typeName": "String", "key": "destination name", "required": true},
+        {"name": "maxWorkQueueSize", "typeName": "Number", "key": "max work queue size", "default": 0},
+        {"name": "maxWorkQueueDataSize", "typeName": "String", "key": "max work queue data size", "default": "0 MB"},
+        {"name": "flowfileExpiration", "typeName": "String", "key": "flowfile expiration", "default": "0 sec"},
+        {"name": "queuePrioritizerClass", "typeName": "String", "key": "queue prioritizer class", "default": ""}
+      ]
+    },
+    {
       "name": "ContentRepositorySchema",
       "wrapperName": "Content Repository",
       "writable": true,
