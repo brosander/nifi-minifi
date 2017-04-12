@@ -19,16 +19,38 @@
 
 package org.apache.nifi.minifi.commons.schema.common;
 
+import java.util.List;
 import java.util.Map;
 
+import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.ID_KEY;
 import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.NAME_KEY;
 
-public class BaseSchemaWithIdAndName extends BaseSchemaWithId implements WritableSchema {
+public class BaseSchemaWithIdAndName extends BaseSchema implements WritableSchema {
+    private final String wrapperName;
+    private String id;
     private String name;
 
     public BaseSchemaWithIdAndName(Map map, String wrapperName) {
-        super(map, wrapperName);
-        name = getOptionalKeyAsType(map, NAME_KEY, String.class, getWrapperName(), "");
+        this.id = getId(map, wrapperName);
+        this.wrapperName = wrapperName;
+        this.name = getOptionalKeyAsType(map, NAME_KEY, String.class, getWrapperName(), "");
+    }
+
+    protected String getId(Map map, String wrapperName) {
+        return getOptionalKeyAsType(map, ID_KEY, String.class, wrapperName, "");
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getWrapperName() {
+        return wrapperName.replace("{id}", StringUtil.isNullOrEmpty(id) ? "unknown" : id)
+                .replace("{name}", StringUtil.isNullOrEmpty(name) ? "unknown" : name);
     }
 
     public String getName() {
@@ -39,14 +61,22 @@ public class BaseSchemaWithIdAndName extends BaseSchemaWithId implements Writabl
         this.name = name;
     }
 
-    public String getWrapperName() {
-        return super.getWrapperName().replace("{name}", StringUtil.isNullOrEmpty(name) ? "unknown" : name);
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = mapSupplier.get();
+        map.put(ID_KEY, id);
+        map.put(NAME_KEY, name);
+        return map;
     }
 
     @Override
-    public Map<String, Object> toMap() {
-        Map<String, Object> map = super.toMap();
-        map.put(NAME_KEY, name);
-        return map;
+    public List<String> getValidationIssues() {
+        List<String> validationIssues = super.getValidationIssues();
+        if (StringUtil.isNullOrEmpty(id)) {
+            validationIssues.add(getIssueText(CommonPropertyKeys.ID_KEY, getWrapperName(), IT_WAS_NOT_FOUND_AND_IT_IS_REQUIRED));
+        } else if (!isValidId(id)) {
+            validationIssues.add(getIssueText(CommonPropertyKeys.ID_KEY, getWrapperName(), "Id value of " + id + " is not a valid UUID"));
+        }
+        return validationIssues;
     }
 }
