@@ -32,7 +32,7 @@
         {"name": "securityProperties", "typeName": "SecurityPropertiesSchema", "key": "Security Properties", "required": false},
         {"name": "processGroupSchema", "typeName": "ProcessGroupSchema", "required": false, "instantiator": "new ProcessGroupSchema(map, WRAPPER_NAME)", "toMap":"result.putAll(processGroupSchema.toMap());"},
         {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false, "instantiator": "getMapAsType(map, PROVENANCE_REPORTING_PROPERTIES_KEY, ProvenanceReportingSchema.class, WRAPPER_NAME, false, false)"},
-        {"name": "nifiPropertiesOverrides", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name":"String"}]}, "key": "NiFi Properties Overrides", "default": "Collections.emptyMap()"}
+        {"name": "nifiPropertiesOverrides", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name":"String"}]}, "key": "NiFi Properties Overrides", "default": {}}
       ]
     },
     {
@@ -49,9 +49,9 @@
         {"name": "provenanceRepositorySchema", "typeName": "ProvenanceRepositorySchema", "key": "Provenance Repository", "required": false},
         {"name": "componentStatusRepositoryProperties", "typeName": "ComponentStatusRepositorySchema", "key": "Component Status Repository", "required": false},
         {"name": "securityProperties", "typeName": "SecurityPropertiesSchema", "key": "Security Properties", "required": false},
-        {"name": "processors", "type": {"name": "List", "genericTypes": [{"name":"ProcessorSchemaV1"}]}, "key": "Processors", "default": "Collections.emptyList()"},
-        {"name": "connections", "type": {"name": "List", "genericTypes": [{"name":"ConnectionSchemaV1"}]}, "key": "Connections", "default": "Collections.emptyList()"},
-        {"name": "remoteProcessingGroups", "type": {"name": "List", "genericTypes": [{"name":"RemoteProcessGroupSchemaV1"}]}, "key": "Remote Processing Groups", "default": "Collections.emptyList()"},
+        {"name": "processors", "type": {"name": "List", "genericTypes": [{"name":"ProcessorSchemaV1"}]}, "key": "Processors", "default": []},
+        {"name": "connections", "type": {"name": "List", "genericTypes": [{"name":"ConnectionSchemaV1"}]}, "key": "Connections", "default": []},
+        {"name": "remoteProcessingGroups", "type": {"name": "List", "genericTypes": [{"name":"RemoteProcessGroupSchemaV1"}]}, "key": "Remote Processing Groups", "default": []},
         {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false, "instantiator": "getMapAsType(map, PROVENANCE_REPORTING_PROPERTIES_KEY, ProvenanceReportingSchema.class, WRAPPER_NAME, false, false)"}
       ]
     },
@@ -82,7 +82,7 @@
         {"name": "id", "typeName": "String", "key": "id", "default": "", "required": true, "validator": "validateId"},
         {"name": "name", "typeName": "String", "key": "name", "default": ""},
         {"name": "sourceId", "typeName": "String", "key": "source id", "default": "", "required": true},
-        {"name": "sourceRelationshipNames", "type": {"name": "List", "genericTypes": [{"name": "String"}]}, "key": "source relationship names", "default": "Collections.emptyList()"},
+        {"name": "sourceRelationshipNames", "type": {"name": "List", "genericTypes": [{"name": "String"}]}, "key": "source relationship names", "default": []},
         {"name": "destinationId", "typeName": "String", "key": "destination id", "default": "", "required": true},
         {"name": "maxWorkQueueSize", "typeName": "long", "key": "max work queue size", "default": 0},
         {"name": "maxWorkQueueDataSize", "typeName": "String", "key": "max work queue data size", "default": "0 MB"},
@@ -101,7 +101,7 @@
         {"name": "sourceName", "typeName": "String", "key": "source name", "required": true},
         {"name": "sourceRelationshipName", "typeName": "String", "key": "source relationship name", "required": true},
         {"name": "destinationName", "typeName": "String", "key": "destination name", "required": true},
-        {"name": "maxWorkQueueSize", "typeName": "Number", "key": "max work queue size", "default": 0},
+        {"name": "maxWorkQueueSize", "typeName": "long", "key": "max work queue size", "default": 0},
         {"name": "maxWorkQueueDataSize", "typeName": "String", "key": "max work queue data size", "default": "0 MB"},
         {"name": "flowfileExpiration", "typeName": "String", "key": "flowfile expiration", "default": "0 sec"},
         {"name": "queuePrioritizerClass", "typeName": "String", "key": "queue prioritizer class", "default": ""}
@@ -125,7 +125,7 @@
         {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId"},
         {"name": "name", "typeName": "String", "key": "name", "default": ""},
         {"name": "serviceClass", "typeName": "String", "key": "type", "required": true},
-        {"name": "properties", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name": "Object"}]}, "key": "Properties", "default": "Collections.emptyMap()"},
+        {"name": "properties", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name": "String"}]}, "key": "Properties", "default": {}},
         {"name": "annotationData", "typeName": "String", "key": "annotation data", "default": "", "omitIfEmpty": true}
       ]
     },
@@ -185,14 +185,14 @@
         {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId", "default": "Root-Group"},
         {"name": "name", "typeName": "String", "key": "name", "default": ""},
         {"name": "comment", "typeName": "String", "key": "comment", "default": "", "omitIfEmpty": true},
-        {"name": "processors", "type": {"name": "List", "genericTypes": [{"name":"ProcessorSchema"}]}, "key": "Processors", "default": "Collections.emptyList()"},
-        {"name": "controllerServices", "type": {"name": "List", "genericTypes": [{"name":"ControllerServiceSchema"}]}, "key": "Controller Services", "default": "Collections.emptyList()"},
-        {"name": "funnels", "type": {"name": "List", "genericTypes": [{"name":"FunnelSchema"}]}, "key": "Funnels", "default": "Collections.emptyList()"},
-        {"name": "connections", "type": {"name": "List", "genericTypes": [{"name":"ConnectionSchema"}]}, "key": "Connections", "default": "Collections.emptyList()"},
-        {"name": "remoteProcessGroups", "type": {"name": "List", "genericTypes": [{"name":"RemoteProcessGroupSchema"}]}, "key": "Remote Process Groups", "default": "Collections.emptyList()"},
-        {"name": "inputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Input Ports", "default": "Collections.emptyList()", "instantiator": "getOptionalKeyAsList(map, INPUT_PORT_SCHEMAS_KEY, m -> new PortSchema(m, \"InputPort(id: {id}, name: {name})\"), getWrapperName())"},
-        {"name": "outputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Output Ports", "default": "Collections.emptyList()", "instantiator": "getOptionalKeyAsList(map, OUTPUT_PORT_SCHEMAS_KEY, m -> new PortSchema(m, \"OutputPort(id: {id}, name: {name})\"), getWrapperName())"},
-        {"name": "processGroupSchemas", "type": {"name": "List", "genericTypes": [{"name":"ProcessGroupSchema"}]}, "key": "Process Groups", "default": "Collections.emptyList()", "instantiator": "getOptionalKeyAsList(map, PROCESS_GROUP_SCHEMAS_KEY, m -> new ProcessGroupSchema(m, \"ProcessGroup(id: {id}, name: {name})\"), getWrapperName())"}
+        {"name": "processors", "type": {"name": "List", "genericTypes": [{"name":"ProcessorSchema"}]}, "key": "Processors", "default": []},
+        {"name": "controllerServices", "type": {"name": "List", "genericTypes": [{"name":"ControllerServiceSchema"}]}, "key": "Controller Services", "default": []},
+        {"name": "funnels", "type": {"name": "List", "genericTypes": [{"name":"FunnelSchema"}]}, "key": "Funnels", "default": []},
+        {"name": "connections", "type": {"name": "List", "genericTypes": [{"name":"ConnectionSchema"}]}, "key": "Connections", "default": []},
+        {"name": "remoteProcessGroups", "type": {"name": "List", "genericTypes": [{"name":"RemoteProcessGroupSchema"}]}, "key": "Remote Process Groups", "default": []},
+        {"name": "inputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Input Ports", "default": [], "instantiator": "getOptionalKeyAsList(map, INPUT_PORT_SCHEMAS_KEY, m -> new PortSchema(m, \"InputPort(id: {id}, name: {name})\"), getWrapperName())"},
+        {"name": "outputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Output Ports", "default": [], "instantiator": "getOptionalKeyAsList(map, OUTPUT_PORT_SCHEMAS_KEY, m -> new PortSchema(m, \"OutputPort(id: {id}, name: {name})\"), getWrapperName())"},
+        {"name": "processGroupSchemas", "type": {"name": "List", "genericTypes": [{"name":"ProcessGroupSchema"}]}, "key": "Process Groups", "default": [], "instantiator": "getOptionalKeyAsList(map, PROCESS_GROUP_SCHEMAS_KEY, m -> new ProcessGroupSchema(m, \"ProcessGroup(id: {id}, name: {name})\"), getWrapperName())"}
       ]
     },
     {
@@ -205,13 +205,13 @@
         {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId", "default": "Root-Group"},
         {"name": "name", "typeName": "String", "key": "name", "default": ""},
         {"name": "comment", "typeName": "String", "key": "comment", "default": "", "omitIfEmpty": true},
-        {"name": "processors", "type": {"name": "List", "genericTypes": [{"name":"ProcessorSchema"}]}, "key": "Processors", "default": "Collections.emptyList()"},
-        {"name": "funnels", "type": {"name": "List", "genericTypes": [{"name":"FunnelSchema"}]}, "key": "Funnels", "default": "Collections.emptyList()"},
-        {"name": "connections", "type": {"name": "List", "genericTypes": [{"name":"ConnectionSchema"}]}, "key": "Connections", "default": "Collections.emptyList()"},
-        {"name": "remoteProcessGroups", "type": {"name": "List", "genericTypes": [{"name":"RemoteProcessGroupSchema"}]}, "key": "Remote Process Groups", "default": "Collections.emptyList()"},
-        {"name": "processGroupSchemas", "type": {"name": "List", "genericTypes": [{"name":"ProcessGroupSchemaV2"}]}, "key": "Process Groups", "default": "Collections.emptyList()", "instantiator": "getOptionalKeyAsList(map, PROCESS_GROUP_SCHEMAS_KEY, m -> new ProcessGroupSchemaV2(m, \"ProcessGroup(id: {id}, name: {name})\"), getWrapperName())"},
-        {"name": "inputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Input Ports", "default": "Collections.emptyList()", "instantiator": "getOptionalKeyAsList(map, INPUT_PORT_SCHEMAS_KEY, m -> new PortSchema(m, \"InputPort(id: {id}, name: {name})\"), getWrapperName())"},
-        {"name": "outputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Output Ports", "default": "Collections.emptyList()", "instantiator": "getOptionalKeyAsList(map, OUTPUT_PORT_SCHEMAS_KEY, m -> new PortSchema(m, \"OutputPort(id: {id}, name: {name})\"), getWrapperName())"}
+        {"name": "processors", "type": {"name": "List", "genericTypes": [{"name":"ProcessorSchema"}]}, "key": "Processors", "default": []},
+        {"name": "funnels", "type": {"name": "List", "genericTypes": [{"name":"FunnelSchema"}]}, "key": "Funnels", "default": []},
+        {"name": "connections", "type": {"name": "List", "genericTypes": [{"name":"ConnectionSchema"}]}, "key": "Connections", "default": []},
+        {"name": "remoteProcessGroups", "type": {"name": "List", "genericTypes": [{"name":"RemoteProcessGroupSchema"}]}, "key": "Remote Process Groups", "default": []},
+        {"name": "processGroupSchemas", "type": {"name": "List", "genericTypes": [{"name":"ProcessGroupSchemaV2"}]}, "key": "Process Groups", "default": [], "instantiator": "getOptionalKeyAsList(map, PROCESS_GROUP_SCHEMAS_KEY, m -> new ProcessGroupSchemaV2(m, \"ProcessGroup(id: {id}, name: {name})\"), getWrapperName())"},
+        {"name": "inputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Input Ports", "default": [], "instantiator": "getOptionalKeyAsList(map, INPUT_PORT_SCHEMAS_KEY, m -> new PortSchema(m, \"InputPort(id: {id}, name: {name})\"), getWrapperName())"},
+        {"name": "outputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Output Ports", "default": [], "instantiator": "getOptionalKeyAsList(map, OUTPUT_PORT_SCHEMAS_KEY, m -> new PortSchema(m, \"OutputPort(id: {id}, name: {name})\"), getWrapperName())"}
       ]
     },
     {
@@ -229,8 +229,8 @@
         {"name": "penalizationPeriod", "typeName": "String", "key": "penalization period", "default": "30 sec"},
         {"name": "yieldPeriod", "typeName": "String", "key": "yield period", "default": "1 sec"},
         {"name": "runDurationNanos", "typeName": "long", "key": "run duration nanos", "default": 0},
-        {"name": "autoTerminatedRelationshipsList", "type": {"name": "List", "genericTypes": [{"name": "String"}]}, "key": "auto-terminated relationships list", "default": "Collections.emptyList()"},
-        {"name": "properties", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name": "Object"}]}, "key": "Properties", "default": "Collections.emptyMap()"},
+        {"name": "autoTerminatedRelationshipsList", "type": {"name": "List", "genericTypes": [{"name": "String"}]}, "key": "auto-terminated relationships list", "default": []},
+        {"name": "properties", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name": "String"}]}, "key": "Properties", "default": {}},
         {"name": "annotationData", "typeName": "String", "key": "annotation data", "default": "", "omitIfEmpty": true}
       ]
     },
@@ -245,12 +245,12 @@
         {"name": "processorClass", "typeName": "String", "key": "class", "default": "", "required": true},
         {"name": "schedulingStrategy", "typeName": "String", "key": "scheduling strategy", "required": true},
         {"name": "schedulingPeriod", "typeName": "String", "key": "scheduling period", "default": "", "required": true},
-        {"name": "maxConcurrentTasks", "typeName": "Number", "key": "max concurrent tasks", "default": 1},
+        {"name": "maxConcurrentTasks", "typeName": "int", "key": "max concurrent tasks", "default": 1},
         {"name": "penalizationPeriod", "typeName": "String", "key": "penalization period", "default": "30 sec"},
         {"name": "yieldPeriod", "typeName": "String", "key": "yield period", "default": "1 sec"},
-        {"name": "runDurationNanos", "typeName": "Number", "key": "run duration nanos", "default": 0},
-        {"name": "autoTerminatedRelationshipsList", "type": {"name": "List", "genericTypes": [{"name": "String"}]}, "key": "auto-terminated relationships list", "default": "Collections.emptyList()"},
-        {"name": "properties", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name": "Object"}]}, "key": "Properties", "default": "Collections.emptyMap()"}
+        {"name": "runDurationNanos", "typeName": "long", "key": "run duration nanos", "default": 0},
+        {"name": "autoTerminatedRelationshipsList", "type": {"name": "List", "genericTypes": [{"name": "String"}]}, "key": "auto-terminated relationships list", "default": []},
+        {"name": "properties", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name": "String"}]}, "key": "Properties", "default": {}}
       ]
     },
     {
@@ -299,8 +299,8 @@
         {"name": "id", "typeName": "String", "key": "id", "required": true, "validator": "validateId"},
         {"name": "name", "typeName": "String", "key": "name", "default": ""},
         {"name": "url", "typeName": "String", "key": "url", "default": "", "required": true},
-        {"name": "inputPorts", "type": {"name": "List", "genericTypes": [{"name":"RemotePortSchema"}]}, "key": "Input Ports", "default": "Collections.emptyList()"},
-        {"name": "outputPorts", "type": {"name": "List", "genericTypes": [{"name":"RemotePortSchema"}]}, "key": "Output Ports", "default": "Collections.emptyList()"},
+        {"name": "inputPorts", "type": {"name": "List", "genericTypes": [{"name":"RemotePortSchema"}]}, "key": "Input Ports", "default": []},
+        {"name": "outputPorts", "type": {"name": "List", "genericTypes": [{"name":"RemotePortSchema"}]}, "key": "Output Ports", "default": []},
         {"name": "comment", "typeName": "String", "key": "comment", "default": ""},
         {"name": "timeout", "typeName": "String", "key": "timeout", "default": "30 secs"},
         {"name": "yieldPeriod", "typeName": "String", "key": "yield period", "default": "10 sec"},

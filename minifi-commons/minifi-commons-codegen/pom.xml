@@ -28,6 +28,10 @@ limitations under the License.
 
     <dependencies>
         <dependency>
+            <groupId>org.apache.nifi</groupId>
+            <artifactId>nifi-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
             <version>2.0</version>
@@ -62,9 +66,18 @@ limitations under the License.
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <configuration>
+                    <excludes combine.children="append">
+                        <exclude>src/main/resources/avro.vm</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
-                <version>3.2</version>
+                <version>3.5</version>
                 <configuration>
                     <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
                 </configuration>
@@ -74,6 +87,9 @@ limitations under the License.
                         <goals>
                             <goal>descriptor</goal>
                         </goals>
+                        <configuration>
+                            <mojoDependencies>org.apache.nifi.minifi:minifi-commons-codegen</mojoDependencies>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

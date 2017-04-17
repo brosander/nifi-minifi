@@ -359,7 +359,7 @@ public final class ConfigTransformer {
 
             addTextElement(serviceElement, "enabled", "true");
 
-            Map<String, Object> attributes = controllerServiceSchema.getProperties();
+            Map<String, String> attributes = controllerServiceSchema.getProperties();
 
             addConfiguration(serviceElement, attributes);
 
@@ -521,13 +521,12 @@ public final class ConfigTransformer {
         }
     }
 
-    protected static void addConfiguration(final Element element, Map<String, Object> elementConfig) {
+    protected static void addConfiguration(final Element element, Map<String, ?> elementConfig) {
         final Document doc = element.getOwnerDocument();
         if (elementConfig == null) {
             return;
         }
-        for (final Map.Entry<String, Object> entry : elementConfig.entrySet()) {
-
+        for (final Map.Entry<String, ?> entry : elementConfig.entrySet()) {
             final Element propElement = doc.createElement("property");
             addTextElement(propElement, "name", entry.getKey());
             if (entry.getValue() != null) {

@@ -38,13 +38,6 @@ public class FieldDefinition {
         this.name = name;
     }
 
-    public String getDefaultLiteral() {
-        if (String.class.getSimpleName().equals(type.getDeclaration()) && defaultValue != null) {
-            return "\"" + String.valueOf(defaultValue) + "\"";
-        }
-        return String.valueOf(defaultValue);
-    }
-
     public TypeDefinition getType() {
         return type;
     }

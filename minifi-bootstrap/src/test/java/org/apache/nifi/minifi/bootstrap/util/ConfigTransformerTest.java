@@ -347,7 +347,7 @@ public class ConfigTransformerTest {
         assertEquals(connectionSchema.getQueuePrioritizerClass(), getText(element, "queuePrioritizerClass"));
     }
 
-    private void testProperties(Element element, Map<String, Object> expected) throws XPathExpressionException {
+    private void testProperties(Element element, Map<String, String> expected) throws XPathExpressionException {
         NodeList propertyElements = (NodeList) xPathFactory.newXPath().evaluate("property", element, XPathConstants.NODESET);
         Map<String, String> properties = new HashMap<>();
         for (int i = 0; i < propertyElements.getLength(); i++) {

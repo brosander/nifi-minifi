@@ -20,6 +20,7 @@ package org.apache.nifi.minifi.codegen.schema;
 import java.util.List;
 
 public class EnumDefinition {
+    private String packageName;
     private SchemaDefinition parent;
     private String name;
     private boolean caseSensitive;
@@ -51,6 +52,14 @@ public class EnumDefinition {
 
     public boolean isCaseSensitive() {
         return caseSensitive;
+    }
+
+    public String getPackage() {
+        return packageName == null ? parent.getPackage() : packageName;
+    }
+
+    public void setPackage(String packageName) {
+        this.packageName = packageName;
     }
 
     public void setCaseSensitive(boolean caseSensitive) {

@@ -20,6 +20,8 @@ package org.apache.nifi.minifi.codegen.schema;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -46,6 +48,7 @@ public class SchemaDefinition extends BaseDefinitionWithImports {
     };
     private Map<String, EnumDefinition> enums = Collections.emptyMap();
     private Map<String, ClassDefinition> classes = Collections.emptyMap();
+    private Comparator<ClassDefinition> classDefinitionComparator;
 
     public SchemaDefinition() {
         setPackage("org.apache.nifi.minifi.commons.schema");
@@ -62,7 +65,15 @@ public class SchemaDefinition extends BaseDefinitionWithImports {
     }
 
     public List<ClassDefinition> getClasses() {
-        return new ArrayList<>(classes.values());
+        List<ClassDefinition> result = new ArrayList<>(classes.values());
+        if (classDefinitionComparator != null) {
+            result.sort(classDefinitionComparator);
+        }
+        return result;
+    }
+
+    public void setClassComparator(Comparator<ClassDefinition> comparator) {
+        classDefinitionComparator = comparator;
     }
 
     public ClassDefinition getClass(String name) {
@@ -99,6 +110,10 @@ public class SchemaDefinition extends BaseDefinitionWithImports {
 
     public List<EnumDefinition> getEnums() {
         return new ArrayList<>(enums.values());
+    }
+
+    public Map<String, EnumDefinition> getEnumMap() {
+        return new HashMap<>(enums);
     }
 
     public void setEnums(List<EnumDefinition> enums) {

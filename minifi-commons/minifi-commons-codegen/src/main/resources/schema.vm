@@ -51,7 +51,7 @@ public#if(!$class.concrete) abstract#end class $actualClassname extends $class.e
 
 #foreach($field in $class.fields)
 #if ($field.hasDefault() || $field.required)
-    public static final $field.type.declaration ${underscoreNames[$field.name]}_DEFAULT = #if($field.type.enum && $field.default)${field.type.name}.#end${field.defaultLiteral};
+    public static final $field.type.declaration ${underscoreNames[$field.name]}_DEFAULT = #if($field.type.enum && $field.default)${field.type.name}.#end${schema.getDefaultLiteral($field)};
 #end
 #end
 

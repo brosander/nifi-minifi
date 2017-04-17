@@ -92,6 +92,10 @@ public class ClassDefinition extends BaseDefinitionWithImports {
         this.parent = parent;
     }
 
+    public SchemaDefinition getParent() {
+        return parent;
+    }
+
     public String getWrapperName() {
         return wrapperName;
     }
