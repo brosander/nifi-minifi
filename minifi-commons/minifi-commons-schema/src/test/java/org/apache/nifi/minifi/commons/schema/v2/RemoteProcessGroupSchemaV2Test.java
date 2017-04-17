@@ -41,7 +41,7 @@ public class RemoteProcessGroupSchemaV2Test {
     @Test
     public void testInputPortsRootGroup() {
         Map<String, Object> map = new HashMap<>();
-        map.put(CommonPropertyKeys.INPUT_PORTS_KEY, Arrays.asList(createPortSchema("f94d2469-39f8-4f07-a0d8-acd9396f639e", "testName", ConfigSchema.WRAPPER_NAME).toMap()));
+        map.put(CommonPropertyKeys.INPUT_PORTS_KEY, Arrays.asList(createPortSchema("f94d2469-39f8-4f07-a0d8-acd9396f639e", "testName", ConfigSchema.TOP_LEVEL).toMap()));
         map.put(RemoteProcessGroupSchema.URL_KEY, "http://localhost:8080/nifi");
         map.put(CommonPropertyKeys.ID_KEY, "a58d2fab-7efe-4cb7-8224-12a60bd8003d");
         validateIssuesNumMatches(0, new RemoteProcessGroupSchemaV2(map));
@@ -50,7 +50,7 @@ public class RemoteProcessGroupSchemaV2Test {
     @Test
     public void testTransportProtocol() {
         Map<String, Object> map = new HashMap<>();
-        map.put(CommonPropertyKeys.INPUT_PORTS_KEY, Arrays.asList(createPortSchema("f94d2469-39f8-4f07-a0d8-acd9396f639e", "testName", ConfigSchema.WRAPPER_NAME).toMap()));
+        map.put(CommonPropertyKeys.INPUT_PORTS_KEY, Arrays.asList(createPortSchema("f94d2469-39f8-4f07-a0d8-acd9396f639e", "testName", ConfigSchema.TOP_LEVEL).toMap()));
         map.put(RemoteProcessGroupSchema.URL_KEY, "http://localhost:8080/nifi");
         map.put(CommonPropertyKeys.ID_KEY, "a58d2fab-7efe-4cb7-8224-12a60bd8003d");
         map.put(RemoteProcessGroupSchema.TRANSPORT_PROTOCOL_KEY, "not valid");

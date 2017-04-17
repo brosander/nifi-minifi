@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ConfigSchema extends AbstractConfigSchema implements ConvertableSchema<ConfigSchema> {
+    public static final String TOP_LEVEL = "top level";
     public static final int CONFIG_VERSION = 3;
     public static final String VERSION = "MiNiFi Config Version";
     public static final String FOUND_THE_FOLLOWING_DUPLICATE_REMOTE_INPUT_PORT_IDS = "Found the following duplicate remote input port ids: ";

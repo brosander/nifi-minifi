@@ -30,7 +30,6 @@ public class ClassDefinition extends BaseDefinitionWithImports {
     private SchemaDefinition parent;
     private String wrapperName;
     private String name;
-    private String extendsClass = "BaseSchema";
     private boolean writable;
     private boolean concrete = true;
     private Set<TypeDefinition> implementsClasses = Collections.emptySet();
@@ -66,18 +65,6 @@ public class ClassDefinition extends BaseDefinitionWithImports {
             result.add(implementsClass.getDeclaration());
         }
         return result.stream().sorted().collect(Collectors.joining(", "));
-    }
-
-    public void setExtends(String extendsClass) {
-        this.extendsClass = extendsClass;
-    }
-
-    public String getExtends() {
-        return getCanonicalName(extendsClass).getName();
-    }
-
-    public void setFields(List<FieldDefinition> fields) {
-        this.fields = fields;
     }
 
     public void setWritable(boolean writable) {
@@ -122,9 +109,7 @@ public class ClassDefinition extends BaseDefinitionWithImports {
 
     public List<String> getClassImports() {
         Set<CanonicalName> imports = new HashSet<>();
-        if (extendsClass != null) {
-            imports.add(getCanonicalName(extendsClass));
-        }
+        imports.add(getCanonicalName("BaseSchema"));
         if (writable) {
             imports.add(getCanonicalName("org.apache.nifi.minifi.commons.schema.common.WritableSchema"));
         }

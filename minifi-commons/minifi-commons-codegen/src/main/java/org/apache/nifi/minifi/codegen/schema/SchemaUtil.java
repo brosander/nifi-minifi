@@ -19,8 +19,16 @@ package org.apache.nifi.minifi.codegen.schema;
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class SchemaUtil {
+    public String getActualClassname(ClassDefinition classDefinition) {
+        if (classDefinition.isConcrete()) {
+            return classDefinition.getName();
+        }
+        return "Abstract" + classDefinition.getName();
+    }
+
     public String getDefaultLiteral(FieldDefinition fieldDefinition) {
         TypeDefinition type = fieldDefinition.getType();
         Object defaultValue = fieldDefinition.getDefault();
@@ -42,5 +50,17 @@ public class SchemaUtil {
             }
         }
         return String.valueOf(defaultValue);
+    }
+
+    public String getWrapperNameCreator(ClassDefinition classDefinition) {
+        String originalWrapperName = "\"" + classDefinition.getWrapperName() + "\"";
+        String wrapperName = originalWrapperName;
+        for (FieldDefinition fieldDefinition : classDefinition.getFields()) {
+            wrapperName = wrapperName.replaceAll(Pattern.quote("{" + fieldDefinition.getName() + "}"), "\").append(" + fieldDefinition.getName() + ").append(\"");
+        }
+        if (originalWrapperName.equals(wrapperName)) {
+            return originalWrapperName;
+        }
+        return "new StringBuilder(" + wrapperName + ").toString()";
     }
 }

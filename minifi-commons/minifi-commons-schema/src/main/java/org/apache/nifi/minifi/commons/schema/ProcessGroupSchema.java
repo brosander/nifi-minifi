@@ -35,13 +35,13 @@ public class ProcessGroupSchema extends AbstractProcessGroupSchema implements Co
     public static final String PROCESS_GROUPS_KEY = "Process Groups";
 
     public ProcessGroupSchema() {
-        this(Collections.emptyMap(), ConfigSchema.WRAPPER_NAME);
+        this(Collections.emptyMap(), ConfigSchema.TOP_LEVEL);
     }
 
     public ProcessGroupSchema(Map map, String wrapperName) {
         super(map, wrapperName);
 
-        if (ConfigSchema.WRAPPER_NAME.equals(wrapperName)) {
+        if (ConfigSchema.TOP_LEVEL.equals(wrapperName)) {
             if (getInputPortSchemas().size() > 0) {
                 addValidationIssue(INPUT_PORTS_KEY, wrapperName, "must be empty in root group as external input/output ports are currently unsupported");
             }

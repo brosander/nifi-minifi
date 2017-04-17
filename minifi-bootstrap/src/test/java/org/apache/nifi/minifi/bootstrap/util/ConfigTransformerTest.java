@@ -81,7 +81,7 @@ public class ConfigTransformerTest {
 
     @Test
     public void testNullQueuePrioritizerNotWritten() throws ConfigurationChangeException, XPathExpressionException {
-        ConfigTransformer.addConnection(config, new ConnectionSchema(Collections.emptyMap()), new ParentGroupIdResolver(new ProcessGroupSchema(Collections.emptyMap(), ConfigSchema.WRAPPER_NAME)));
+        ConfigTransformer.addConnection(config, new ConnectionSchema(Collections.emptyMap()), new ParentGroupIdResolver(new ProcessGroupSchema(Collections.emptyMap(), ConfigSchema.TOP_LEVEL)));
         XPath xpath = xPathFactory.newXPath();
         String expression = "connection/queuePrioritizerClass";
         assertNull(xpath.evaluate(expression, config, XPathConstants.NODE));
@@ -92,7 +92,7 @@ public class ConfigTransformerTest {
         Map<String, Object> map = new HashMap<>();
         map.put(ConnectionSchema.QUEUE_PRIORITIZER_CLASS_KEY, "");
 
-        ConfigTransformer.addConnection(config, new ConnectionSchema(map), new ParentGroupIdResolver(new ProcessGroupSchema(Collections.emptyMap(), ConfigSchema.WRAPPER_NAME)));
+        ConfigTransformer.addConnection(config, new ConnectionSchema(map), new ParentGroupIdResolver(new ProcessGroupSchema(Collections.emptyMap(), ConfigSchema.TOP_LEVEL)));
         XPath xpath = xPathFactory.newXPath();
         String expression = "connection/queuePrioritizerClass";
         assertNull(xpath.evaluate(expression, config, XPathConstants.NODE));
@@ -103,7 +103,7 @@ public class ConfigTransformerTest {
         Map<String, Object> map = new HashMap<>();
         map.put(ConnectionSchema.QUEUE_PRIORITIZER_CLASS_KEY, "org.apache.nifi.prioritizer.FirstInFirstOutPrioritizer");
 
-        ConfigTransformer.addConnection(config, new ConnectionSchema(map), new ParentGroupIdResolver(new ProcessGroupSchema(Collections.emptyMap(), ConfigSchema.WRAPPER_NAME)));
+        ConfigTransformer.addConnection(config, new ConnectionSchema(map), new ParentGroupIdResolver(new ProcessGroupSchema(Collections.emptyMap(), ConfigSchema.TOP_LEVEL)));
         XPath xpath = xPathFactory.newXPath();
         String expression = "connection/queuePrioritizerClass/text()";
         assertEquals("org.apache.nifi.prioritizer.FirstInFirstOutPrioritizer", xpath.evaluate(expression, config, XPathConstants.STRING));

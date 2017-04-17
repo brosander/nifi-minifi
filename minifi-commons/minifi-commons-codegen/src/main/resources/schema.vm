@@ -21,28 +21,16 @@ package $class.package;
 #foreach($import in $class.classImports)import $import;
 #end
 ##
-## Add abstract to classname if necessary
-#set($actualClassname = $class.name)
-#if (!$class.concrete)
-    #set($actualClassname = "Abstract" + $class.name)
-#end
-##
 ## Calculate underscore and camel case names for each field
 #set($underscoreNames = $util.newMap())
 #set($camelCase = $util.newMap())
 #set($underscoreNames[$class.wrapperName] = $util.calculateUnderscoreName($class.name))
-#set($hasWrapperName = !$class.extends.equals("BaseSchema"))
 #foreach($field in $class.fields)
     #set($underscoreNames[$field.name] = $util.calculateUnderscoreName($field.name))
     #set($camelCase[$field.name] = $util.camelCase($field.name))
 #end
 
-//CHECKSTYLE:LineLength:OFF
-public#if(!$class.concrete) abstract#end class $actualClassname extends $class.extends #if($class.implementsString)implements $class.implementsString #end{
-#if ($class.wrapperName)
-    public static final String WRAPPER_NAME = "$class.wrapperName";
-
-#end
+public#if(!$class.concrete) abstract#end class $schema.getActualClassname($class) extends BaseSchema #if($class.implementsString)implements $class.implementsString #end{
 #foreach($field in $class.fields)
 #if ($field.key)
     public static final String ${underscoreNames[$field.name]}_KEY = "$field.key";
@@ -64,7 +52,7 @@ public#if(!$class.concrete) abstract#end class $actualClassname extends $class.e
 #end
 
 #if ($class.wrapperName)
-    public ${actualClassname}() {
+    public ${schema.getActualClassname($class)}() {
 #foreach($field in $class.fields)
 #if ($class.isSchema($field.type.name))
         $field.name = new ${field.type.declaration}();
@@ -72,9 +60,9 @@ public#if(!$class.concrete) abstract#end class $actualClassname extends $class.e
 #end
     }
 
-    public ${actualClassname}(Map map) {
+    public ${schema.getActualClassname($class)}(Map map) {
 #else
-    public ${actualClassname}(Map map, String wrapperName) {
+    public ${schema.getActualClassname($class)}(Map map, String wrapperName) {
         this.wrapperName = wrapperName;
 #end
 #foreach($field in $class.fields)
@@ -126,11 +114,12 @@ public#if(!$class.concrete) abstract#end class $actualClassname extends $class.e
     }
 
     protected String getWrapperName() {
-        return#if ($class.wrapperName) WRAPPER_NAME#else wrapperName#end
-
+        return#if ($class.wrapperName) $schema.getWrapperNameCreator($class);
+#else wrapperName
 #foreach($field in $class.fields)
             .replace("{$field.name}", String.valueOf($field.name))#if (!$foreach.hasNext);#end
 
+#end
 #end
     }
 #if ($class.writable && $class.fields.size() > 0)
@@ -214,4 +203,3 @@ public#if(!$class.concrete) abstract#end class $actualClassname extends $class.e
         return validationIssues;
     }
 }
-//CHECKSTYLE:LineLength:ON

@@ -30,8 +30,8 @@
         {"name": "provenanceRepositorySchema", "typeName": "ProvenanceRepositorySchema", "key": "Provenance Repository", "required": false},
         {"name": "componentStatusRepositoryProperties", "typeName": "ComponentStatusRepositorySchema", "key": "Component Status Repository", "required": false},
         {"name": "securityProperties", "typeName": "SecurityPropertiesSchema", "key": "Security Properties", "required": false},
-        {"name": "processGroupSchema", "typeName": "ProcessGroupSchema", "required": false, "instantiator": "new ProcessGroupSchema(map, WRAPPER_NAME)", "toMap":"result.putAll(processGroupSchema.toMap());"},
-        {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false, "instantiator": "getMapAsType(map, PROVENANCE_REPORTING_PROPERTIES_KEY, ProvenanceReportingSchema.class, WRAPPER_NAME, false, false)"},
+        {"name": "processGroupSchema", "typeName": "ProcessGroupSchema", "required": false, "instantiator": "new ProcessGroupSchema(map, getWrapperName())", "toMap":"result.putAll(processGroupSchema.toMap());"},
+        {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false, "instantiator": "getMapAsType(map, PROVENANCE_REPORTING_PROPERTIES_KEY, ProvenanceReportingSchema.class, getWrapperName(), false, false)"},
         {"name": "nifiPropertiesOverrides", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name":"String"}]}, "key": "NiFi Properties Overrides", "default": {}}
       ]
     },
@@ -52,7 +52,7 @@
         {"name": "processors", "type": {"name": "List", "genericTypes": [{"name":"ProcessorSchemaV1"}]}, "key": "Processors", "default": []},
         {"name": "connections", "type": {"name": "List", "genericTypes": [{"name":"ConnectionSchemaV1"}]}, "key": "Connections", "default": []},
         {"name": "remoteProcessingGroups", "type": {"name": "List", "genericTypes": [{"name":"RemoteProcessGroupSchemaV1"}]}, "key": "Remote Processing Groups", "default": []},
-        {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false, "instantiator": "getMapAsType(map, PROVENANCE_REPORTING_PROPERTIES_KEY, ProvenanceReportingSchema.class, WRAPPER_NAME, false, false)"}
+        {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false, "instantiator": "getMapAsType(map, PROVENANCE_REPORTING_PROPERTIES_KEY, ProvenanceReportingSchema.class, getWrapperName(), false, false)"}
       ]
     },
     {
@@ -69,8 +69,8 @@
         {"name": "provenanceRepositorySchema", "typeName": "ProvenanceRepositorySchema", "key": "Provenance Repository", "required": false},
         {"name": "componentStatusRepositoryProperties", "typeName": "ComponentStatusRepositorySchema", "key": "Component Status Repository", "required": false},
         {"name": "securityProperties", "typeName": "SecurityPropertiesSchema", "key": "Security Properties", "required": false},
-        {"name": "processGroupSchema", "typeName": "ProcessGroupSchemaV2", "required": false, "instantiator": "new ProcessGroupSchemaV2(map, WRAPPER_NAME)"},
-        {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false, "instantiator": "getMapAsType(map, PROVENANCE_REPORTING_PROPERTIES_KEY, ProvenanceReportingSchema.class, WRAPPER_NAME, false, false)"}
+        {"name": "processGroupSchema", "typeName": "ProcessGroupSchemaV2", "required": false, "instantiator": "new ProcessGroupSchemaV2(map, getWrapperName())"},
+        {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false, "instantiator": "getMapAsType(map, PROVENANCE_REPORTING_PROPERTIES_KEY, ProvenanceReportingSchema.class, getWrapperName(), false, false)"}
       ]
     },
     {

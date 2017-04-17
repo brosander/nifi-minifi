@@ -40,23 +40,20 @@ public class SchemaMojo extends BaseCodegenMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         for (File file : inputDir.listFiles()) {
             SchemaDefinition schemaDefinition = getSchemaDefinition(file);
+            SchemaUtil schemaUtil = new SchemaUtil();
             for (EnumDefinition enumDefinition : schemaDefinition.getEnums()) {
                 Context context = new VelocityContext();
                 context.put("enum", enumDefinition);
-                context.put("schema", new SchemaUtil());
+                context.put("schema", schemaUtil);
                 context.put("util", new Util());
                 render("enum.vm", context, getOutputFile(schemaDefinition.getPackage(), enumDefinition.getName()));
             }
             for (ClassDefinition classDefinition : schemaDefinition.getClasses()) {
                 Context context = new VelocityContext();
                 context.put("class", classDefinition);
-                context.put("schema", new SchemaUtil());
+                context.put("schema", schemaUtil);
                 context.put("util", new Util());
-                String name = classDefinition.getName();
-                if (!classDefinition.isConcrete()) {
-                    name = "Abstract" + name;
-                }
-                render("schema.vm", context, getOutputFile(classDefinition.getPackage(), name));
+                render("schema.vm", context, getOutputFile(classDefinition.getPackage(), schemaUtil.getActualClassname(classDefinition)));
             }
         }
         project.addCompileSourceRoot(outputDir.getAbsolutePath());

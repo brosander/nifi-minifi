@@ -36,7 +36,7 @@ import static org.apache.nifi.minifi.commons.schema.common.CommonPropertyKeys.OU
 
 public class ProcessGroupSchemaV2 extends AbstractProcessGroupSchemaV2 {
     public ProcessGroupSchemaV2() {
-        this(Collections.emptyMap(), ConfigSchemaV2.WRAPPER_NAME);
+        this(Collections.emptyMap(), ConfigSchema.TOP_LEVEL);
     }
 
 
@@ -46,8 +46,7 @@ public class ProcessGroupSchemaV2 extends AbstractProcessGroupSchemaV2 {
 
     @Override
     public void initValidation() {
-
-        if (ConfigSchema.WRAPPER_NAME.equals(getWrapperName())) {
+        if (ConfigSchema.TOP_LEVEL.equals(getWrapperName())) {
             if (getInputPortSchemas().size() > 0) {
                 addValidationIssue(INPUT_PORTS_KEY, getWrapperName(), "must be empty in root group as external input/output ports are currently unsupported");
             }
