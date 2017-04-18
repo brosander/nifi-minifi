@@ -17,9 +17,11 @@
 
 package org.apache.nifi.minifi.c2.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wordnik.swagger.annotations.Api;
 import org.apache.nifi.minifi.c2.api.Configuration;
 import org.apache.nifi.minifi.c2.api.ConfigurationProvider;
+import org.apache.nifi.minifi.c2.api.ConfigurationProviderException;
 import org.apache.nifi.minifi.c2.api.InvalidParameterException;
 import org.apache.nifi.minifi.c2.api.security.authorization.AuthorizationException;
 import org.apache.nifi.minifi.c2.api.security.authorization.Authorizer;
@@ -32,6 +34,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -43,10 +46,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Path("/config")
@@ -56,15 +62,47 @@ import java.util.stream.Collectors;
 )
 public class ConfigService {
     private static final Logger logger = LoggerFactory.getLogger(ConfigService.class);
-    private final List<Pair<MediaType, ConfigurationProvider>> configurationProviders;
+    private final List<Pair<List<MediaType>, ConfigurationProvider>> configurationProviders;
+    private final List<String> contentTypes;
     private final Authorizer authorizer;
+    private final ObjectMapper objectMapper;
 
     public ConfigService(List<ConfigurationProvider> configurationProviders, Authorizer authorizer) {
         this.authorizer = authorizer;
+        this.objectMapper = new ObjectMapper();
         if (configurationProviders == null || configurationProviders.size() == 0) {
             throw new IllegalArgumentException("Expected at least one configuration provider");
         }
-        this.configurationProviders = configurationProviders.stream().map(c -> new Pair<>(MediaType.valueOf(c.getContentType()), c)).collect(Collectors.toList());
+        this.configurationProviders = configurationProviders.stream()
+                .map(c -> {
+                    try {
+                        return new Pair<>(c.getContentTypes().stream().map(MediaType::valueOf).collect(Collectors.toList()), c);
+                    } catch (ConfigurationProviderException e) {
+                        logger.warn("Unable to get content types for provider " + c, e);
+                        return null;
+                    }
+                }).filter(Objects::nonNull).collect(Collectors.toList());
+        this.contentTypes = new ArrayList<>(this.configurationProviders.stream().flatMap(p -> p.getFirst().stream()).map(MediaType::toString).collect(Collectors.toCollection(LinkedHashSet::new)));
+    }
+
+    @GET
+    @Path("/contentTypes")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getContentTypes(@Context HttpServletRequest request, @Context UriInfo uriInfo) {
+        try {
+            authorizer.authorize(SecurityContextHolder.getContext().getAuthentication(), uriInfo);
+        } catch (AuthorizationException e) {
+            logger.warn(HttpRequestUtil.getClientString(request) + " not authorized to access " + uriInfo, e);
+            return Response.status(403).build();
+        }
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        try {
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(byteArrayOutputStream, contentTypes);
+        } catch (IOException e) {
+            logger.warn("Unable to write configuration providers to output stream.", e);
+            return Response.status(500).build();
+        }
+        return Response.ok().type(MediaType.APPLICATION_JSON_TYPE).entity(byteArrayOutputStream.toByteArray()).build();
     }
 
     @GET
@@ -111,7 +149,7 @@ public class ConfigService {
                 }
             }
             Response.ResponseBuilder ok = Response.ok();
-            Configuration configuration = providerPair.getSecond().getConfiguration(version, parameters);
+            Configuration configuration = providerPair.getSecond().getConfiguration(providerPair.getFirst().toString(), version, parameters);
             ok = ok.header("X-Content-Version", configuration.getVersion());
             ok = ok.type(providerPair.getFirst());
             byte[] buffer = new byte[1024];
@@ -153,9 +191,11 @@ public class ConfigService {
 
     private Pair<MediaType, ConfigurationProvider> getProvider(List<MediaType> acceptValues) {
         for (MediaType accept : acceptValues) {
-            for (Pair<MediaType, ConfigurationProvider> configurationProviderPair : configurationProviders) {
-                if (accept.isCompatible(configurationProviderPair.getFirst())) {
-                    return configurationProviderPair;
+            for (Pair<List<MediaType>, ConfigurationProvider> configurationProviderPair : configurationProviders) {
+                for (MediaType mediaType : configurationProviderPair.getFirst()) {
+                    if (accept.isCompatible(mediaType)) {
+                        return new Pair<>(mediaType, configurationProviderPair.getSecond());
+                    }
                 }
             }
         }

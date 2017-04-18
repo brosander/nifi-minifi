@@ -50,7 +50,7 @@ public class FileSystemConfigurationCache implements ConfigurationCache {
     }
 
     @Override
-    public ConfigurationCacheFileInfo getCacheFileInfo(Map<String, List<String>> parameters) throws InvalidParameterException {
+    public ConfigurationCacheFileInfo getCacheFileInfo(String contentType, Map<String, List<String>> parameters) throws InvalidParameterException {
         String pathString = pathPattern;
         for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
             if (entry.getValue().size() != 1) {
@@ -58,6 +58,7 @@ public class FileSystemConfigurationCache implements ConfigurationCache {
             }
             pathString = pathString.replaceAll(Pattern.quote("${" + entry.getKey() + "}"), entry.getValue().get(0));
         }
+        pathString = pathString + "." + contentType.replace('/', '.');
         String[] split = pathString.split("/");
         for (String s1 : split) {
             int openBrace = s1.indexOf("${");

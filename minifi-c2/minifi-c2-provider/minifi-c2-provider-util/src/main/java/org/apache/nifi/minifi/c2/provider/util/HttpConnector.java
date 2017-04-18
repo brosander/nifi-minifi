@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.minifi.c2.provider.nifi.rest;
+package org.apache.nifi.minifi.c2.provider.util;
 
 import org.apache.nifi.minifi.c2.api.ConfigurationProviderException;
 import org.apache.nifi.minifi.c2.api.InvalidParameterException;
@@ -32,29 +32,37 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-public class NiFiRestConnector {
-    private static final Logger logger = LoggerFactory.getLogger(NiFiRestConnector.class);
+public class HttpConnector {
+    private static final Logger logger = LoggerFactory.getLogger(HttpConnector.class);
 
-    private final String nifiApiUrl;
+    private final String baseUrl;
     private final SslContextFactory sslContextFactory;
 
-    public NiFiRestConnector(String nifiApiUrl) throws InvalidParameterException, GeneralSecurityException, IOException {
-        if (nifiApiUrl.startsWith("https:")) {
+    public HttpConnector(String baseUrl) throws InvalidParameterException, GeneralSecurityException, IOException {
+        if (baseUrl.startsWith("https:")) {
             sslContextFactory = C2Properties.getInstance().getSslContextFactory();
             if (sslContextFactory == null) {
-                throw new InvalidParameterException("Need sslContextFactory to connect to https NiFi endpoint (" + nifiApiUrl + ")");
+                throw new InvalidParameterException("Need sslContextFactory to connect to https endpoint (" + baseUrl + ")");
             }
         } else {
             sslContextFactory = null;
         }
-        this.nifiApiUrl = nifiApiUrl;
+        this.baseUrl = baseUrl;
     }
 
-    protected HttpURLConnection get(String endpointPath) throws ConfigurationProviderException {
-        String endpointUrl = nifiApiUrl + endpointPath;
+    public HttpURLConnection get(String endpointPath) throws ConfigurationProviderException {
+        return get(endpointPath, Collections.emptyMap());
+    }
+
+    public HttpURLConnection get(String endpointPath, Map<String, List<String>> headers) throws ConfigurationProviderException {
+        String endpointUrl = baseUrl + endpointPath;
         if (logger.isDebugEnabled()) {
-            logger.debug("Connecting to NiFi endpoint: " + endpointUrl);
+            logger.debug("Connecting to endpoint: " + endpointUrl);
         }
         URL url;
         try {
@@ -63,18 +71,21 @@ public class NiFiRestConnector {
             throw new ConfigurationProviderException("Malformed url " + endpointUrl, e);
         }
 
+        HttpURLConnection httpURLConnection;
         try {
             if (sslContextFactory == null) {
-                return (HttpURLConnection) url.openConnection();
+                httpURLConnection = (HttpURLConnection) url.openConnection();
             } else {
                 HttpsURLConnection httpsURLConnection = (HttpsURLConnection) url.openConnection();
                 SSLContext sslContext = sslContextFactory.getSslContext();
                 SSLSocketFactory socketFactory = sslContext.getSocketFactory();
                 httpsURLConnection.setSSLSocketFactory(socketFactory);
-                return httpsURLConnection;
+                httpURLConnection = httpsURLConnection;
             }
         } catch (IOException e) {
             throw new ConfigurationProviderException("Unable to connect to " + url, e);
         }
+        headers.forEach((s, strings) -> httpURLConnection.setRequestProperty(s, strings.stream().collect(Collectors.joining(","))));
+        return httpURLConnection;
     }
 }
