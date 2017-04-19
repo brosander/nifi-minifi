@@ -29,9 +29,13 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -42,8 +46,18 @@ public class HttpConnector {
 
     private final String baseUrl;
     private final SslContextFactory sslContextFactory;
+    private final Proxy proxy;
+    private final String proxyAuthorization;
 
     public HttpConnector(String baseUrl) throws InvalidParameterException, GeneralSecurityException, IOException {
+        this(baseUrl, null, 0);
+    }
+
+    public HttpConnector(String baseUrl, String proxyHost, int proxyPort) throws InvalidParameterException, GeneralSecurityException, IOException {
+        this(baseUrl, proxyHost, proxyPort, null, null);
+    }
+
+    public HttpConnector(String baseUrl, String proxyHost, int proxyPort, String proxyUsername, String proxyPassword) throws InvalidParameterException, GeneralSecurityException, IOException {
         if (baseUrl.startsWith("https:")) {
             sslContextFactory = C2Properties.getInstance().getSslContextFactory();
             if (sslContextFactory == null) {
@@ -53,6 +67,26 @@ public class HttpConnector {
             sslContextFactory = null;
         }
         this.baseUrl = baseUrl;
+        if (proxyHost != null && !proxyHost.isEmpty()) {
+            if (proxyPort == 0) {
+                throw new InvalidParameterException("Must specify proxy port with proxy host");
+            }
+            proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+        } else {
+            proxy = null;
+        }
+
+        if (proxyUsername != null && !proxyUsername.isEmpty()) {
+            if (proxy == null) {
+                throw new InvalidParameterException("Cannot specify proxy username without proxy host.");
+            }
+            if (proxyPassword == null) {
+                throw new InvalidParameterException("Must specify proxy password with proxy username.");
+            }
+            proxyAuthorization = Base64.getEncoder().encodeToString((proxyHost + ":" + proxyPassword).getBytes(StandardCharsets.UTF_8));
+        } else {
+            proxyAuthorization = null;
+        }
     }
 
     public HttpURLConnection get(String endpointPath) throws ConfigurationProviderException {
@@ -73,17 +107,22 @@ public class HttpConnector {
 
         HttpURLConnection httpURLConnection;
         try {
-            if (sslContextFactory == null) {
+            if (proxy == null) {
                 httpURLConnection = (HttpURLConnection) url.openConnection();
             } else {
-                HttpsURLConnection httpsURLConnection = (HttpsURLConnection) url.openConnection();
+                httpURLConnection = (HttpURLConnection) url.openConnection(proxy);
+            }
+            if (sslContextFactory != null) {
+                HttpsURLConnection httpsURLConnection = (HttpsURLConnection) httpURLConnection;
                 SSLContext sslContext = sslContextFactory.getSslContext();
                 SSLSocketFactory socketFactory = sslContext.getSocketFactory();
                 httpsURLConnection.setSSLSocketFactory(socketFactory);
-                httpURLConnection = httpsURLConnection;
             }
         } catch (IOException e) {
             throw new ConfigurationProviderException("Unable to connect to " + url, e);
+        }
+        if (proxyAuthorization != null) {
+            httpURLConnection.setRequestProperty("Proxy-Authorization", proxyAuthorization);
         }
         headers.forEach((s, strings) -> httpURLConnection.setRequestProperty(s, strings.stream().collect(Collectors.joining(","))));
         return httpURLConnection;
