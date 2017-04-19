@@ -17,7 +17,6 @@
 
 package org.apache.nifi.minifi.bootstrap.configuration.ingestors;
 
-import okhttp3.Authenticator;
 import okhttp3.Call;
 import okhttp3.Credentials;
 import okhttp3.HttpUrl;
@@ -25,7 +24,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import okhttp3.Route;
 import org.apache.nifi.minifi.bootstrap.ConfigurationFileHolder;
 import org.apache.nifi.minifi.bootstrap.configuration.ConfigurationChangeNotifier;
 import org.apache.nifi.minifi.bootstrap.configuration.differentiators.WholeConfigDifferentiator;

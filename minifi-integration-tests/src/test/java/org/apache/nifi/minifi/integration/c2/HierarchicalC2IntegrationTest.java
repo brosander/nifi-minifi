@@ -44,7 +44,8 @@ public class HierarchicalC2IntegrationTest {
     public static DockerComposeRule docker = DockerComposeRule.builder()
             .file("target/test-classes/docker-compose-c2-hierarchical.yml")
             .waitingForServices(Arrays.asList("squid-edge3", "c2"),
-                    new HttpsStatusCodeHealthCheck(container -> "https://c2-authoritative:10443/c2/config", containers -> containers.get(0), containers -> containers.get(1), () -> healthCheckSocketFactory, 403))
+                    new HttpsStatusCodeHealthCheck(container -> "https://c2-authoritative:10443/c2/config",
+                            containers -> containers.get(0), containers -> containers.get(1), () -> healthCheckSocketFactory, 403))
             .build();
     /**
      * Generates certificates with the tls-toolkit and then starts up the docker compose file
@@ -64,7 +65,8 @@ public class HierarchicalC2IntegrationTest {
         tlsToolkitStandaloneCommandLine.parse(toolkitCommandLine.toArray(new String[toolkitCommandLine.size()]));
         new TlsToolkitStandalone().createNifiKeystoresAndTrustStores(tlsToolkitStandaloneCommandLine.createConfig());
 
-        trustSslContext = SslContextFactory.createTrustSslContext(certificatesDirectory.resolve("c2-authoritative").resolve("truststore.jks").toFile().getAbsolutePath(), "badTrustPass".toCharArray(), "jks", "TLS");
+        trustSslContext = SslContextFactory.createTrustSslContext(certificatesDirectory.resolve("c2-authoritative")
+                .resolve("truststore.jks").toFile().getAbsolutePath(), "badTrustPass".toCharArray(), "jks", "TLS");
         healthCheckSocketFactory = trustSslContext.getSocketFactory();
 
         docker.before();
