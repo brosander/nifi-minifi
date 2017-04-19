@@ -26,6 +26,7 @@ import org.apache.nifi.minifi.c2.api.InvalidParameterException;
 import org.apache.nifi.minifi.c2.api.cache.ConfigurationCache;
 import org.apache.nifi.minifi.c2.api.cache.ConfigurationCacheFileInfo;
 import org.apache.nifi.minifi.c2.api.cache.WriteableConfiguration;
+import org.apache.nifi.minifi.c2.api.security.authorization.AuthorizationException;
 import org.apache.nifi.minifi.c2.provider.util.HttpConnector;
 
 import java.io.IOException;
@@ -90,12 +91,19 @@ public class DelegatingConfigurationProvider implements ConfigurationProvider {
                         }
                     }
                     if (responseCode >= 400) {
-                        String message;
-                        try (InputStream inputStream = remoteC2ServerConnection.getErrorStream()) {
-                            message = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+                        String message = "";
+                        InputStream inputStream = remoteC2ServerConnection.getErrorStream();
+                        if (inputStream != null) {
+                            try {
+                                message = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+                            } finally {
+                                inputStream.close();
+                            }
                         }
                         if (responseCode == 400) {
                             throw new InvalidParameterException(message);
+                        } else if (responseCode == 403) {
+                            throw new AuthorizationException("Got authorization exception from upstream server " + message);
                         } else {
                             throw new ConfigurationProviderException(message);
                         }

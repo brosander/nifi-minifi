@@ -196,6 +196,9 @@ public class ConfigService {
                 throw new WebApplicationException(500);
             }
             return ok.build();
+        } catch (AuthorizationException e) {
+            logger.warn(HttpRequestUtil.getClientString(request) + " not authorized to access " + uriInfo, e);
+            return Response.status(403).build();
         } catch (InvalidParameterException e) {
             logger.info(HttpRequestUtil.getClientString(request) + " made invalid request with " + HttpRequestUtil.getQueryString(request), e);
             return Response.status(400).entity("Invalid request.").build();
