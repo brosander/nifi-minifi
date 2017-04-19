@@ -34,11 +34,15 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DelegatingConfigurationProvider implements ConfigurationProvider {
+    public static final Pattern errorPattern = Pattern.compile("^Server returned HTTP response code: ([0-9]+) for URL:.*");
     private final ConfigurationCache configurationCache;
     private final HttpConnector httpConnector;
     private final ObjectMapper objectMapper;
@@ -73,6 +77,32 @@ public class DelegatingConfigurationProvider implements ConfigurationProvider {
         try {
             if (version == null) {
                 remoteC2ServerConnection = getDelegateConnection(contentType, parameters);
+                try {
+                    int responseCode;
+                    try {
+                        responseCode = remoteC2ServerConnection.getResponseCode();
+                    } catch (IOException e) {
+                        Matcher matcher = errorPattern.matcher(e.getMessage());
+                        if (matcher.matches()) {
+                            responseCode = Integer.parseInt(matcher.group(1));
+                        } else {
+                            throw e;
+                        }
+                    }
+                    if (responseCode >= 400) {
+                        String message;
+                        try (InputStream inputStream = remoteC2ServerConnection.getErrorStream()) {
+                            message = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+                        }
+                        if (responseCode == 400) {
+                            throw new InvalidParameterException(message);
+                        } else {
+                            throw new ConfigurationProviderException(message);
+                        }
+                    }
+                } catch (IOException e) {
+                    throw new ConfigurationProviderException("Unable to get response code from upstream server.", e);
+                }
                 version = Integer.parseInt(remoteC2ServerConnection.getHeaderField("X-Content-Version"));
             }
             ConfigurationCacheFileInfo cacheFileInfo = configurationCache.getCacheFileInfo(contentType, parameters);

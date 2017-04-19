@@ -52,7 +52,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Path("/config")
@@ -62,10 +62,12 @@ import java.util.stream.Collectors;
 )
 public class ConfigService {
     private static final Logger logger = LoggerFactory.getLogger(ConfigService.class);
-    private final List<Pair<List<MediaType>, ConfigurationProvider>> configurationProviders;
-    private final List<String> contentTypes;
+    private final List<ConfigurationProvider> configurationProviders;
     private final Authorizer authorizer;
     private final ObjectMapper objectMapper;
+
+    private volatile List<Pair<MediaType, ConfigurationProvider>> mediaTypeList;
+    private volatile List<String> contentTypes;
 
     public ConfigService(List<ConfigurationProvider> configurationProviders, Authorizer authorizer) {
         this.authorizer = authorizer;
@@ -73,16 +75,25 @@ public class ConfigService {
         if (configurationProviders == null || configurationProviders.size() == 0) {
             throw new IllegalArgumentException("Expected at least one configuration provider");
         }
-        this.configurationProviders = configurationProviders.stream()
-                .map(c -> {
-                    try {
-                        return new Pair<>(c.getContentTypes().stream().map(MediaType::valueOf).collect(Collectors.toList()), c);
-                    } catch (ConfigurationProviderException e) {
-                        logger.warn("Unable to get content types for provider " + c, e);
-                        return null;
-                    }
-                }).filter(Objects::nonNull).collect(Collectors.toList());
-        this.contentTypes = new ArrayList<>(this.configurationProviders.stream().flatMap(p -> p.getFirst().stream()).map(MediaType::toString).collect(Collectors.toCollection(LinkedHashSet::new)));
+        this.configurationProviders = new ArrayList<>(configurationProviders);
+    }
+
+    protected void initContentTypeInfo() throws ConfigurationProviderException {
+        List<Pair<MediaType, ConfigurationProvider>> mediaTypeList = new ArrayList<>();
+        List<String> contentTypes = new ArrayList<>();
+        Set<MediaType> seenMediaTypes = new LinkedHashSet<>();
+
+        for (ConfigurationProvider configurationProvider : configurationProviders) {
+            for (String contentTypeString : configurationProvider.getContentTypes()) {
+                MediaType mediaType = MediaType.valueOf(contentTypeString);
+                if (seenMediaTypes.add(mediaType)) {
+                    contentTypes.add(contentTypeString);
+                    mediaTypeList.add(new Pair<>(mediaType, configurationProvider));
+                }
+            }
+        }
+        this.mediaTypeList = mediaTypeList;
+        this.contentTypes = contentTypes;
     }
 
     @GET
@@ -94,6 +105,14 @@ public class ConfigService {
         } catch (AuthorizationException e) {
             logger.warn(HttpRequestUtil.getClientString(request) + " not authorized to access " + uriInfo, e);
             return Response.status(403).build();
+        }
+        if (contentTypes == null) {
+            try {
+                initContentTypeInfo();
+            } catch (ConfigurationProviderException e) {
+                logger.warn("Unable to initialize content type information.", e);
+                return Response.status(500).build();
+            }
         }
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         try {
@@ -136,7 +155,13 @@ public class ConfigService {
                     .append(acceptValues.stream().map(Object::toString).collect(Collectors.joining(", ")));
             logger.debug(builder.toString());
         }
-        Pair<MediaType, ConfigurationProvider> providerPair = getProvider(acceptValues);
+        Pair<MediaType, ConfigurationProvider> providerPair = null;
+        try {
+            providerPair = getProvider(acceptValues);
+        } catch (ConfigurationProviderException e) {
+            logger.warn("Unable to get provider.", e);
+            return Response.status(500).build();
+        }
 
         try {
             Integer version = null;
@@ -189,19 +214,21 @@ public class ConfigService {
         return builder.toString();
     }
 
-    private Pair<MediaType, ConfigurationProvider> getProvider(List<MediaType> acceptValues) {
+    private Pair<MediaType, ConfigurationProvider> getProvider(List<MediaType> acceptValues) throws ConfigurationProviderException {
+        if (mediaTypeList == null) {
+            initContentTypeInfo();
+        }
         for (MediaType accept : acceptValues) {
-            for (Pair<List<MediaType>, ConfigurationProvider> configurationProviderPair : configurationProviders) {
-                for (MediaType mediaType : configurationProviderPair.getFirst()) {
-                    if (accept.isCompatible(mediaType)) {
-                        return new Pair<>(mediaType, configurationProviderPair.getSecond());
-                    }
+            for (Pair<MediaType, ConfigurationProvider> pair : mediaTypeList) {
+                MediaType mediaType = pair.getFirst();
+                if (accept.isCompatible(mediaType)) {
+                    return new Pair<>(mediaType, pair.getSecond());
                 }
             }
         }
 
         throw new WebApplicationException(Response.status(406).entity("Unable to find configuration provider for " +
                 "\"Accept: " + acceptValues.stream().map(Object::toString).collect(Collectors.joining(", ")) + "\" supported media types are " +
-                configurationProviders.stream().map(Pair::getFirst).map(Object::toString).collect(Collectors.joining(", "))).build());
+                mediaTypeList.stream().map(Pair::getFirst).map(Object::toString).collect(Collectors.joining(", "))).build());
     }
 }

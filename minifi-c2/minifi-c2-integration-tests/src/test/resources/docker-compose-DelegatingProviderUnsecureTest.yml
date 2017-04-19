@@ -13,27 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-Default Action: deny
-Paths:
-  /c2/config:
-    Default Action: deny
-    Actions:
-    - Authorization: CLASS_RASPI_3
-      Query Parameters:
-        class: raspi3
-      Action: allow
-    - Authorization: ROLE_SUPERUSER
-      Action: allow
+version: "2"
 
-    # Default authorization lets anonymous pull any config.  Remove below to change that.
-    - Authorization: ROLE_ANONYMOUS
-      Action: allow
-
-  /c2/config/contentTypes:
-    Default Action: deny
-    Actions:
-    - Authorization: CLASS_RASPI_3
-      Action: allow
-    # Default authorization lets anonymous pull any config.  Remove below to change that.
-    - Authorization: ROLE_ANONYMOUS
-      Action: allow
+services:
+  c2-upstream:
+    image: apacheminific2:${minifi.c2.version}
+    ports:
+      - "10080"
+    hostname: c2-upstream
+    volumes:
+      - ./c2/files:/opt/minifi-c2/minifi-c2-${minifi.c2.version}/files
+  c2:
+    image: apacheminific2:${minifi.c2.version}
+    ports:
+      - "10080"
+    hostname: c2
+    volumes:
+      - ./c2-unsecure-delegating/conf/minifi-c2-context.xml:/opt/minifi-c2/minifi-c2-${minifi.c2.version}/conf/minifi-c2-context.xml
