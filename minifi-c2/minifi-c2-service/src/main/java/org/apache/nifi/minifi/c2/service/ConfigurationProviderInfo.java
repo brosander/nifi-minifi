@@ -18,6 +18,7 @@
 package org.apache.nifi.minifi.c2.service;
 
 import org.apache.nifi.minifi.c2.api.ConfigurationProvider;
+import org.apache.nifi.minifi.c2.api.ConfigurationProviderException;
 import org.apache.nifi.minifi.c2.api.util.Pair;
 
 import javax.ws.rs.core.MediaType;
@@ -26,17 +27,25 @@ import java.util.List;
 public class ConfigurationProviderInfo {
     private final List<Pair<MediaType, ConfigurationProvider>> mediaTypeList;
     private final List<String> contentTypes;
+    private final ConfigurationProviderException configurationProviderException;
 
-    public ConfigurationProviderInfo(List<Pair<MediaType, ConfigurationProvider>> mediaTypeList, List<String> contentTypes) {
+    public ConfigurationProviderInfo(List<Pair<MediaType, ConfigurationProvider>> mediaTypeList, List<String> contentTypes, ConfigurationProviderException configurationProviderException) {
         this.mediaTypeList = mediaTypeList;
         this.contentTypes = contentTypes;
+        this.configurationProviderException = configurationProviderException;
     }
 
-    public List<Pair<MediaType, ConfigurationProvider>> getMediaTypeList() {
+    public List<Pair<MediaType, ConfigurationProvider>> getMediaTypeList() throws ConfigurationProviderException {
+        if (configurationProviderException != null) {
+            throw configurationProviderException;
+        }
         return mediaTypeList;
     }
 
-    public List<String> getContentTypes() {
+    public List<String> getContentTypes() throws ConfigurationProviderException {
+        if (configurationProviderException != null) {
+            throw configurationProviderException;
+        }
         return contentTypes;
     }
 }

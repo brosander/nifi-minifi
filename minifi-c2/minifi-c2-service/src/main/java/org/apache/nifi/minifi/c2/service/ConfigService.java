@@ -96,23 +96,31 @@ public class ConfigService {
                 .build(new CacheLoader<ConfigurationProviderKey, ConfigurationProviderValue>() {
                     @Override
                     public ConfigurationProviderValue load(ConfigurationProviderKey key) throws Exception {
-                        List<MediaType> acceptValues = key.getAcceptValues();
-                        Pair<MediaType, ConfigurationProvider> providerPair = getProvider(acceptValues);
-
-                        Map<String, List<String>> parameters = key.getParameters();
-
-                        Integer version = null;
-                        List<String> versionList = parameters.get("version");
-                        if (versionList != null && versionList.size() > 0) {
-                            try {
-                                version = Integer.parseInt(versionList.get(0));
-                            } catch (NumberFormatException e) {
-                                throw new InvalidParameterException("Unable to parse " + version + " as integer.", e);
-                            }
-                        }
-                        return new ConfigurationProviderValue(providerPair.getSecond().getConfiguration(providerPair.getFirst().toString(), version, parameters), providerPair.getFirst());
+                        return initConfigurationProviderValue(key);
                     }
                 });
+    }
+
+    public ConfigurationProviderValue initConfigurationProviderValue(ConfigurationProviderKey key) {
+        try {
+            List<MediaType> acceptValues = key.getAcceptValues();
+            Pair<MediaType, ConfigurationProvider> providerPair = getProvider(acceptValues);
+
+            Map<String, List<String>> parameters = key.getParameters();
+
+            Integer version = null;
+            List<String> versionList = parameters.get("version");
+            if (versionList != null && versionList.size() > 0) {
+                try {
+                    version = Integer.parseInt(versionList.get(0));
+                } catch (NumberFormatException e) {
+                    throw new InvalidParameterException("Unable to parse " + version + " as integer.", e);
+                }
+            }
+            return new ConfigurationProviderValue(providerPair.getSecond().getConfiguration(providerPair.getFirst().toString(), version, parameters), providerPair.getFirst(), null);
+        } catch (ConfigurationProviderException e) {
+            return new ConfigurationProviderValue(null, null, e);
+        }
     }
 
     protected ConfigurationProviderInfo initContentTypeInfo(List<ConfigurationProvider> configurationProviders) {
@@ -130,10 +138,10 @@ public class ConfigService {
                     }
                 }
             } catch (ConfigurationProviderException e) {
-                throw e.wrap();
+                return new ConfigurationProviderInfo(null, null, e);
             }
         }
-        return new ConfigurationProviderInfo(mediaTypeList, contentTypes);
+        return new ConfigurationProviderInfo(mediaTypeList, contentTypes, null);
     }
 
     @GET
@@ -150,8 +158,8 @@ public class ConfigService {
         List<String> contentTypes;
         try {
             contentTypes = configurationProviderInfo.get().getContentTypes();
-        } catch (ConfigurationProviderException.Wrapper e) {
-            logger.warn("Unable to initialize content type information.", e.unwrap());
+        } catch (ConfigurationProviderException e) {
+            logger.warn("Unable to initialize content type information.", e);
             return Response.status(500).build();
         }
         try {
@@ -220,22 +228,19 @@ public class ConfigService {
                 throw new WebApplicationException(500);
             }
             return ok.build();
+        } catch (AuthorizationException e) {
+            logger.warn(HttpRequestUtil.getClientString(request) + " not authorized to access " + uriInfo, e);
+            return Response.status(403).build();
+        } catch (InvalidParameterException e) {
+            logger.info(HttpRequestUtil.getClientString(request) + " made invalid request with " + HttpRequestUtil.getQueryString(request), e);
+            return Response.status(400).entity("Invalid request.").build();
+        } catch (ConfigurationProviderException e) {
+            logger.warn("Unable to get configuration.", e);
+            return Response.status(500).build();
         } catch (ExecutionException|UncheckedExecutionException e) {
             Throwable cause = e.getCause();
             if (cause instanceof WebApplicationException) {
                 throw (WebApplicationException) cause;
-            }
-            if (cause instanceof AuthorizationException) {
-                logger.warn(HttpRequestUtil.getClientString(request) + " not authorized to access " + uriInfo, e);
-                return Response.status(403).build();
-            }
-            if (cause instanceof InvalidParameterException) {
-                logger.info(HttpRequestUtil.getClientString(request) + " made invalid request with " + HttpRequestUtil.getQueryString(request), e);
-                return Response.status(400).entity("Invalid request.").build();
-            }
-            if (cause instanceof ConfigurationProviderException) {
-                logger.warn("Unable to get configuration.", cause);
-                return Response.status(500).build();
             }
             logger.error(HttpRequestUtil.getClientString(request) + " made request with " + HttpRequestUtil.getQueryString(request) + " that caused error.", cause);
             return Response.status(500).entity("Internal error").build();

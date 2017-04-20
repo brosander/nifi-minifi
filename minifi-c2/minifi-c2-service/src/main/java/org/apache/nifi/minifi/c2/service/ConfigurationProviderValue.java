@@ -18,23 +18,32 @@
 package org.apache.nifi.minifi.c2.service;
 
 import org.apache.nifi.minifi.c2.api.Configuration;
+import org.apache.nifi.minifi.c2.api.ConfigurationProviderException;
 
 import javax.ws.rs.core.MediaType;
 
 public class ConfigurationProviderValue {
     private final Configuration configuration;
     private final MediaType mediaType;
+    private final ConfigurationProviderException configurationProviderException;
 
-    public ConfigurationProviderValue(Configuration configuration, MediaType mediaType) {
+    public ConfigurationProviderValue(Configuration configuration, MediaType mediaType, ConfigurationProviderException configurationProviderException) {
         this.configuration = configuration;
         this.mediaType = mediaType;
+        this.configurationProviderException = configurationProviderException;
     }
 
-    public Configuration getConfiguration() {
+    public Configuration getConfiguration() throws ConfigurationProviderException {
+        if (configurationProviderException != null) {
+            throw configurationProviderException;
+        }
         return configuration;
     }
 
-    public MediaType getMediaType() {
+    public MediaType getMediaType() throws ConfigurationProviderException {
+        if (configurationProviderException != null) {
+            throw configurationProviderException;
+        }
         return mediaType;
     }
 }
