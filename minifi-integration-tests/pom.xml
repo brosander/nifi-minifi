@@ -90,6 +90,16 @@ limitations under the License.
             <testResource>
                 <directory>src/test/resources</directory>
                 <filtering>true</filtering>
+                <includes>
+                    <include>docker-compose-*.yml</include>
+                </includes>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>docker-compose-*.yml</exclude>
+                </excludes>
             </testResource>
         </testResources>
 

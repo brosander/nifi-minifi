@@ -19,6 +19,7 @@ package org.apache.nifi.minifi.integration.c2;
 
 import com.palantir.docker.compose.DockerComposeRule;
 import org.apache.nifi.minifi.c2.integration.test.health.HttpsStatusCodeHealthCheck;
+import org.apache.nifi.minifi.integration.util.LogUtil;
 import org.apache.nifi.security.util.SslContextFactory;
 import org.apache.nifi.toolkit.tls.standalone.TlsToolkitStandalone;
 import org.apache.nifi.toolkit.tls.standalone.TlsToolkitStandaloneCommandLine;
@@ -47,13 +48,34 @@ public class HierarchicalC2IntegrationTest {
                     new HttpsStatusCodeHealthCheck(container -> "https://c2-authoritative:10443/c2/config",
                             containers -> containers.get(0), containers -> containers.get(1), () -> healthCheckSocketFactory, 403))
             .build();
+    private static Path resourceDirectory;
+    private static Path authoritativeFiles;
+    private static Path minifiEdge1Version2;
+    private static Path minifiEdge2Version2;
+    private static Path minifiEdge3Version2;
+
     /**
      * Generates certificates with the tls-toolkit and then starts up the docker compose file
      */
     @BeforeClass
     public static void initCertificates() throws Exception {
-        certificatesDirectory = Paths.get(HierarchicalC2IntegrationTest.class.getClassLoader()
-                .getResource("docker-compose-c2-hierarchical.yml").getFile()).getParent().toAbsolutePath().resolve("certificates-c2-hierarchical");
+        resourceDirectory = Paths.get(HierarchicalC2IntegrationTest.class.getClassLoader()
+                .getResource("docker-compose-c2-hierarchical.yml").getFile()).getParent();
+        certificatesDirectory = resourceDirectory.toAbsolutePath().resolve("certificates-c2-hierarchical");
+        authoritativeFiles = resourceDirectory.resolve("c2").resolve("hierarchical").resolve("c2-authoritative").resolve("files");
+        minifiEdge1Version2 = authoritativeFiles.resolve("edge1").resolve("raspi3").resolve("config.text.yml.v2");
+        minifiEdge2Version2 = authoritativeFiles.resolve("edge2").resolve("raspi2").resolve("config.text.yml.v2");
+        minifiEdge3Version2 = authoritativeFiles.resolve("edge3").resolve("raspi3").resolve("config.text.yml.v2");
+
+        if (Files.exists(minifiEdge1Version2)) {
+            Files.delete(minifiEdge1Version2);
+        }
+        if (Files.exists(minifiEdge2Version2)) {
+            Files.delete(minifiEdge2Version2);
+        }
+        if (Files.exists(minifiEdge3Version2)) {
+            Files.delete(minifiEdge3Version2);
+        }
 
         List<String> toolkitCommandLine = new ArrayList<>(Arrays.asList("-O", "-o", certificatesDirectory.toFile().getAbsolutePath(), "-S", "badKeystorePass", "-P", "badTrustPass"));
         for (String serverHostname : Arrays.asList("c2-authoritative", "minifi-edge1", "c2-edge2", "minifi-edge3")) {
@@ -77,8 +99,27 @@ public class HierarchicalC2IntegrationTest {
         docker.after();
     }
 
-    @Test
-    public void test() {
-        System.out.println();
+    @Test(timeout = 60_000)
+    public void testMiNiFiEdge1() throws Exception {
+        LogUtil.verifyLogEntries("c2/hierarchical/minifi-edge1/expected.json", docker.containers().container("minifi-edge1"));
+        Path csvToJsonDir = resourceDirectory.resolve("standalone").resolve("v1").resolve("CsvToJson").resolve("yml");
+        Files.copy(csvToJsonDir.resolve("CsvToJson.yml"), minifiEdge1Version2);
+        LogUtil.verifyLogEntries("standalone/v1/CsvToJson/yml/expected.json", docker.containers().container("minifi-edge1"));
+    }
+
+    @Test(timeout = 60_000)
+    public void testMiNiFiEdge2() throws Exception {
+        LogUtil.verifyLogEntries("c2/hierarchical/minifi-edge2/expected.json", docker.containers().container("minifi-edge2"));
+        Path csvToJsonDir = resourceDirectory.resolve("standalone").resolve("v1").resolve("CsvToJson").resolve("yml");
+        Files.copy(csvToJsonDir.resolve("CsvToJson.yml"), minifiEdge2Version2);
+        LogUtil.verifyLogEntries("standalone/v1/CsvToJson/yml/expected.json", docker.containers().container("minifi-edge2"));
+    }
+
+    @Test(timeout = 60_000)
+    public void testMiNiFiEdge3() throws Exception {
+        LogUtil.verifyLogEntries("c2/hierarchical/minifi-edge3/expected.json", docker.containers().container("minifi-edge3"));
+        Path csvToJsonDir = resourceDirectory.resolve("standalone").resolve("v1").resolve("CsvToJson").resolve("yml");
+        Files.copy(csvToJsonDir.resolve("CsvToJson.yml"), minifiEdge3Version2);
+        LogUtil.verifyLogEntries("standalone/v1/CsvToJson/yml/expected.json", docker.containers().container("minifi-edge3"));
     }
 }

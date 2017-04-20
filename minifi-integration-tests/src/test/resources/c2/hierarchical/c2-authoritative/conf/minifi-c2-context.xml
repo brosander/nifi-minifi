@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
   ~ Licensed to the Apache Software Foundation (ASF) under one or more
   ~ contributor license agreements.  See the NOTICE file distributed with
@@ -30,19 +29,21 @@
     <bean id="configService" class="org.apache.nifi.minifi.c2.service.ConfigService" scope="singleton">
         <constructor-arg>
             <list>
-                <bean class="org.apache.nifi.minifi.c2.provider.delegating.DelegatingConfigurationProvider">
+                <bean class="org.apache.nifi.minifi.c2.provider.cache.CacheConfigurationProvider">
+                    <constructor-arg>
+                        <list>
+                            <value>text/yml</value>
+                        </list>
+                    </constructor-arg>
                     <constructor-arg>
                         <bean class="org.apache.nifi.minifi.c2.cache.filesystem.FileSystemConfigurationCache">
                             <constructor-arg>
-                                <value>./cache</value>
+                                <value>./files</value>
                             </constructor-arg>
                             <constructor-arg>
-                                <value>${class}/${class}</value>
+                                <value>${net}/${class}/config</value>
                             </constructor-arg>
                         </bean>
-                    </constructor-arg>
-                    <constructor-arg>
-                        <value>https://c2-authoritative:10443</value>
                     </constructor-arg>
                 </bean>
             </list>

@@ -14,9 +14,8 @@
 # limitations under the License.
 
 CN=minifi-edge1, OU=NIFI:
-  - RASPI_3
+  - EDGE_1
 CN=c2-edge2, OU=NIFI:
-  - RASPI_3
-  - CONTENT_TYPES
+  - EDGE_2
 CN=minifi-edge3, OU=NIFI:
-  - RASPI_3
+  - EDGE_3

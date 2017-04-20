@@ -21,6 +21,8 @@ import org.apache.nifi.minifi.c2.api.InvalidParameterException;
 import org.apache.nifi.minifi.c2.api.cache.ConfigurationCache;
 import org.apache.nifi.minifi.c2.api.cache.ConfigurationCacheFileInfo;
 import org.apache.nifi.minifi.c2.api.util.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,6 +33,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class FileSystemConfigurationCache implements ConfigurationCache {
+    private static final Logger logger = LoggerFactory.getLogger(FileSystemConfigurationCache.class);
+
     private final Path pathRoot;
     private final String pathPattern;
 
@@ -76,6 +80,27 @@ public class FileSystemConfigurationCache implements ConfigurationCache {
             path = resolveChildAndVerifyParent(path, s);
         }
         Pair<Path, String> dirPathAndFilename = new Pair<>(path, splitPath[splitPath.length - 1]);
+        if (logger.isDebugEnabled()) {
+            StringBuilder message = new StringBuilder("Parameters {");
+            for (Map.Entry<String, List<String>> p : parameters.entrySet()) {
+                message.append(p);
+                message.append(": [");
+                for (String s : p.getValue()) {
+                    message.append(s);
+                    message.append(", ");
+                }
+                if (p.getValue().size() > 0) {
+                    message.setLength(message.length() - 2);
+                }
+                message.append("], ");
+            }
+            if (parameters.size() > 0) {
+                message.setLength(message.length() - 2);
+            }
+            message.append("} -> ");
+            message.append(dirPathAndFilename.getFirst().resolve(dirPathAndFilename.getSecond()).toAbsolutePath());
+            logger.debug(message.toString());
+        }
         return new FileSystemCacheFileInfoImpl(this, dirPathAndFilename.getFirst(), dirPathAndFilename.getSecond() + ".v");
     }
 }

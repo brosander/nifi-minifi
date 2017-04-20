@@ -18,6 +18,12 @@
 package org.apache.nifi.minifi.c2.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.wordnik.swagger.annotations.Api;
 import org.apache.nifi.minifi.c2.api.Configuration;
 import org.apache.nifi.minifi.c2.api.ConfigurationProvider;
@@ -53,6 +59,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Path("/config")
@@ -62,38 +70,70 @@ import java.util.stream.Collectors;
 )
 public class ConfigService {
     private static final Logger logger = LoggerFactory.getLogger(ConfigService.class);
-    private final List<ConfigurationProvider> configurationProviders;
     private final Authorizer authorizer;
     private final ObjectMapper objectMapper;
-
-    private volatile List<Pair<MediaType, ConfigurationProvider>> mediaTypeList;
-    private volatile List<String> contentTypes;
+    private final Supplier<ConfigurationProviderInfo> configurationProviderInfo;
+    private final LoadingCache<ConfigurationProviderKey, ConfigurationProviderValue> configurationCache;
 
     public ConfigService(List<ConfigurationProvider> configurationProviders, Authorizer authorizer) {
+        this(configurationProviders, authorizer, 1000, 300_000);
+    }
+    public ConfigService(List<ConfigurationProvider> configurationProviders, Authorizer authorizer, long maximumCacheSize, long cacheTtlMillis) {
         this.authorizer = authorizer;
         this.objectMapper = new ObjectMapper();
         if (configurationProviders == null || configurationProviders.size() == 0) {
             throw new IllegalArgumentException("Expected at least one configuration provider");
         }
-        this.configurationProviders = new ArrayList<>(configurationProviders);
+        this.configurationProviderInfo = Suppliers.memoizeWithExpiration(() -> initContentTypeInfo(configurationProviders), cacheTtlMillis, TimeUnit.MILLISECONDS);
+        CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
+        if (maximumCacheSize >= 0) {
+            cacheBuilder = cacheBuilder.maximumSize(maximumCacheSize);
+        }
+        if (cacheTtlMillis >= 0) {
+            cacheBuilder = cacheBuilder.expireAfterAccess(cacheTtlMillis, TimeUnit.MILLISECONDS);
+        }
+        this.configurationCache = cacheBuilder
+                .build(new CacheLoader<ConfigurationProviderKey, ConfigurationProviderValue>() {
+                    @Override
+                    public ConfigurationProviderValue load(ConfigurationProviderKey key) throws Exception {
+                        List<MediaType> acceptValues = key.getAcceptValues();
+                        Pair<MediaType, ConfigurationProvider> providerPair = getProvider(acceptValues);
+
+                        Map<String, List<String>> parameters = key.getParameters();
+
+                        Integer version = null;
+                        List<String> versionList = parameters.get("version");
+                        if (versionList != null && versionList.size() > 0) {
+                            try {
+                                version = Integer.parseInt(versionList.get(0));
+                            } catch (NumberFormatException e) {
+                                throw new InvalidParameterException("Unable to parse " + version + " as integer.", e);
+                            }
+                        }
+                        return new ConfigurationProviderValue(providerPair.getSecond().getConfiguration(providerPair.getFirst().toString(), version, parameters), providerPair.getFirst());
+                    }
+                });
     }
 
-    protected void initContentTypeInfo() throws ConfigurationProviderException {
+    protected ConfigurationProviderInfo initContentTypeInfo(List<ConfigurationProvider> configurationProviders) {
         List<Pair<MediaType, ConfigurationProvider>> mediaTypeList = new ArrayList<>();
         List<String> contentTypes = new ArrayList<>();
         Set<MediaType> seenMediaTypes = new LinkedHashSet<>();
 
         for (ConfigurationProvider configurationProvider : configurationProviders) {
-            for (String contentTypeString : configurationProvider.getContentTypes()) {
-                MediaType mediaType = MediaType.valueOf(contentTypeString);
-                if (seenMediaTypes.add(mediaType)) {
-                    contentTypes.add(contentTypeString);
-                    mediaTypeList.add(new Pair<>(mediaType, configurationProvider));
+            try {
+                for (String contentTypeString : configurationProvider.getContentTypes()) {
+                    MediaType mediaType = MediaType.valueOf(contentTypeString);
+                    if (seenMediaTypes.add(mediaType)) {
+                        contentTypes.add(contentTypeString);
+                        mediaTypeList.add(new Pair<>(mediaType, configurationProvider));
+                    }
                 }
+            } catch (ConfigurationProviderException e) {
+                throw e.wrap();
             }
         }
-        this.mediaTypeList = mediaTypeList;
-        this.contentTypes = contentTypes;
+        return new ConfigurationProviderInfo(mediaTypeList, contentTypes);
     }
 
     @GET
@@ -106,15 +146,14 @@ public class ConfigService {
             logger.warn(HttpRequestUtil.getClientString(request) + " not authorized to access " + uriInfo, e);
             return Response.status(403).build();
         }
-        if (contentTypes == null) {
-            try {
-                initContentTypeInfo();
-            } catch (ConfigurationProviderException e) {
-                logger.warn("Unable to initialize content type information.", e);
-                return Response.status(500).build();
-            }
-        }
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        List<String> contentTypes;
+        try {
+            contentTypes = configurationProviderInfo.get().getContentTypes();
+        } catch (ConfigurationProviderException.Wrapper e) {
+            logger.warn("Unable to initialize content type information.", e.unwrap());
+            return Response.status(500).build();
+        }
         try {
             objectMapper.writerWithDefaultPrettyPrinter().writeValue(byteArrayOutputStream, contentTypes);
         } catch (IOException e) {
@@ -155,35 +194,20 @@ public class ConfigService {
                     .append(acceptValues.stream().map(Object::toString).collect(Collectors.joining(", ")));
             logger.debug(builder.toString());
         }
-        Pair<MediaType, ConfigurationProvider> providerPair = null;
-        try {
-            providerPair = getProvider(acceptValues);
-        } catch (ConfigurationProviderException e) {
-            logger.warn("Unable to get provider.", e);
-            return Response.status(500).build();
-        }
 
         try {
-            Integer version = null;
-            List<String> versionList = parameters.get("version");
-            if (versionList != null && versionList.size() > 0) {
-                try {
-                    version = Integer.parseInt(versionList.get(0));
-                } catch (NumberFormatException e) {
-                    throw new InvalidParameterException("Unable to parse " + version + " as integer.", e);
-                }
-            }
+            ConfigurationProviderValue configurationProviderValue = configurationCache.get(new ConfigurationProviderKey(acceptValues, parameters));
+            Configuration configuration = configurationProviderValue.getConfiguration();
             Response.ResponseBuilder ok = Response.ok();
-            Configuration configuration = providerPair.getSecond().getConfiguration(providerPair.getFirst().toString(), version, parameters);
             ok = ok.header("X-Content-Version", configuration.getVersion());
-            ok = ok.type(providerPair.getFirst());
+            ok = ok.type(configurationProviderValue.getMediaType());
             byte[] buffer = new byte[1024];
             int read;
             try (InputStream inputStream = configuration.getInputStream();
                  ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 MessageDigest md5 = MessageDigest.getInstance("MD5");
                 MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
-                while((read = inputStream.read(buffer)) >= 0) {
+                while ((read = inputStream.read(buffer)) >= 0) {
                     outputStream.write(buffer, 0, read);
                     md5.update(buffer, 0, read);
                     sha256.update(buffer, 0, read);
@@ -191,19 +215,29 @@ public class ConfigService {
                 ok = ok.header("Content-MD5", bytesToHex(md5.digest()));
                 ok = ok.header("X-Content-SHA-256", bytesToHex(sha256.digest()));
                 ok = ok.entity(outputStream.toByteArray());
-            } catch (IOException|NoSuchAlgorithmException e) {
+            } catch (ConfigurationProviderException | IOException | NoSuchAlgorithmException e) {
                 logger.error("Error reading or checksumming configuration file", e);
                 throw new WebApplicationException(500);
             }
             return ok.build();
-        } catch (AuthorizationException e) {
-            logger.warn(HttpRequestUtil.getClientString(request) + " not authorized to access " + uriInfo, e);
-            return Response.status(403).build();
-        } catch (InvalidParameterException e) {
-            logger.info(HttpRequestUtil.getClientString(request) + " made invalid request with " + HttpRequestUtil.getQueryString(request), e);
-            return Response.status(400).entity("Invalid request.").build();
-        } catch (Throwable t) {
-            logger.error(HttpRequestUtil.getClientString(request) + " made request with " + HttpRequestUtil.getQueryString(request) + " that caused error in " + providerPair.getSecond(), t);
+        } catch (ExecutionException|UncheckedExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof WebApplicationException) {
+                throw (WebApplicationException) cause;
+            }
+            if (cause instanceof AuthorizationException) {
+                logger.warn(HttpRequestUtil.getClientString(request) + " not authorized to access " + uriInfo, e);
+                return Response.status(403).build();
+            }
+            if (cause instanceof InvalidParameterException) {
+                logger.info(HttpRequestUtil.getClientString(request) + " made invalid request with " + HttpRequestUtil.getQueryString(request), e);
+                return Response.status(400).entity("Invalid request.").build();
+            }
+            if (cause instanceof ConfigurationProviderException) {
+                logger.warn("Unable to get configuration.", cause);
+                return Response.status(500).build();
+            }
+            logger.error(HttpRequestUtil.getClientString(request) + " made request with " + HttpRequestUtil.getQueryString(request) + " that caused error.", cause);
             return Response.status(500).entity("Internal error").build();
         }
     }
@@ -211,15 +245,18 @@ public class ConfigService {
     // see: http://stackoverflow.com/questions/15429257/how-to-convert-byte-array-to-hexstring-in-java#answer-15429408
     protected static String bytesToHex(byte[] in) {
         final StringBuilder builder = new StringBuilder();
-        for(byte b : in) {
+        for (byte b : in) {
             builder.append(String.format("%02x", b));
         }
         return builder.toString();
     }
 
     private Pair<MediaType, ConfigurationProvider> getProvider(List<MediaType> acceptValues) throws ConfigurationProviderException {
-        if (mediaTypeList == null) {
-            initContentTypeInfo();
+        List<Pair<MediaType, ConfigurationProvider>> mediaTypeList;
+        try {
+            mediaTypeList = this.configurationProviderInfo.get().getMediaTypeList();
+        } catch (ConfigurationProviderException.Wrapper e) {
+            throw e.unwrap();
         }
         for (MediaType accept : acceptValues) {
             for (Pair<MediaType, ConfigurationProvider> pair : mediaTypeList) {

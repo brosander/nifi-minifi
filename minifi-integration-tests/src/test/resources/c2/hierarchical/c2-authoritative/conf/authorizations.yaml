@@ -18,13 +18,24 @@ Paths:
   /c2/config:
     Default Action: deny
     Actions:
-    - Authorization: RASPI_3
+    - Authorization: EDGE_1
       Query Parameters:
+        net: edge1
+        class: raspi3
+      Action: allow
+    - Authorization: EDGE_2
+      Query Parameters:
+        net: edge2
+        class: raspi2
+      Action: allow
+    - Authorization: EDGE_3
+      Query Parameters:
+        net: edge3
         class: raspi3
       Action: allow
 
   /c2/config/contentTypes:
     Default Action: deny
     Actions:
-    - Authorization: CONTENT_TYPES
+    - Authorization: EDGE_2
       Action: allow

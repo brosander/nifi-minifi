@@ -15,28 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.minifi.c2.api;
+package org.apache.nifi.minifi.c2.service;
 
-public class ConfigurationProviderException extends Exception {
-    public ConfigurationProviderException(String message) {
-        super(message);
+import org.apache.nifi.minifi.c2.api.Configuration;
+
+import javax.ws.rs.core.MediaType;
+
+public class ConfigurationProviderValue {
+    private final Configuration configuration;
+    private final MediaType mediaType;
+
+    public ConfigurationProviderValue(Configuration configuration, MediaType mediaType) {
+        this.configuration = configuration;
+        this.mediaType = mediaType;
     }
 
-    public ConfigurationProviderException(String message, Throwable cause) {
-        super(message, cause);
+    public Configuration getConfiguration() {
+        return configuration;
     }
 
-    public ConfigurationProviderException.Wrapper wrap() {
-        return new Wrapper(this);
-    }
-
-    public static class Wrapper extends RuntimeException {
-        public Wrapper(ConfigurationProviderException cause) {
-            super(cause);
-        }
-
-        public ConfigurationProviderException unwrap() {
-            return (ConfigurationProviderException) getCause();
-        }
+    public MediaType getMediaType() {
+        return mediaType;
     }
 }
