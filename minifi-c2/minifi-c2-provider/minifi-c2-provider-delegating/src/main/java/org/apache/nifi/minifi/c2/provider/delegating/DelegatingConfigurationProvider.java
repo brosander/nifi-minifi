@@ -37,6 +37,7 @@ import java.net.HttpURLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -78,39 +79,6 @@ public class DelegatingConfigurationProvider implements ConfigurationProvider {
         try {
             if (version == null) {
                 remoteC2ServerConnection = getDelegateConnection(contentType, parameters);
-                try {
-                    int responseCode;
-                    try {
-                        responseCode = remoteC2ServerConnection.getResponseCode();
-                    } catch (IOException e) {
-                        Matcher matcher = errorPattern.matcher(e.getMessage());
-                        if (matcher.matches()) {
-                            responseCode = Integer.parseInt(matcher.group(1));
-                        } else {
-                            throw e;
-                        }
-                    }
-                    if (responseCode >= 400) {
-                        String message = "";
-                        InputStream inputStream = remoteC2ServerConnection.getErrorStream();
-                        if (inputStream != null) {
-                            try {
-                                message = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-                            } finally {
-                                inputStream.close();
-                            }
-                        }
-                        if (responseCode == 400) {
-                            throw new InvalidParameterException(message);
-                        } else if (responseCode == 403) {
-                            throw new AuthorizationException("Got authorization exception from upstream server " + message);
-                        } else {
-                            throw new ConfigurationProviderException(message);
-                        }
-                    }
-                } catch (IOException e) {
-                    throw new ConfigurationProviderException("Unable to get response code from upstream server.", e);
-                }
                 version = Integer.parseInt(remoteC2ServerConnection.getHeaderField("X-Content-Version"));
             }
             ConfigurationCacheFileInfo cacheFileInfo = configurationCache.getCacheFileInfo(contentType, parameters);
@@ -136,18 +104,17 @@ public class DelegatingConfigurationProvider implements ConfigurationProvider {
 
     protected HttpURLConnection getDelegateConnection(String contentType, Map<String, List<String>> parameters) throws ConfigurationProviderException {
         StringBuilder queryStringBuilder = new StringBuilder();
-        for (Map.Entry<String, List<String>> keyValues : parameters.entrySet()) {
-            String key = keyValues.getKey();
-            for (String value : keyValues.getValue()) {
+        try {
+            parameters.entrySet().stream().sorted(Comparator.comparing(Map.Entry::getKey)).forEachOrdered(e -> e.getValue().stream().sorted().forEachOrdered(v -> {
                 try {
-                    queryStringBuilder.append(URLEncoder.encode(key, "UTF-8"));
-                    queryStringBuilder.append("=");
-                    queryStringBuilder.append(URLEncoder.encode(value, "UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    throw new ConfigurationProviderException("Unsupported encoding.", e);
+                    queryStringBuilder.append(URLEncoder.encode(e.getKey(), "UTF-8")).append("=").append(URLEncoder.encode(v, "UTF-8"));
+                } catch (UnsupportedEncodingException ex) {
+                    throw new ConfigurationProviderException("Unsupported encoding.", ex).wrap();
                 }
                 queryStringBuilder.append("&");
-            }
+            }));
+        } catch (ConfigurationProviderException.Wrapper e) {
+            throw e.unwrap();
         }
         String url = "/c2/config";
         if (queryStringBuilder.length() > 0) {
@@ -156,6 +123,39 @@ public class DelegatingConfigurationProvider implements ConfigurationProvider {
         }
         HttpURLConnection httpURLConnection = httpConnector.get(url);
         httpURLConnection.setRequestProperty("Accepts", contentType);
+        try {
+            int responseCode;
+            try {
+                responseCode = httpURLConnection.getResponseCode();
+            } catch (IOException e) {
+                Matcher matcher = errorPattern.matcher(e.getMessage());
+                if (matcher.matches()) {
+                    responseCode = Integer.parseInt(matcher.group(1));
+                } else {
+                    throw e;
+                }
+            }
+            if (responseCode >= 400) {
+                String message = "";
+                InputStream inputStream = httpURLConnection.getErrorStream();
+                if (inputStream != null) {
+                    try {
+                        message = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+                    } finally {
+                        inputStream.close();
+                    }
+                }
+                if (responseCode == 400) {
+                    throw new InvalidParameterException(message);
+                } else if (responseCode == 403) {
+                    throw new AuthorizationException("Got authorization exception from upstream server " + message);
+                } else {
+                    throw new ConfigurationProviderException(message);
+                }
+            }
+        } catch (IOException e) {
+            throw new ConfigurationProviderException("Unable to get response code from upstream server.", e);
+        }
         return httpURLConnection;
     }
 }

@@ -31,6 +31,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class FileSystemConfigurationCache implements ConfigurationCache {
     private static final Logger logger = LoggerFactory.getLogger(FileSystemConfigurationCache.class);
@@ -82,21 +83,7 @@ public class FileSystemConfigurationCache implements ConfigurationCache {
         Pair<Path, String> dirPathAndFilename = new Pair<>(path, splitPath[splitPath.length - 1]);
         if (logger.isDebugEnabled()) {
             StringBuilder message = new StringBuilder("Parameters {");
-            for (Map.Entry<String, List<String>> p : parameters.entrySet()) {
-                message.append(p);
-                message.append(": [");
-                for (String s : p.getValue()) {
-                    message.append(s);
-                    message.append(", ");
-                }
-                if (p.getValue().size() > 0) {
-                    message.setLength(message.length() - 2);
-                }
-                message.append("], ");
-            }
-            if (parameters.size() > 0) {
-                message.setLength(message.length() - 2);
-            }
+            message.append(parameters.entrySet().stream().map(e -> e.getKey() + ": [" + String.join(", ", e.getValue()) + "]").collect(Collectors.joining(", ")));
             message.append("} -> ");
             message.append(dirPathAndFilename.getFirst().resolve(dirPathAndFilename.getSecond()).toAbsolutePath());
             logger.debug(message.toString());
