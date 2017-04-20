@@ -111,6 +111,21 @@ public class ConfigSchema extends AbstractConfigSchema implements ConvertableSch
     }
 
     @Override
+    protected ProcessGroupSchema initializeProcessGroupSchema(Map map) {
+        return new ProcessGroupSchema(map, getWrapperName());
+    }
+
+    @Override
+    protected void persistProcessGroupSchema(Map result) {
+        result.putAll(getProcessGroupSchema().toMap());
+    }
+
+    @Override
+    protected ProvenanceReportingSchema initializeProvenanceReportingProperties(Map map) {
+        return getMapAsType(map, PROVENANCE_REPORTING_PROPERTIES_KEY, ProvenanceReportingSchema.class, getWrapperName(), false, false);
+    }
+
+    @Override
     public Map<String, Object> toMap() {
         Map<String, Object> result = mapSupplier.get();
         result.put(VERSION, getVersion());

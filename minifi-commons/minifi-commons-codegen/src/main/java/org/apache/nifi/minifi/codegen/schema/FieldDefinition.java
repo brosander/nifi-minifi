@@ -26,8 +26,6 @@ public class FieldDefinition {
     private boolean required;
     private boolean requiredSet;
     private String validator;
-    private String instantiator;
-    private String toMap;
     private boolean omitIfEmpty;
 
     public String getName() {
@@ -91,22 +89,6 @@ public class FieldDefinition {
 
     public void setType(TypeDefinition type) {
         this.type = type;
-    }
-
-    public String getInstantiator() {
-        return instantiator;
-    }
-
-    public void setInstantiator(String instantiator) {
-        this.instantiator = instantiator;
-    }
-
-    public String getToMap() {
-        return toMap;
-    }
-
-    public void setToMap(String toMap) {
-        this.toMap = toMap;
     }
 
     public boolean isOmitIfEmpty() {

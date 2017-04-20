@@ -66,41 +66,7 @@ public#if(!$class.concrete) abstract#end class $schema.getActualClassname($class
         this.wrapperName = wrapperName;
 #end
 #foreach($field in $class.fields)
-#if ($field.type.declaration.equals("int"))
-#set($extraConvert = ".intValue()")
-#elseif ($field.type.declaration.equals("long"))
-#set($extraConvert = ".longValue()")
-#else
-#set($extraConvert = "")
-#end
-#if ($field.instantiator)
-        $field.name = ${field.instantiator};
-#elseif ($class.isSchema($field.type.name))
-        $field.name = getMapAsType(map, ${underscoreNames[$field.name]}_KEY, ${field.type.mapType}.class, getWrapperName(), $field.required);
-#elseif ($field.type.name.equals("List") && $class.isSchema($field.type.genericTypes.get(0).name))
-        $field.name = convertListToType(getOptionalKeyAsType(map, ${underscoreNames[$field.name]}_KEY, ${field.type.mapType}.class, getWrapperName(), ${underscoreNames[$field.name]}_DEFAULT), ${underscoreNames[$field.name]}_KEY.toLowerCase().substring(0, ${underscoreNames[$field.name]}_KEY.length() - 1), ${field.type.genericTypes.get(0).mapType}.class, ${underscoreNames[$field.name]}_KEY);
-#elseif ($field.type.enum)
-#if ($field.hasDefault())
-        String ${field.name}String = getOptionalKeyAsType(map, ${underscoreNames[$field.name]}_KEY, String.class, getWrapperName(), ${underscoreNames[$field.name]}_DEFAULT.name());
-#elseif ($field.required)
-        String ${field.name}String = getRequiredKeyAsType(map, ${underscoreNames[$field.name]}_KEY, String.class, getWrapperName());
-#else
-        String ${field.name}String = getOptionalKeyAsType(map, ${underscoreNames[$field.name]}_KEY, String.class, getWrapperName(), null);
-#end
-        if (${field.name}String != null) {
-            try {
-                $field.name = ${field.type.declaration}.valueOf(${field.name}String);
-            } catch (IllegalArgumentException e) {
-                addValidationIssue(${underscoreNames[$field.name]}_KEY, getWrapperName(), "it is not a valid ${field.type.declaration}");
-            }
-        }
-#else
-#if ($field.hasDefault() || $field.required)
-        $field.name = getOptionalKeyAsType(map, ${underscoreNames[$field.name]}_KEY, ${field.type.mapType}.class, getWrapperName(), ${underscoreNames[$field.name]}_DEFAULT)$extraConvert;
-#else
-        $field.name = getOptionalKeyAsType(map, ${underscoreNames[$field.name]}_KEY, ${field.type.mapType}.class, getWrapperName())$extraConvert;
-#end
-#end
+        $field.name = initialize${camelCase[$field.name]}(map);
 #end
         initValidation();
     }
@@ -128,9 +94,58 @@ public#if(!$class.concrete) abstract#end class $schema.getActualClassname($class
     public Map<String, Object> toMap() {
         Map<String, Object> result = mapSupplier.get();
 #foreach($field in $class.fields)
-#if ($field.toMap)
-        $field.toMap
+        persist${camelCase[$field.name]}(result);
+#end
+        return result;
+    }
+#end
+#foreach($field in $class.fields)
+#if ($field.type.declaration.equals("int"))
+#set($extraConvert = ".intValue()")
+#elseif ($field.type.declaration.equals("long"))
+#set($extraConvert = ".longValue()")
+#else
+#set($extraConvert = "")
+#end
+
+#if ($field.key)
+    protected $field.type.declaration initialize${camelCase[$field.name]}(Map map) {
+#if ($class.isSchema($field.type.name))
+        return getMapAsType(map, ${underscoreNames[$field.name]}_KEY, ${field.type.mapType}.class, getWrapperName(), $field.required);
+#elseif ($field.type.name.equals("List") && $class.isSchema($field.type.genericTypes.get(0).name))
+        return convertListToType(getOptionalKeyAsType(map, ${underscoreNames[$field.name]}_KEY, ${field.type.mapType}.class, getWrapperName(), ${underscoreNames[$field.name]}_DEFAULT), ${underscoreNames[$field.name]}_KEY.toLowerCase().substring(0, ${underscoreNames[$field.name]}_KEY.length() - 1), ${field.type.genericTypes.get(0).mapType}.class, ${underscoreNames[$field.name]}_KEY);
 #elseif ($field.type.enum)
+#if ($field.hasDefault())
+        String ${field.name}String = getOptionalKeyAsType(map, ${underscoreNames[$field.name]}_KEY, String.class, getWrapperName(), ${underscoreNames[$field.name]}_DEFAULT.name());
+#elseif ($field.required)
+        String ${field.name}String = getRequiredKeyAsType(map, ${underscoreNames[$field.name]}_KEY, String.class, getWrapperName());
+#else
+        String ${field.name}String = getOptionalKeyAsType(map, ${underscoreNames[$field.name]}_KEY, String.class, getWrapperName(), null);
+#end
+        if (${field.name}String != null) {
+            try {
+                return ${field.type.declaration}.valueOf(${field.name}String);
+            } catch (IllegalArgumentException e) {
+                addValidationIssue(${underscoreNames[$field.name]}_KEY, getWrapperName(), "it is not a valid ${field.type.declaration}");
+            }
+        }
+        return null;
+#else
+#if ($field.hasDefault() || $field.required)
+        return getOptionalKeyAsType(map, ${underscoreNames[$field.name]}_KEY, ${field.type.mapType}.class, getWrapperName(), ${underscoreNames[$field.name]}_DEFAULT)$extraConvert;
+#else
+        return getOptionalKeyAsType(map, ${underscoreNames[$field.name]}_KEY, ${field.type.mapType}.class, getWrapperName())$extraConvert;
+#end
+#end
+    }
+#else
+    protected abstract $field.type.declaration initialize${camelCase[$field.name]}(Map map);
+#end
+#if ($class.writable)
+
+#if ($field.key)
+    protected void persist${camelCase[$field.name]}(Map result) {
+#if ($field.type.enum)
         if ($field.name != null) {
             result.put(${underscoreNames[$field.name]}_KEY, ${field.name}.name());
         }#if (!$field.omitIfEmpty) else {
@@ -154,11 +169,11 @@ public#if(!$class.concrete) abstract#end class $schema.getActualClassname($class
 #else
         result.put(${underscoreNames[$field.name]}_KEY, $field.name);
 #end
-#end
-        return result;
     }
+#else
+    protected abstract void persist${camelCase[$field.name]}(Map result);
 #end
-#foreach($field in $class.fields)
+#end
 
 #if ($field.name.equals("id") && $field.type.declaration.equals("String"))
     @Override

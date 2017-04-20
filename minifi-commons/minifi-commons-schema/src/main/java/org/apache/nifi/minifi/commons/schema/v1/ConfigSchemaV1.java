@@ -22,6 +22,7 @@ package org.apache.nifi.minifi.commons.schema.v1;
 import org.apache.nifi.minifi.commons.schema.ConfigSchema;
 import org.apache.nifi.minifi.commons.schema.ConnectionSchema;
 import org.apache.nifi.minifi.commons.schema.ProcessorSchema;
+import org.apache.nifi.minifi.commons.schema.ProvenanceReportingSchema;
 import org.apache.nifi.minifi.commons.schema.RemotePortSchema;
 import org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema;
 import org.apache.nifi.minifi.commons.schema.common.CollectionOverlap;
@@ -208,5 +209,10 @@ public class ConfigSchemaV1 extends AbstractConfigSchemaV1 {
     @Override
     public int getVersion() {
         return CONFIG_VERSION;
+    }
+
+    @Override
+    protected ProvenanceReportingSchema initializeProvenanceReportingProperties(Map map) {
+        return getMapAsType(map, PROVENANCE_REPORTING_PROPERTIES_KEY, ProvenanceReportingSchema.class, getWrapperName(), false, false);
     }
 }

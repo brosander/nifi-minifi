@@ -24,6 +24,7 @@ import org.apache.nifi.minifi.commons.schema.common.StringUtil;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -101,5 +102,20 @@ public class ProcessGroupSchema extends AbstractProcessGroupSchema implements Co
     @Override
     public int getVersion() {
         return ConfigSchema.CONFIG_VERSION;
+    }
+
+    @Override
+    protected List<PortSchema> initializeInputPortSchemas(Map map) {
+        return getOptionalKeyAsList(map, INPUT_PORT_SCHEMAS_KEY, m -> new PortSchema(m, "InputPort(id: {id}, name: {name})"), getWrapperName());
+    }
+
+    @Override
+    protected List<PortSchema> initializeOutputPortSchemas(Map map) {
+        return getOptionalKeyAsList(map, OUTPUT_PORT_SCHEMAS_KEY, m -> new PortSchema(m, "OutputPort(id: {id}, name: {name})"), getWrapperName());
+    }
+
+    @Override
+    protected List<ProcessGroupSchema> initializeProcessGroupSchemas(Map map) {
+        return getOptionalKeyAsList(map, PROCESS_GROUP_SCHEMAS_KEY, m -> new ProcessGroupSchema(m, "ProcessGroup(id: {id}, name: {name})"), getWrapperName());
     }
 }

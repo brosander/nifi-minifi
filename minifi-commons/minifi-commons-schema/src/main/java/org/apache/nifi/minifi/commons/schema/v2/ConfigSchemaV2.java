@@ -22,6 +22,7 @@ import org.apache.nifi.minifi.commons.schema.ConnectionSchema;
 import org.apache.nifi.minifi.commons.schema.FunnelSchema;
 import org.apache.nifi.minifi.commons.schema.PortSchema;
 import org.apache.nifi.minifi.commons.schema.ProcessorSchema;
+import org.apache.nifi.minifi.commons.schema.ProvenanceReportingSchema;
 import org.apache.nifi.minifi.commons.schema.RemotePortSchema;
 import org.apache.nifi.minifi.commons.schema.RemoteProcessGroupSchema;
 import org.apache.nifi.minifi.commons.schema.common.CollectionOverlap;
@@ -136,5 +137,15 @@ public class ConfigSchemaV2 extends AbstractConfigSchemaV2 {
         result.putAll(getProcessGroupSchema().toMap());
         putIfNotNull(result, PROVENANCE_REPORTING_KEY, getProvenanceReportingProperties());
         return new ConfigSchema(result, getValidationIssues());
+    }
+
+    @Override
+    protected ProcessGroupSchemaV2 initializeProcessGroupSchema(Map map) {
+        return new ProcessGroupSchemaV2(map, getWrapperName());
+    }
+
+    @Override
+    protected ProvenanceReportingSchema initializeProvenanceReportingProperties(Map map) {
+        return getMapAsType(map, PROVENANCE_REPORTING_PROPERTIES_KEY, ProvenanceReportingSchema.class, getWrapperName(), false, false);
     }
 }

@@ -30,8 +30,8 @@
         {"name": "provenanceRepositorySchema", "typeName": "ProvenanceRepositorySchema", "key": "Provenance Repository", "required": false},
         {"name": "componentStatusRepositoryProperties", "typeName": "ComponentStatusRepositorySchema", "key": "Component Status Repository", "required": false},
         {"name": "securityProperties", "typeName": "SecurityPropertiesSchema", "key": "Security Properties", "required": false},
-        {"name": "processGroupSchema", "typeName": "ProcessGroupSchema", "required": false, "instantiator": "new ProcessGroupSchema(map, getWrapperName())", "toMap":"result.putAll(processGroupSchema.toMap());"},
-        {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false, "instantiator": "getMapAsType(map, PROVENANCE_REPORTING_PROPERTIES_KEY, ProvenanceReportingSchema.class, getWrapperName(), false, false)"},
+        {"name": "processGroupSchema", "typeName": "ProcessGroupSchema", "required": false},
+        {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false},
         {"name": "nifiPropertiesOverrides", "type": {"name": "Map", "genericTypes": [{"name": "String"}, {"name":"String"}]}, "key": "NiFi Properties Overrides", "default": {}}
       ]
     },
@@ -52,7 +52,7 @@
         {"name": "processors", "type": {"name": "List", "genericTypes": [{"name":"ProcessorSchemaV1"}]}, "key": "Processors", "default": []},
         {"name": "connections", "type": {"name": "List", "genericTypes": [{"name":"ConnectionSchemaV1"}]}, "key": "Connections", "default": []},
         {"name": "remoteProcessingGroups", "type": {"name": "List", "genericTypes": [{"name":"RemoteProcessGroupSchemaV1"}]}, "key": "Remote Processing Groups", "default": []},
-        {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false, "instantiator": "getMapAsType(map, PROVENANCE_REPORTING_PROPERTIES_KEY, ProvenanceReportingSchema.class, getWrapperName(), false, false)"}
+        {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false}
       ]
     },
     {
@@ -69,8 +69,8 @@
         {"name": "provenanceRepositorySchema", "typeName": "ProvenanceRepositorySchema", "key": "Provenance Repository", "required": false},
         {"name": "componentStatusRepositoryProperties", "typeName": "ComponentStatusRepositorySchema", "key": "Component Status Repository", "required": false},
         {"name": "securityProperties", "typeName": "SecurityPropertiesSchema", "key": "Security Properties", "required": false},
-        {"name": "processGroupSchema", "typeName": "ProcessGroupSchemaV2", "required": false, "instantiator": "new ProcessGroupSchemaV2(map, getWrapperName())"},
-        {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false, "instantiator": "getMapAsType(map, PROVENANCE_REPORTING_PROPERTIES_KEY, ProvenanceReportingSchema.class, getWrapperName(), false, false)"}
+        {"name": "processGroupSchema", "typeName": "ProcessGroupSchemaV2", "required": false},
+        {"name": "provenanceReportingProperties", "typeName": "ProvenanceReportingSchema", "key": "Provenance Reporting", "required": false}
       ]
     },
     {
@@ -190,9 +190,9 @@
         {"name": "funnels", "type": {"name": "List", "genericTypes": [{"name":"FunnelSchema"}]}, "key": "Funnels", "default": []},
         {"name": "connections", "type": {"name": "List", "genericTypes": [{"name":"ConnectionSchema"}]}, "key": "Connections", "default": []},
         {"name": "remoteProcessGroups", "type": {"name": "List", "genericTypes": [{"name":"RemoteProcessGroupSchema"}]}, "key": "Remote Process Groups", "default": []},
-        {"name": "inputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Input Ports", "default": [], "instantiator": "getOptionalKeyAsList(map, INPUT_PORT_SCHEMAS_KEY, m -> new PortSchema(m, \"InputPort(id: {id}, name: {name})\"), getWrapperName())"},
-        {"name": "outputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Output Ports", "default": [], "instantiator": "getOptionalKeyAsList(map, OUTPUT_PORT_SCHEMAS_KEY, m -> new PortSchema(m, \"OutputPort(id: {id}, name: {name})\"), getWrapperName())"},
-        {"name": "processGroupSchemas", "type": {"name": "List", "genericTypes": [{"name":"ProcessGroupSchema"}]}, "key": "Process Groups", "default": [], "instantiator": "getOptionalKeyAsList(map, PROCESS_GROUP_SCHEMAS_KEY, m -> new ProcessGroupSchema(m, \"ProcessGroup(id: {id}, name: {name})\"), getWrapperName())"}
+        {"name": "inputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Input Ports", "default": []},
+        {"name": "outputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Output Ports", "default": []},
+        {"name": "processGroupSchemas", "type": {"name": "List", "genericTypes": [{"name":"ProcessGroupSchema"}]}, "key": "Process Groups", "default": []}
       ]
     },
     {
@@ -209,9 +209,9 @@
         {"name": "funnels", "type": {"name": "List", "genericTypes": [{"name":"FunnelSchema"}]}, "key": "Funnels", "default": []},
         {"name": "connections", "type": {"name": "List", "genericTypes": [{"name":"ConnectionSchema"}]}, "key": "Connections", "default": []},
         {"name": "remoteProcessGroups", "type": {"name": "List", "genericTypes": [{"name":"RemoteProcessGroupSchema"}]}, "key": "Remote Process Groups", "default": []},
-        {"name": "processGroupSchemas", "type": {"name": "List", "genericTypes": [{"name":"ProcessGroupSchemaV2"}]}, "key": "Process Groups", "default": [], "instantiator": "getOptionalKeyAsList(map, PROCESS_GROUP_SCHEMAS_KEY, m -> new ProcessGroupSchemaV2(m, \"ProcessGroup(id: {id}, name: {name})\"), getWrapperName())"},
-        {"name": "inputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Input Ports", "default": [], "instantiator": "getOptionalKeyAsList(map, INPUT_PORT_SCHEMAS_KEY, m -> new PortSchema(m, \"InputPort(id: {id}, name: {name})\"), getWrapperName())"},
-        {"name": "outputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Output Ports", "default": [], "instantiator": "getOptionalKeyAsList(map, OUTPUT_PORT_SCHEMAS_KEY, m -> new PortSchema(m, \"OutputPort(id: {id}, name: {name})\"), getWrapperName())"}
+        {"name": "processGroupSchemas", "type": {"name": "List", "genericTypes": [{"name":"ProcessGroupSchemaV2"}]}, "key": "Process Groups", "default": []},
+        {"name": "inputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Input Ports", "default": []},
+        {"name": "outputPortSchemas", "type": {"name": "List", "genericTypes": [{"name":"PortSchema"}]}, "key": "Output Ports", "default": []}
       ]
     },
     {
