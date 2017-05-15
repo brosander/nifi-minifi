@@ -16,34 +16,11 @@
 # under the License.
 #
 
-FROM openjdk:8-jre-alpine
+FROM apacheminific2:${minifi.version}
 MAINTAINER Apache MiNiFi <dev@nifi.apache.org>
 
-ARG UID=1000
-ARG GID=50
-ARG MINIFI_C2_VERSION
-ARG MINIFI_C2_BINARY
-
-ENV MINIFI_C2_BASE_DIR /opt/minifi-c2
-ENV MINIFI_C2_HOME $MINIFI_C2_BASE_DIR/minifi-c2-$MINIFI_C2_VERSION
-
-# Install curl, tls support
+USER root
 RUN apk update && \
-    apk add curl ca-certificates && \
-    update-ca-certificates && \
+    apk add python && \
     rm -rf /var/lib/apt/lists/*
-
-# Setup MiNiFi C2 user
-RUN addgroup -g $GID c2 || groupmod -n c2 `getent group $GID | cut -d: -f1` && \
-    adduser -s /bin/sh -u $UID -G c2 -D c2
-
-ADD $MINIFI_C2_BINARY $MINIFI_C2_BASE_DIR
-RUN chown -R c2:c2 $MINIFI_C2_HOME
-
 USER c2
-
-#Default http port
-EXPOSE 10080
-
-# Startup MiNiFi c2
-CMD $MINIFI_C2_HOME/bin/c2.sh run

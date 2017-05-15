@@ -92,6 +92,7 @@ limitations under the License.
                 <filtering>true</filtering>
                 <includes>
                     <include>docker-compose-*.yml</include>
+                    <include>**/Dockerfile</include>
                 </includes>
             </testResource>
             <testResource>
@@ -99,6 +100,7 @@ limitations under the License.
                 <filtering>false</filtering>
                 <excludes>
                     <exclude>docker-compose-*.yml</exclude>
+                    <exclude>**/Dockerfile</exclude>
                 </excludes>
             </testResource>
         </testResources>
@@ -130,6 +132,41 @@ limitations under the License.
             </properties>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>com.spotify</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>0.4.13</version>
+                        <executions>
+                            <execution>
+                                <id>minifi-c2-integration-image</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <configuration>
+                                    <imageName>apacheminific2-integration</imageName>
+                                    <dockerDirectory>${project.build.directory}/test-classes/minifi-c2-integration-image</dockerDirectory>
+                                    <imageTags>
+                                        <imageTag>${minifi.version}</imageTag>
+                                    </imageTags>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>minifi-integration-image</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <configuration>
+                                    <imageName>apacheminifi-integration</imageName>
+                                    <dockerDirectory>${project.build.directory}/test-classes/minifi-integration-image</dockerDirectory>
+                                    <imageTags>
+                                        <imageTag>${minifi.version}</imageTag>
+                                    </imageTags>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>

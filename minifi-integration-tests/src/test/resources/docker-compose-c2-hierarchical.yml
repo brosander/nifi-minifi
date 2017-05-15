@@ -17,7 +17,7 @@ version: "2"
 
 services:
   c2-authoritative:
-    image: apacheminific2:${minifi.c2.version}
+    image: apacheminific2-integration:${minifi.c2.version}
     ports:
       - "10443"
     hostname: c2-authoritative
@@ -36,7 +36,7 @@ services:
       - edge1
 
   minifi-edge1:
-    image: apacheminifi:${minifi.version}
+    image: apacheminifi-integration:${minifi.version}
     ports:
       - "8000"
     volumes:
@@ -55,7 +55,7 @@ services:
       - edge1
 
   c2-edge2:
-    image: apacheminific2:${minifi.c2.version}
+    image: apacheminific2-integration:${minifi.c2.version}
     ports:
       - "10080"
     hostname: c2-edge2
@@ -70,7 +70,7 @@ services:
       - edge2
 
   minifi-edge2:
-    image: apacheminifi:${minifi.version}
+    image: apacheminifi-integration:${minifi.version}
     ports:
       - "8000"
     volumes:
@@ -97,7 +97,7 @@ services:
       - edge3
 
   minifi-edge3:
-    image: apacheminifi:${minifi.version}
+    image: apacheminifi-integration:${minifi.version}
     ports:
       - "8000"
     volumes:

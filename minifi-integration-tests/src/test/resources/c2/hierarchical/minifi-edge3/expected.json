@@ -1,5 +1,8 @@
 [
   {
+    "pattern": "org\\.apache\\.nifi\\.minifi\\.MiNiFi Controller initialization took"
+  },
+  {
     "pattern": "ConfigurationChangeCoordinator Notifying Listeners of a change"
   },
   {

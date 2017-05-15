@@ -17,7 +17,7 @@ version: "2"
 
 services:
   minifi:
-    image: apacheminifi:${minifi.version}
+    image: apacheminifi-integration:${minifi.version}
     ports:
       - "8000"
     hostname: minifi

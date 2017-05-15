@@ -27,11 +27,15 @@ ARG MINIFI_BINARY
 ENV MINIFI_BASE_DIR /opt/minifi
 ENV MINIFI_HOME $MINIFI_BASE_DIR/minifi-$MINIFI_VERSION
 
+# Install curl, tls support
+RUN apk update && \
+    apk add curl ca-certificates && \
+    update-ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
 # Setup MiNiFi user
 RUN addgroup -g $GID minifi || groupmod -n minifi `getent group $GID | cut -d: -f1` && \
-    adduser -s /bin/sh -u $UID -G minifi -D minifi && \
-    mkdir -p /home/minifi && \
-    chown -R minifi:minifi /home/minifi
+    adduser -s /bin/sh -u $UID -G minifi -D minifi
 
 ADD $MINIFI_BINARY $MINIFI_BASE_DIR
 RUN chown -R minifi:minifi $MINIFI_HOME
