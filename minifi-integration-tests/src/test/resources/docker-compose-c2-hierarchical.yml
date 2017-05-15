@@ -48,7 +48,7 @@ services:
       - ./certificates-c2-hierarchical/minifi-edge1/keystore.jks:/opt/minifi/minifi-${minifi.version}/conf/keystore.jks
       - ./certificates-c2-hierarchical/minifi-edge1/truststore.jks:/opt/minifi/minifi-${minifi.version}/conf/truststore.jks
     entrypoint:
-      - bash
+      - sh
       - -c
       - /opt/minifi/minifi-${minifi.version}/bin/minifi.sh start && python /home/minifi/tailFileServer.py --file /opt/minifi/minifi-${minifi.version}/logs/minifi-app.log --file /opt/minifi/minifi-${minifi.version}/logs/minifi-bootstrap.log
     networks:
@@ -79,7 +79,7 @@ services:
       - ./c2/hierarchical/minifi-edge2/bootstrap.conf:/opt/minifi/minifi-${minifi.version}/conf/bootstrap.conf
       - ./logback.xml:/opt/minifi/minifi-${minifi.version}/conf/logback.xml
     entrypoint:
-      - bash
+      - sh
       - -c
       - /opt/minifi/minifi-${minifi.version}/bin/minifi.sh start && python /home/minifi/tailFileServer.py --file /opt/minifi/minifi-${minifi.version}/logs/minifi-app.log --file /opt/minifi/minifi-${minifi.version}/logs/minifi-bootstrap.log
     networks:
@@ -109,7 +109,7 @@ services:
       - ./certificates-c2-hierarchical/minifi-edge3/keystore.jks:/opt/minifi/minifi-${minifi.version}/conf/keystore.jks
       - ./certificates-c2-hierarchical/minifi-edge3/truststore.jks:/opt/minifi/minifi-${minifi.version}/conf/truststore.jks
     entrypoint:
-      - bash
+      - sh
       - -c
       - /opt/minifi/minifi-${minifi.version}/bin/minifi.sh start && python /home/minifi/tailFileServer.py --file /opt/minifi/minifi-${minifi.version}/logs/minifi-app.log --file /opt/minifi/minifi-${minifi.version}/logs/minifi-bootstrap.log
     networks:
