@@ -33,9 +33,10 @@ RUN apk update && \
     update-ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-# Setup c2 user
+# Setup MiNiFi C2 user
 RUN addgroup -g $GID c2 || groupmod -n c2 `getent group $GID | cut -d: -f1` && \
-    adduser -s /bin/sh -u $UID -G c2 -D c2
+    adduser -s /bin/sh -u $UID -G c2 -D c2 && \
+    mkdir -p $MINIFI_C2_BASE_DIR
 
 # Download, validate, and expand Apache MiNiFi C2 binary.
 RUN curl -fSL $MINIFI_C2_BINARY_URL -o $MINIFI_C2_BASE_DIR/minifi-c2-$MINIFI_C2_VERSION-bin.tar.gz \

@@ -45,5 +45,5 @@ USER c2
 #Default http port
 EXPOSE 10080
 
-# Startup MiNiFi c2
-CMD $MINIFI_C2_HOME/bin/c2.sh run
+# Startup MiNiFi C2
+CMD $MINIFI_C2_HOME/bin/c2.sh
